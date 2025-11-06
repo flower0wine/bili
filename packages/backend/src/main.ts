@@ -1,3 +1,5 @@
+import compression from "compression";
+import helmet from "helmet";
 import { Logger } from "nestjs-pino";
 import { HttpAdapterHost, NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
@@ -36,6 +38,12 @@ async function bootstrap() {
     }
   });
 
+  app.use(compression());
+  app.use(helmet());
+
   await app.listen(process.env.PORT ?? 9000);
 }
-void bootstrap();
+void bootstrap().catch((err: any) => {
+  console.error(err);
+  process.exit(1);
+});
