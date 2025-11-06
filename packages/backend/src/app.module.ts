@@ -5,12 +5,14 @@ import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { AppController } from "@/app.controller";
 import { AppService } from "@/app.service";
+import { PrismaModule } from "@/services/common/prisma.module";
 import { GitModule } from "@/services/git/git.module";
 import { UserSpaceModule } from "@/services/user-space/user-space.module";
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
     LoggerModule.forRoot({
       pinoHttp: {
         genReqId: (req: Request, res: Response) => {
