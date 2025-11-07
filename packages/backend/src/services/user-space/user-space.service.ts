@@ -8,12 +8,29 @@ export interface UserSpaceData {
   mid: number;
   name: string;
   sex: string;
-  level: number;
   face: string;
+  faceNft: number;
   sign: string;
-  userStatus: object;
-  following: number;
-  follower: number;
+  level: number;
+  birthday?: string;
+
+  // 认证与会员信息
+  official?: object;
+  vip?: object;
+  pendant?: object;
+  nameplate?: object;
+
+  // 社交信息
+  fansBadge: boolean;
+  fansMedal?: object;
+  isFollowed: boolean;
+  topPhoto?: string;
+
+  // 其他展示信息
+  liveRoom?: object;
+  tags?: string[] | null;
+  sysNotice?: object;
+  isSeniorMember: number;
 }
 
 @Injectable()
@@ -97,12 +114,29 @@ export class UserSpaceService {
         mid: data.mid,
         name: data.name,
         sex: data.sex,
-        level: data.level,
         face: data.face,
+        faceNft: data.face_nft,
         sign: data.sign,
-        userStatus: data.vip,
-        following: data.following,
-        follower: data.follower
+        level: data.level,
+        birthday: data.birthday,
+
+        // 认证与会员信息
+        official: data.official,
+        vip: data.vip,
+        pendant: data.pendant,
+        nameplate: data.nameplate,
+
+        // 社交信息
+        fansBadge: data.fans_badge,
+        fansMedal: data.fans_medal,
+        isFollowed: data.is_followed,
+        topPhoto: data.top_photo,
+
+        // 其他展示信息
+        liveRoom: data.live_room,
+        tags: data.tags,
+        sysNotice: data.sys_notice,
+        isSeniorMember: data.is_senior_member
       };
     } catch (error: any) {
       const message = `获取用户空间信息失败：${error?.message || error}`;

@@ -3,10 +3,9 @@ import { Logger } from "nestjs-pino";
 import { Inject, Injectable } from "@nestjs/common";
 import { PrismaService } from "@/services/common/prisma.service";
 import {
-  UserSpaceData,
-  UserSpaceService
-} from "@/services/user-space/user-space.service";
-import { Prisma } from "@prisma/client";
+  UserCardData,
+  UserCardService
+} from "@/services/user-card/user-card.service";
 import { Task } from "../decorators/task.decorator";
 import { TaskCancelledError } from "../interfaces/task.interface";
 
@@ -15,6 +14,7 @@ import { TaskCancelledError } from "../interfaces/task.interface";
  */
 interface SyncParams {
   mids?: number[];
+  photo?: boolean;
 }
 
 /**
@@ -33,20 +33,20 @@ interface SyncResult {
 }
 
 /**
- * 用户空间同步任务
+ * 用户名片同步任务
  * 这是一个纯粹的任务实现，不包含任何调度逻辑
  */
 @Injectable()
-export class UserSpaceSyncTask {
+export class UserCardSyncTask {
   constructor(
-    private readonly userSpaceService: UserSpaceService,
+    private readonly userCardService: UserCardService,
     private readonly prisma: PrismaService,
     @Inject(Logger) private readonly logger: Logger
   ) {}
 
   @Task({
-    name: "user-space-sync",
-    description: "同步用户空间数据到数据库",
+    name: "user-card-sync",
+    description: "同步用户名片数据到数据库",
     timeout: 300000, // 5分钟超时
     retries: 3
   })
@@ -55,36 +55,42 @@ export class UserSpaceSyncTask {
     signal?: AbortSignal
   ): Promise<SyncResult> {
     const mids = params?.mids || [2]; // 默认用户列表
+    const photo = params?.photo !== false; // 默认请求头图
 
     const results: SyncResult["results"] = [];
 
     for (const mid of mids) {
       // 检查是否被取消
       if (signal?.aborted) {
-        throw new TaskCancelledError("user-space-sync", "unknown");
+        throw new TaskCancelledError("user-card-sync", "unknown");
       }
 
       try {
-        // 获取用户空间数据
-        const userData: UserSpaceData =
-          await this.userSpaceService.getUserSpaceInfo({ mid });
+        // 获取用户名片数据
+        const userData: UserCardData =
+          await this.userCardService.getUserCardInfo({ mid, photo });
 
         // 再次检查取消状态
         if (signal?.aborted) {
-          throw new TaskCancelledError("user-space-sync", "unknown");
+          throw new TaskCancelledError("user-card-sync", "unknown");
         }
 
         // 保存到数据库
-        const saved = await this.prisma.userSpaceData.upsert({
+        const saved = await this.prisma.userCard.upsert({
           where: { mid: userData.mid },
           update: {
             name: userData.name,
             sex: userData.sex,
             face: userData.face,
-            faceNft: userData.faceNft,
             sign: userData.sign,
             level: userData.level,
-            birthday: userData.birthday,
+
+            // 统计信息
+            fans: userData.fans,
+            friend: userData.friend,
+            archiveCount: userData.archiveCount,
+            articleCount: userData.articleCount,
+            likeNum: userData.likeNum,
 
             // 认证与会员信息
             official: userData.official,
@@ -93,16 +99,8 @@ export class UserSpaceSyncTask {
             nameplate: userData.nameplate,
 
             // 社交信息
-            fansBadge: userData.fansBadge,
-            fansMedal: userData.fansMedal,
-            isFollowed: userData.isFollowed,
-            topPhoto: userData.topPhoto,
-
-            // 其他展示信息
-            liveRoom: userData.liveRoom,
-            tags: userData.tags === null ? Prisma.JsonNull : userData.tags,
-            sysNotice: userData.sysNotice,
-            isSeniorMember: userData.isSeniorMember,
+            following: userData.following,
+            space: userData.space,
 
             updatedAt: dayjs().toDate()
           },
@@ -111,10 +109,15 @@ export class UserSpaceSyncTask {
             name: userData.name,
             sex: userData.sex,
             face: userData.face,
-            faceNft: userData.faceNft,
             sign: userData.sign,
             level: userData.level,
-            birthday: userData.birthday,
+
+            // 统计信息
+            fans: userData.fans,
+            friend: userData.friend,
+            archiveCount: userData.archiveCount,
+            articleCount: userData.articleCount,
+            likeNum: userData.likeNum,
 
             // 认证与会员信息
             official: userData.official,
@@ -123,16 +126,8 @@ export class UserSpaceSyncTask {
             nameplate: userData.nameplate,
 
             // 社交信息
-            fansBadge: userData.fansBadge,
-            fansMedal: userData.fansMedal,
-            isFollowed: userData.isFollowed,
-            topPhoto: userData.topPhoto,
-
-            // 其他展示信息
-            liveRoom: userData.liveRoom,
-            tags: userData.tags === null ? Prisma.JsonNull : userData.tags,
-            sysNotice: userData.sysNotice,
-            isSeniorMember: userData.isSeniorMember
+            following: userData.following,
+            space: userData.space
           }
         });
 
@@ -141,7 +136,7 @@ export class UserSpaceSyncTask {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
         this.logger.error({
-          event: "user_space_sync.failed",
+          event: "user_card_sync.failed",
           mid,
           error: errorMessage
         });
@@ -168,7 +163,7 @@ export class UserSpaceSyncTask {
     // 记录部分失败的情况
     if (failedCount > 0) {
       this.logger.warn({
-        event: "user_space_sync.partial_failure",
+        event: "user_card_sync.partial_failure",
         total: mids.length,
         success: successCount,
         failed: failedCount,

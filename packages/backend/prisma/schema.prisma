@@ -9,18 +9,36 @@ datasource db {
 }
 
 model UserSpaceData {
-  id         Int      @id @default(autoincrement())
-  mid        Int      @unique
-  name       String
-  sex        String
-  level      Int
-  face       String
-  sign       String
-  userStatus Json
-  following  Int
-  follower   Int
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt  DateTime @updatedAt @db.Timestamptz(6)
+  id              Int      @id @default(autoincrement())
+  mid             Int      @unique
+  name            String
+  sex             String
+  face            String
+  faceNft         Int      @default(0)
+  sign            String   @db.Text
+  level           Int
+  birthday        String?  // MM-DD格式
+  
+  // 认证与会员信息
+  official        Json?    // 认证信息
+  vip             Json?    // 会员信息
+  pendant         Json?    // 头像框信息
+  nameplate       Json?    // 勋章信息
+  
+  // 社交信息
+  fansBadge       Boolean  @default(false)
+  fansMedal       Json?    // 粉丝勋章信息
+  isFollowed      Boolean  @default(false)
+  topPhoto        String?  // 主页头图链接
+  
+  // 其他展示信息
+  liveRoom        Json?    // 直播间信息
+  tags            Json?    // 个人标签数组
+  sysNotice       Json?    // 系统通知
+  isSeniorMember  Int      @default(0)
+  
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model CronTrigger {
@@ -38,6 +56,36 @@ model CronTrigger {
   @@index([taskName])
   @@index([enabled])
   @@index([source])
+}
+
+model UserCard {
+  id              Int      @id @default(autoincrement())
+  mid             Int      @unique
+  name            String
+  sex             String
+  face            String
+  sign            String   @db.Text
+  level           Int
+  
+  // 统计信息
+  fans            Int      // 粉丝数
+  friend          Int      // 关注数
+  archiveCount    Int      // 稿件数
+  articleCount    Int      // 专栏数
+  likeNum         Int      // 点赞数
+  
+  // 认证与会员信息
+  official        Json?    // 认证信息
+  vip             Json?    // 会员信息
+  pendant         Json?    // 头像框信息
+  nameplate       Json?    // 勋章信息
+  
+  // 社交信息
+  following       Boolean  @default(false) // 是否关注此用户
+  space           Json?    // 主页头图信息
+  
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
 }
 
 model TaskExecution {

@@ -8,12 +8,25 @@ export const triggerConfigs: TriggerConfig[] = [
   {
     name: "user-space-sync-daily",
     taskName: "user-space-sync",
-    cron: "*/5 * * * * *",
+    cron: "*/20 * * * * *",
     params: {
-      mids: [2]
+      mids: [456664753]
     },
     enabled: true, // 默认禁用，需要手动启用
-    description: "每天凌晨同步用户空间数据"
+    description: "同步用户空间数据"
+  },
+
+  // 示例：每天凌晨同步用户名片数据
+  {
+    name: "user-card-sync-daily",
+    taskName: "user-card-sync",
+    cron: "*/20 * * * * *", // 每天凌晨
+    params: {
+      mids: [456664753],
+      photo: true
+    },
+    enabled: true, // 默认禁用，需要手动启用
+    description: "同步用户名片数据"
   }
 
   // 示例：每小时执行一次测试任务

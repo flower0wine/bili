@@ -9,6 +9,7 @@ import { PrismaModule } from "@/services/common/prisma.module";
 import { GitModule } from "@/services/git/git.module";
 import { TaskModule } from "@/services/task/task.module";
 import { TriggerModule } from "@/services/task/trigger/trigger.module";
+import { UserCardModule } from "@/services/user-card/user-card.module";
 import { UserSpaceModule } from "@/services/user-space/user-space.module";
 
 @Module({
@@ -44,6 +45,7 @@ import { UserSpaceModule } from "@/services/user-space/user-space.module";
     }),
     GitModule,
     UserSpaceModule,
+    UserCardModule,
     TaskModule,
     TriggerModule
   ],
