@@ -1,14 +1,13 @@
 import { createHash } from "crypto";
-import { CronJob } from "cron";
+import { CronJob, CronTime } from "cron";
 import dayjs from "dayjs";
 import { Injectable, Logger, OnModuleDestroy } from "@nestjs/common";
 import { SchedulerRegistry } from "@nestjs/schedule";
-import { PrismaService } from "@/services/common/prisma.service";
 import { TaskExecutorService } from "../task-executor.service";
 import { TriggerConfigLoaderService } from "./config/trigger-config-loader.service";
 
 export interface CronTriggerConfig {
-  id?: string; // 唯一标识符(UUID)
+  id: string; // 唯一标识符(UUID) - 必填
   name: string;
   taskName: string;
   cron: string;
@@ -24,38 +23,35 @@ export interface CronTriggerConfig {
 @Injectable()
 export class CronTriggerService implements OnModuleDestroy {
   private readonly logger = new Logger(CronTriggerService.name);
-  private checkInterval: NodeJS.Timeout;
-  private isLoadingConfigs = false; // 防止并发加载
   private configHash = ""; // 配置哈希,用于变更检测
-  private runningTasks = new Map<string, boolean>(); // 任务执行锁
 
   constructor(
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly taskExecutor: TaskExecutorService,
-    private readonly prisma: PrismaService,
     private readonly configLoader: TriggerConfigLoaderService
   ) {}
 
   /**
-   * 启动定时检查（从配置源同步触发器配置）
+   * 初始化触发器服务
+   * 从配置源加载初始配置，并注册变更监听器
    */
-  async startPeriodicSync(intervalMs: number = 60000) {
-    this.logger.log("启动触发器定期同步");
-    await this.loadTriggersFromAllSources(); // 立即加载一次
+  async initialize() {
+    this.logger.log("初始化触发器服务...");
 
-    this.checkInterval = setInterval(async () => {
-      await this.loadTriggersFromAllSources();
-    }, intervalMs);
+    // 加载初始配置
+    await this.loadAndSyncTriggers();
+
+    // 注册配置变更监听器
+    this.configLoader.setConfigChangeListener(async () => {
+      this.logger.log("检测到配置源变更,开始重新加载配置...");
+      await this.loadAndSyncTriggers();
+    });
+
+    this.logger.log("触发器服务初始化完成");
   }
 
-  onModuleDestroy() {
+  async onModuleDestroy() {
     this.logger.log("正在清理触发器服务...");
-
-    // 清理定时同步
-    if (this.checkInterval) {
-      clearInterval(this.checkInterval);
-      this.logger.debug("已清理配置同步定时器");
-    }
 
     // 停止所有 Cron 任务,防止内存泄漏
     try {
@@ -65,7 +61,7 @@ export class CronTriggerService implements OnModuleDestroy {
       for (const jobName of jobNames) {
         try {
           const job = this.schedulerRegistry.getCronJob(jobName);
-          job.stop(); // 停止任务
+          await job.stop(); // 停止任务
           this.schedulerRegistry.deleteCronJob(jobName);
         } catch (err) {
           this.logger.warn(`清理任务失败: ${jobName}, 错误: ${err.message}`);
@@ -77,23 +73,14 @@ export class CronTriggerService implements OnModuleDestroy {
       this.logger.error(`清理 Cron 任务失败: ${error.message}`, error.stack);
     }
 
-    // 清理运行状态
-    this.runningTasks.clear();
     this.logger.log("触发器服务清理完成");
   }
 
   /**
-   * 从所有配置源加载触发器配置
-   * 防止并发执行,支持变更检测
+   * 从所有配置源加载并同步触发器配置
+   * 支持变更检测，只有配置变更时才重新注册
    */
-  private async loadTriggersFromAllSources() {
-    // 防止并发竞争
-    if (this.isLoadingConfigs) {
-      this.logger.debug("配置加载正在进行中,跳过本次同步");
-      return;
-    }
-
-    this.isLoadingConfigs = true;
+  private async loadAndSyncTriggers() {
     const startTime = dayjs().valueOf();
 
     try {
@@ -103,15 +90,11 @@ export class CronTriggerService implements OnModuleDestroy {
       // 计算配置哈希,检测变更
       const newConfigHash = this.computeConfigHash(configs);
       if (newConfigHash === this.configHash) {
-        this.logger.debug(
-          `配置未变更 (hash: ${newConfigHash.substring(0, 8)}...),跳过同步`
-        );
+        this.logger.debug("配置未变更,跳过同步");
         return;
       }
 
-      this.logger.log(
-        `检测到配置变更 (旧: ${this.configHash.substring(0, 8)}... -> 新: ${newConfigHash.substring(0, 8)}...),开始同步触发器`
-      );
+      this.logger.log("检测到配置变更,开始同步触发器");
       this.configHash = newConfigHash;
 
       // 只注册启用的触发器
@@ -141,8 +124,6 @@ export class CronTriggerService implements OnModuleDestroy {
         `从配置源加载触发器失败: ${error.message}`,
         error.stack
       );
-    } finally {
-      this.isLoadingConfigs = false;
     }
   }
 
@@ -165,28 +146,28 @@ export class CronTriggerService implements OnModuleDestroy {
 
   /**
    * 移除已经不再配置中的触发器
-   * 先收集要删除的ID,再统一删除,避免迭代器失效
+   * 统一使用 ID 作为键,确保准确匹配
    */
   private async removeObsoleteTriggers(currentTriggerIds: string[]) {
     const registeredTriggers = this.schedulerRegistry.getCronJobs();
-    const registeredIds = Array.from(registeredTriggers.keys());
+    const registeredJobNames = Array.from(registeredTriggers.keys());
 
-    // 先收集需要删除的触发器ID
+    // 收集需要删除的触发器ID
     const toRemove: string[] = [];
-    for (const registeredId of registeredIds) {
-      // 提取触发器ID（去除 "cron_" 前缀）
-      const triggerId = registeredId.replace(/^cron_/, "");
+    for (const jobName of registeredJobNames) {
+      // jobName 格式为 "cron_{id}"
+      if (jobName.startsWith("cron_")) {
+        const triggerId = jobName.substring(5); // 移除 "cron_" 前缀
 
-      if (!currentTriggerIds.includes(triggerId)) {
-        toRemove.push(triggerId);
+        if (!currentTriggerIds.includes(triggerId)) {
+          toRemove.push(triggerId);
+        }
       }
     }
 
-    // 统一删除,避免迭代器失效
+    // 统一删除
     if (toRemove.length > 0) {
-      this.logger.log(
-        `准备移除 ${toRemove.length} 个已废弃的触发器: ${toRemove.join(", ")}`
-      );
+      this.logger.log(`移除 ${toRemove.length} 个已废弃的触发器`);
       for (const triggerId of toRemove) {
         this.removeTrigger(triggerId);
       }
@@ -195,55 +176,112 @@ export class CronTriggerService implements OnModuleDestroy {
 
   /**
    * 注册 Cron 触发器
-   * 防止内存泄漏,支持安全删除和重新注册
+   * 1. 强制要求 ID 存在
+   * 2. 验证 Cron 表达式合法性
+   * 3. 检测 Cron 表达式变更,完全重建 CronJob
+   * 4. 防止内存泄漏
    */
   async registerTrigger(config: CronTriggerConfig) {
     try {
-      // 使用 ID 作为触发器唯一标识(如果有),否则使用 name
-      const triggerKey = config.id || config.name;
-      const triggerName = `cron_${triggerKey}`;
-
-      // 如果触发器已存在,先安全删除
-      if (this.schedulerRegistry.doesExist("cron", triggerName)) {
-        try {
-          const existingJob = this.schedulerRegistry.getCronJob(triggerName);
-          existingJob.stop(); // 停止旧任务,防止内存泄漏
-          this.schedulerRegistry.deleteCronJob(triggerName);
-          this.logger.debug(
-            `已停止并删除旧触发器: ${triggerName} (${config.name})`
-          );
-        } catch (err) {
-          this.logger.warn(
-            `删除旧触发器失败: ${triggerName}, 错误: ${err.message}`
-          );
-        }
+      // 强制要求 ID 存在
+      if (!config.id) {
+        this.logger.error(
+          `触发器配置缺少必填字段 id: ${JSON.stringify(config)}`
+        );
+        return;
       }
 
-      // 创建新的 Cron Job
-      const cronJob = new CronJob(
-        config.cron,
-        async () => {
-          await this.handleTrigger(config);
-        },
-        null, // onComplete
-        false, // start: false, 稍后手动启动
-        null, // timeZone
-        null, // context
-        false // runOnInit: false, 不立即执行
-      );
+      // 验证 Cron 表达式合法性
+      if (!this.validateCronExpression(config.cron)) {
+        this.logger.error(
+          `触发器 ${config.name} (ID: ${config.id}) 的 Cron 表达式非法: ${config.cron}`
+        );
+        return;
+      }
 
-      // 注册到调度器
-      this.schedulerRegistry.addCronJob(triggerName, cronJob);
-      cronJob.start();
+      const triggerName = `cron_${config.id}`;
+      let needsRecreate = false;
 
-      this.logger.log(
-        `✅ Cron 触发器已注册: ${config.name}${config.id ? ` (ID: ${config.id})` : ""} -> 任务: ${config.taskName} | Cron: ${config.cron}`
-      );
+      // 检查触发器是否已存在
+      if (this.schedulerRegistry.doesExist("cron", triggerName)) {
+        const existingJob = this.schedulerRegistry.getCronJob(triggerName);
+
+        // CronJob 不支持运行时修改 cron 表达式,必须重建
+        // 比较现有 cron 表达式和新的是否相同
+        const existingCronTime = (existingJob as any).cronTime;
+        const existingCronPattern = existingCronTime?.source || "";
+
+        if (existingCronPattern !== config.cron) {
+          this.logger.debug(
+            `触发器 ${config.name} (ID: ${config.id}) 的 Cron 表达式已变更 (${existingCronPattern} -> ${config.cron}),需要重建`
+          );
+          needsRecreate = true;
+        }
+      } else {
+        needsRecreate = true;
+      }
+
+      // 需要重建时,先完全删除旧任务
+      if (needsRecreate) {
+        if (this.schedulerRegistry.doesExist("cron", triggerName)) {
+          try {
+            const existingJob = this.schedulerRegistry.getCronJob(triggerName);
+            await existingJob.stop(); // 停止旧任务
+            this.schedulerRegistry.deleteCronJob(triggerName); // 从注册表删除
+            this.logger.debug(
+              `已停止并删除旧触发器: ${config.name} (ID: ${config.id})`
+            );
+          } catch (err) {
+            this.logger.warn(
+              `删除旧触发器失败: ${config.name} (ID: ${config.id}), 错误: ${err.message}`
+            );
+          }
+        }
+
+        // 创建全新的 CronJob 实例
+        const cronJob = new CronJob(
+          config.cron,
+          () => {
+            this.handleTrigger(config);
+          },
+          null, // onComplete
+          false, // start: false, 稍后手动启动
+          null, // timeZone
+          null, // context
+          false // runOnInit: false, 不立即执行
+        );
+
+        // 注册到调度器
+        this.schedulerRegistry.addCronJob(triggerName, cronJob);
+        cronJob.start();
+
+        this.logger.log(
+          `✅ Cron 触发器已注册: ${config.name} (ID: ${config.id}) -> 任务: ${config.taskName} | Cron: ${config.cron}`
+        );
+      } else {
+        this.logger.debug(
+          `触发器 ${config.name} (ID: ${config.id}) 配置未变更,跳过重建`
+        );
+      }
     } catch (error) {
       this.logger.error(
-        `❌ 注册触发器失败: ${config.name}, 错误: ${error.message}`,
+        `❌ 注册触发器失败: ${config.name} (ID: ${config.id}), 错误: ${error.message}`,
         error.stack
       );
+    }
+  }
+
+  /**
+   * 验证 Cron 表达式合法性
+   * 使用 CronTime 进行验证
+   */
+  private validateCronExpression(cron: string): boolean {
+    try {
+      // 使用 CronTime 尝试解析表达式
+      new CronTime(cron);
+      return true;
+    } catch (error) {
+      return false;
     }
   }
 
@@ -251,14 +289,13 @@ export class CronTriggerService implements OnModuleDestroy {
    * 移除触发器
    * 确保先停止任务,再删除,防止内存泄漏
    */
-  removeTrigger(triggerId: string) {
+  async removeTrigger(triggerId: string) {
     const fullName = `cron_${triggerId}`;
     if (this.schedulerRegistry.doesExist("cron", fullName)) {
       try {
         const job = this.schedulerRegistry.getCronJob(fullName);
-        job.stop(); // 先停止定时器
+        await job.stop(); // 先停止定时器
         this.schedulerRegistry.deleteCronJob(fullName);
-        this.runningTasks.delete(triggerId); // 清理执行锁
         this.logger.log(`✅ 触发器已停止并移除: ${triggerId}`);
       } catch (error) {
         this.logger.error(
@@ -273,45 +310,29 @@ export class CronTriggerService implements OnModuleDestroy {
 
   /**
    * 处理触发器触发事件
-   * 支持任务执行锁,防止并发执行导致资源耗尽
+   * 触发器只负责触发任务,不等待任务执行完成
+   * 任务异步执行,触发器立即返回
    */
-  private async handleTrigger(config: CronTriggerConfig) {
-    const lockKey = config.id || config.name;
+  private handleTrigger(config: CronTriggerConfig) {
+    this.logger.log({
+      triggerId: config.id,
+      triggerName: config.name,
+      taskName: config.taskName,
+      message: "触发器触发,异步执行任务"
+    });
 
-    // 检查任务是否正在执行
-    if (this.runningTasks.get(lockKey)) {
-      this.logger.warn(
-        `⚠ 触发器 ${config.name} (任务: ${config.taskName}) 上次执行尚未完成,跳过本次触发`
-      );
-      return;
-    }
-
-    this.runningTasks.set(lockKey, true);
-    const startTime = dayjs().valueOf();
-
-    this.logger.log(
-      `⏰ 触发器触发: ${config.name} -> 执行任务: ${config.taskName}${config.id ? ` (ID: ${config.id})` : ""}`
-    );
-
-    try {
-      // 通过任务执行器执行任务
-      await this.taskExecutor.execute(
-        config.taskName,
-        config.params,
-        "cron",
-        config.name // 传递触发器名称
-      );
-
-      const elapsed = dayjs().valueOf() - startTime;
-      this.logger.log(`✅ 触发器执行成功: ${config.name}, 耗时: ${elapsed}ms`);
-    } catch (error) {
-      const elapsed = dayjs().valueOf() - startTime;
-      this.logger.error(
-        `❌ 触发器执行失败: ${config.name} (任务: ${config.taskName}), 耗时: ${elapsed}ms, 错误: ${error.message}`,
-        error.stack
-      );
-    } finally {
-      this.runningTasks.delete(lockKey);
-    }
+    // 异步执行任务,不等待结果
+    this.taskExecutor
+      .execute(config.taskName, config.params, "cron", config.name)
+      .catch((error) => {
+        // 捕获错误避免未处理的 Promise rejection
+        this.logger.error({
+          triggerId: config.id,
+          triggerName: config.name,
+          taskName: config.taskName,
+          error: error.message,
+          message: "异步任务执行失败"
+        });
+      });
   }
 }

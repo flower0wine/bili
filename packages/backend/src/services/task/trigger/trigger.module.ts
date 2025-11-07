@@ -46,7 +46,7 @@ export class TriggerModule implements OnModuleInit {
     this.configLoader.registerProvider(this.configFileProvider);
     this.configLoader.registerProvider(this.databaseConfigProvider);
 
-    // 启动触发器同步
-    await this.cronTriggerService.startPeriodicSync();
+    // 初始化触发器服务（加载配置并注册变更监听器）
+    await this.cronTriggerService.initialize();
   }
 }
