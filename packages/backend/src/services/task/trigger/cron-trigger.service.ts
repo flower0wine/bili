@@ -4,7 +4,10 @@ import dayjs from "dayjs";
 import { Injectable, Logger, OnModuleDestroy } from "@nestjs/common";
 import { SchedulerRegistry } from "@nestjs/schedule";
 import { TaskExecutorService } from "../task-executor.service";
-import { TriggerConfigLoaderService } from "./config/trigger-config-loader.service";
+import {
+  ConfigSource,
+  TriggerConfigLoaderService
+} from "./config/trigger-config-loader.service";
 
 export interface CronTriggerConfig {
   id: string; // 唯一标识符(UUID) - 必填
@@ -14,6 +17,7 @@ export interface CronTriggerConfig {
   enabled: boolean;
   params?: any;
   description?: string;
+  source: ConfigSource;
 }
 
 /**
@@ -108,7 +112,8 @@ export class CronTriggerService implements OnModuleDestroy {
           cron: config.cron,
           enabled: config.enabled,
           params: config.params,
-          description: config.description
+          description: config.description,
+          source: config.source
         });
       }
 
@@ -256,7 +261,7 @@ export class CronTriggerService implements OnModuleDestroy {
         cronJob.start();
 
         this.logger.log(
-          `✅ Cron 触发器已注册: ${config.name} (ID: ${config.id}) -> 任务: ${config.taskName} | Cron: ${config.cron}`
+          `✅ Cron 触发器已注册: ${config.name} (Source: ${config.source}, ID: ${config.id}) -> 任务: ${config.taskName} | Cron: ${config.cron}`
         );
       } else {
         this.logger.debug(

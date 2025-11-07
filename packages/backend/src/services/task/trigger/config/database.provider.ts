@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "@/services/common/prisma.service";
 import {
@@ -87,7 +88,7 @@ export class DatabaseConfigProvider implements ITriggerConfigProvider {
         }
 
         validConfigs.push({
-          id: trigger.id.toString(), // 使用数据库ID
+          id: this.generateStableId(trigger.id), // 使用数据库ID生成稳定UUID
           name: trigger.name,
           taskName: trigger.taskName,
           cron: trigger.cron,
@@ -110,6 +111,25 @@ export class DatabaseConfigProvider implements ITriggerConfigProvider {
       );
       return [];
     }
+  }
+
+  /**
+   * 生成稳定的数据库触发器ID
+   * 使用配置源 + 数据库ID生成，确保与文件配置不冲突
+   */
+  private generateStableId(dbId: number): string {
+    // 使用配置源类型 + 数据库ID生成唯一且稳定的ID
+    const uniqueKey = `${ConfigSource.DATABASE}:${dbId}`;
+    const hash = createHash("sha256").update(uniqueKey).digest("hex");
+
+    // 转换为UUID格式
+    return [
+      hash.substring(0, 8),
+      hash.substring(8, 12),
+      hash.substring(12, 16),
+      hash.substring(16, 20),
+      hash.substring(20, 32)
+    ].join("-");
   }
 
   /**

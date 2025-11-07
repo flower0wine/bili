@@ -27,6 +27,20 @@ export const triggerConfigs: TriggerConfig[] = [
     },
     enabled: true, // 默认禁用，需要手动启用
     description: "同步用户名片数据"
+  },
+
+  // 示例：同名但不同参数的触发器（用于测试共存能力）
+  // 注意：名称相同但是不同的配置，会被识别为两个独立的触发器
+  {
+    name: "user-card-sync-daily-2", // 与上面同名
+    taskName: "user-card-sync",
+    cron: "0 */2 * * * *", // 但是不同的cron表达式
+    params: {
+      mids: [2], // 不同的参数
+      photo: false
+    },
+    enabled: true,
+    description: "同步用户名片数据（第二个配置）"
   }
 
   // 示例：每小时执行一次测试任务

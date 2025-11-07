@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { createHash } from "crypto";
 import * as fs from "fs";
 import * as path from "path";
 import { createJiti } from "jiti";
@@ -75,7 +75,7 @@ export class ConfigFileProvider implements ITriggerConfigProvider {
         }
 
         validConfigs.push({
-          id: randomUUID(), // 生成唯一ID
+          id: this.generateStableId(config.name), // 生成稳定的唯一ID
           name: config.name,
           taskName: config.taskName,
           cron: config.cron,
@@ -98,6 +98,27 @@ export class ConfigFileProvider implements ITriggerConfigProvider {
       );
       return [];
     }
+  }
+
+  /**
+   * 生成稳定的触发器ID
+   * 基于配置源和触发器名称生成，确保同一配置每次加载都得到相同的ID
+   * 这样可以在服务重启后正确识别和更新触发器，而不是创建重复实例
+   */
+  private generateStableId(configName: string): string {
+    // 使用配置源类型 + 触发器名称生成唯一且稳定的ID
+    const uniqueKey = `${ConfigSource.CONFIG_FILE}:${configName}`;
+    const hash = createHash("sha256").update(uniqueKey).digest("hex");
+
+    // 转换为UUID格式（8-4-4-4-12）
+    // 使用hash的前32个字符
+    return [
+      hash.substring(0, 8),
+      hash.substring(8, 12),
+      hash.substring(12, 16),
+      hash.substring(16, 20),
+      hash.substring(20, 32)
+    ].join("-");
   }
 
   /**

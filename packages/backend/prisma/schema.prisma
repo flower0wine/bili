@@ -51,7 +51,7 @@ model CronTrigger {
   description String?
   source      String   @default("database")
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz(6)
 
   @@index([taskName])
   @@index([enabled])
