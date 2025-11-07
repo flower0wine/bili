@@ -46,9 +46,9 @@ model TaskExecution {
   triggerSource String
   triggerName   String?
   params        Json?
-  status        String
+  status        String    // running, success, failed, cancelled
   result        Json?
-  error         String?
+  error         String?   @db.Text
   retryCount    Int       @default(0)
   maxRetries    Int       @default(0)
   startedAt     DateTime  @db.Timestamptz(6)

@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
 import { Logger } from "nestjs-pino";
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, OnModuleInit } from "@nestjs/common";
 import { PrismaService } from "@/services/common/prisma.service";
 import { TaskContext, TaskResult } from "../interfaces/task.interface";
 import { TaskMiddleware } from "./task-middleware.interface";
@@ -35,11 +35,44 @@ const PersistenceEvent = {
  * - 在任务失败时记录错误信息
  */
 @Injectable()
-export class PersistenceMiddleware implements TaskMiddleware {
+export class PersistenceMiddleware implements TaskMiddleware, OnModuleInit {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(Logger) private readonly logger: Logger
   ) {}
+
+  /**
+   * 模块初始化时清理孤儿任务
+   * 将所有 running 状态的任务标记为失败(服务异常关闭导致)
+   */
+  async onModuleInit() {
+    try {
+      const result = await (this.prisma as any).taskExecution.updateMany({
+        where: {
+          status: TaskExecutionStatus.RUNNING
+        },
+        data: {
+          status: TaskExecutionStatus.FAILED,
+          error: "服务异常关闭,任务被强制终止",
+          finishedAt: dayjs().toDate(),
+          updatedAt: dayjs().toDate()
+        }
+      });
+
+      if (result.count > 0) {
+        this.logger.warn(
+          `服务启动时检测到 ${result.count} 个孤儿任务(状态为 running),已标记为失败`
+        );
+      } else {
+        this.logger.log("未检测到孤儿任务,数据库状态正常");
+      }
+    } catch (error) {
+      this.logger.error(
+        `清理孤儿任务失败: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined
+      );
+    }
+  }
 
   async before<P>(context: TaskContext<P>): Promise<void> {
     try {

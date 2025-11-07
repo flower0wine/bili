@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import dayjs from "dayjs";
 import { Logger } from "nestjs-pino";
 import pRetry, { AbortError } from "p-retry";
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, OnModuleDestroy } from "@nestjs/common";
 import {
   TaskCancelledError,
   TaskContext,
@@ -30,8 +30,9 @@ import { TaskRegistryService } from "./task-registry.service";
  * - 日志记录（由 LoggingMiddleware 处理）
  */
 @Injectable()
-export class TaskExecutorService {
+export class TaskExecutorService implements OnModuleDestroy {
   private readonly middlewareChain = new TaskMiddlewareChain();
+  private readonly runningTasks = new Map<string, AbortController>();
 
   constructor(
     private readonly taskRegistry: TaskRegistryService,
@@ -89,6 +90,9 @@ export class TaskExecutorService {
     };
 
     let result: TaskResult<D>;
+
+    // 记录正在运行的任务
+    this.runningTasks.set(executionId, taskAbortController);
 
     try {
       // 执行前置中间件
@@ -151,9 +155,33 @@ export class TaskExecutorService {
 
       return result;
     } finally {
-      // 清理 AbortController
+      // 清理资源
+      this.runningTasks.delete(executionId);
       taskAbortController.abort();
     }
+  }
+
+  /**
+   * 模块销毁时的清理工作
+   * 取消所有正在运行的任务
+   */
+  async onModuleDestroy() {
+    this.logger.log(`正在取消 ${this.runningTasks.size} 个正在运行的任务...`);
+
+    // 取消所有正在运行的任务
+    for (const [executionId, controller] of this.runningTasks.entries()) {
+      try {
+        controller.abort();
+        this.logger.debug(`已取消任务执行: ${executionId}`);
+      } catch (error) {
+        this.logger.warn(
+          `取消任务执行失败: ${executionId}, 错误: ${error.message}`
+        );
+      }
+    }
+
+    this.runningTasks.clear();
+    this.logger.log("任务执行器清理完成");
   }
 
   /**
