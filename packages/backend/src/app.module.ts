@@ -7,7 +7,9 @@ import { AppController } from "@/app.controller";
 import { AppService } from "@/app.service";
 import { PrismaModule } from "@/services/common/prisma.module";
 import { GitModule } from "@/services/git/git.module";
-import { SchedulerModule } from "@/services/scheduler/scheduler.module";
+import { TaskModule } from "@/services/task/task.module";
+import { TriggerModule } from "@/services/task/trigger/trigger.module";
+import { UserCardModule } from "@/services/user-card/user-card.module";
 import { UserSpaceModule } from "@/services/user-space/user-space.module";
 
 @Module({
@@ -34,7 +36,7 @@ import { UserSpaceModule } from "@/services/user-space/user-space.module";
           process.env.NODE_ENV !== "production"
             ? { target: "pino-pretty" }
             : undefined,
-        level: process.env.LOG_LEVEL || "info",
+        level: process.env.NODE_ENV !== "production" ? "debug" : "error",
         redact: {
           paths: ["req.headers.authorization"],
           remove: true
@@ -43,7 +45,9 @@ import { UserSpaceModule } from "@/services/user-space/user-space.module";
     }),
     GitModule,
     UserSpaceModule,
-    SchedulerModule
+    UserCardModule,
+    TaskModule,
+    TriggerModule
   ],
   controllers: [AppController],
   providers: [AppService]

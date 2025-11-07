@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import md5 from "md5";
 
 const mixinKeyEncTab = [
@@ -21,7 +22,7 @@ export function encWbi(
   sub_key: string
 ) {
   const mixin_key = getMixinKey(img_key + sub_key),
-    curr_time = Math.round(Date.now() / 1000),
+    curr_time = dayjs().unix(),
     chr_filter = /[!'()*]/g;
 
   Object.assign(params, { wts: curr_time }); // 添加 wts 字段
