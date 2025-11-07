@@ -24,5 +24,8 @@
     "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.6.2",
     "turbo": "^2.5.8"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.19"
   }
 }

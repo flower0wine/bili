@@ -25,6 +25,87 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+**项目特色：解耦式任务调度系统**
+
+本项目实现了一个完全解耦的任务调度架构，将业务逻辑（Task）与触发机制（Trigger）彻底分离。
+
+### 核心特性
+
+- ✅ **任务与调度解耦**：任务不知道如何被触发，触发器不知道任务实现
+- ✅ **多种触发方式**：Cron 定时、API 手动、事件驱动（可扩展）
+- ✅ **动态配置**：所有调度配置可实时修改，无需重启
+- ✅ **中间件架构**：统一处理日志、监控、持久化等横切关注点
+- ✅ **易于测试**：任务可独立测试，不依赖调度系统
+- ✅ **类型安全**：完整的 TypeScript 类型支持
+
+### 快速开始
+
+```bash
+# 1. 安装依赖
+pnpm install
+
+# 2. 配置数据库
+cp .env.example .env
+# 编辑 .env 文件，设置 DATABASE_URL
+
+# 3. 运行数据库迁移
+npx prisma migrate dev
+
+# 4. 启动应用
+pnpm run start:dev
+
+# 5. 测试 API
+curl http://localhost:3000/tasks
+```
+
+### 文档导航
+
+- 🚀 [**快速开始指南**](./QUICK_START.md) - 快速上手和 API 测试
+- 🏛️ [**架构详细说明**](./TASK_ARCHITECTURE.md) - 深入了解架构设计
+- 🔄 [**新旧架构对比**](./MIGRATION_COMPARISON.md) - 了解优势和迁移指南
+- 📊 [**架构总结**](./ARCHITECTURE_SUMMARY.md) - 系统概览和最佳实践
+- 🧪 [**API 测试**](./test-api.http) - REST Client 测试文件
+
+### 使用示例
+
+**创建任务：**
+
+```typescript
+@Injectable()
+export class MyTask {
+  @Task({
+    name: "my-task",
+    description: "我的任务",
+    timeout: 60000
+  })
+  async execute(params?: any) {
+    // 业务逻辑
+    return { success: true };
+  }
+}
+```
+
+**创建触发器：**
+
+```bash
+curl -X POST http://localhost:3000/triggers/cron \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "daily-task",
+    "taskName": "my-task",
+    "cron": "0 0 * * *",
+    "enabled": true
+  }'
+```
+
+**手动执行：**
+
+```bash
+curl -X POST http://localhost:3000/tasks/my-task/execute \
+  -H "Content-Type: application/json" \
+  -d '{"params": {"key": "value"}}'
+```
+
 ## Project setup
 
 ```bash

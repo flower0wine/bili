@@ -25,18 +25,48 @@ model UserSpaceData {
   userStatus  Json
   following   Int
   follower    Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
 }
 
-model CronJob {
+model CronTrigger {
   id          Int      @id @default(autoincrement())
-  name        String   @unique
-  cron        String
+  name        String   @unique  // 触发器名称
+  taskName    String              // 要执行的任务名称
+  cron        String              // Cron 表达式
+  params      Json?               // 任务参数
   enabled     Boolean  @default(true)
   description String?
-  lastRun     DateTime?
-  nextRun     DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  source      String   @default("database") // 配置来源: config_file, database
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([taskName])
+  @@index([enabled])
+  @@index([source])
+}
+
+// 任务执行记录 - 详细记录每次任务执行情况
+model TaskExecution {
+  id            String   @id @default(uuid())
+  taskName      String              // 任务名称
+  triggerSource String              // 触发来源: cron, api, manual, event
+  triggerName   String?             // 触发器名称（如果是通过触发器）
+  params        Json?               // 执行参数
+  status        String              // 执行状态: pending, running, success, failed
+  result        Json?               // 执行结果
+  error         String?             // 错误信息
+  retryCount    Int      @default(0) // 重试次数
+  maxRetries    Int      @default(0) // 最大重试次数
+  startedAt     DateTime @db.Timestamptz(6) // 开始时间（带时区）
+  finishedAt    DateTime? @db.Timestamptz(6) // 结束时间（带时区）
+  duration      Int?                // 执行时长（毫秒）
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([taskName])
+  @@index([status])
+  @@index([triggerSource])
+  @@index([startedAt])
+  @@index([createdAt])
 }

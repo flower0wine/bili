@@ -7,7 +7,7 @@ import { AppController } from "@/app.controller";
 import { AppService } from "@/app.service";
 import { PrismaModule } from "@/services/common/prisma.module";
 import { GitModule } from "@/services/git/git.module";
-import { SchedulerModule } from "@/services/scheduler/scheduler.module";
+import { TaskModule } from "@/services/task/task.module";
 import { UserSpaceModule } from "@/services/user-space/user-space.module";
 
 @Module({
@@ -43,7 +43,7 @@ import { UserSpaceModule } from "@/services/user-space/user-space.module";
     }),
     GitModule,
     UserSpaceModule,
-    SchedulerModule
+    TaskModule
   ],
   controllers: [AppController],
   providers: [AppService]

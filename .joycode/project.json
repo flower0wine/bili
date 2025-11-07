@@ -1,0 +1,19 @@
+{
+  "id": 48654,
+  "name": "bili",
+  "abbrName": "BI",
+  "description": "",
+  "devMode": 2,
+  "status": null,
+  "url": null,
+  "databaseHost": null,
+  "databasePort": null,
+  "databaseName": null,
+  "databaseUsername": null,
+  "databasePassword": null,
+  "projectInfo": [
+    {
+      "flower0wine": 48654
+    }
+  ]
+}
