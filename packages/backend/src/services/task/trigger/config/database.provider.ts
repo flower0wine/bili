@@ -1,4 +1,4 @@
-import { Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "@/services/common/prisma.service";
 import {
   ConfigChangeListener,
@@ -14,6 +14,7 @@ import {
  * - 可以通过 API 更新数据库配置
  * - 更新后调用 notifyChange() 触发重新加载
  */
+@Injectable()
 export class DatabaseConfigProvider implements ITriggerConfigProvider {
   private readonly logger = new Logger(DatabaseConfigProvider.name);
   private changeListeners: ConfigChangeListener[] = [];

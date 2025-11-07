@@ -20,6 +20,11 @@ import { UserSpaceSyncTask } from "./tasks/user-space-sync.task";
     UserSpaceSyncTask
   ],
   controllers: [TaskController],
-  exports: [TaskRegistryService, TaskExecutorService]
+  exports: [
+    TaskRegistryService,
+    TaskExecutorService,
+    LoggingMiddleware,
+    PersistenceMiddleware
+  ]
 })
 export class TaskModule {}

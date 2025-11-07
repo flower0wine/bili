@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import * as fs from "fs";
 import * as path from "path";
 import { createJiti } from "jiti";
-import { Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import {
   ConfigSource,
   ITriggerConfigProvider,
@@ -14,6 +14,7 @@ import {
  *
  * 使用 jiti 动态加载 TypeScript/JavaScript 配置文件
  */
+@Injectable()
 export class ConfigFileProvider implements ITriggerConfigProvider {
   private readonly logger = new Logger(ConfigFileProvider.name);
   private readonly configFilePath: string | null;
