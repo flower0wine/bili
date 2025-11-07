@@ -113,11 +113,33 @@ export class UserSpaceSyncTask {
       }
     }
 
-    return {
+    const successCount = results.filter((r) => r.success).length;
+    const failedCount = results.filter((r) => !r.success).length;
+
+    const result: SyncResult = {
       total: mids.length,
-      success: results.filter((r) => r.success).length,
-      failed: results.filter((r) => !r.success).length,
+      success: successCount,
+      failed: failedCount,
       results
     };
+
+    // 如果所有用户都失败，抛出错误触发重试
+    if (successCount === 0 && failedCount > 0) {
+      const firstError = results.find((r) => !r.success)?.error;
+      throw new Error(`所有用户同步失败: ${firstError}`);
+    }
+
+    // 记录部分失败的情况
+    if (failedCount > 0) {
+      this.logger.warn({
+        event: "user_space_sync.partial_failure",
+        total: mids.length,
+        success: successCount,
+        failed: failedCount,
+        message: `部分用户同步失败，成功 ${successCount}/${mids.length}`
+      });
+    }
+
+    return result;
   }
 }

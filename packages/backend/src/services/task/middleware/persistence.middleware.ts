@@ -6,6 +6,27 @@ import { TaskContext, TaskResult } from "../interfaces/task.interface";
 import { TaskMiddleware } from "./task-middleware.interface";
 
 /**
+ * 任务执行状态常量
+ */
+const TaskExecutionStatus = {
+  RUNNING: "running",
+  SUCCESS: "success",
+  FAILED: "failed"
+} as const;
+
+/**
+ * 持久化事件名称常量
+ */
+const PersistenceEvent = {
+  EXECUTION_CREATED: "task_execution.created",
+  EXECUTION_CREATE_FAILED: "task_execution.create_failed",
+  EXECUTION_UPDATED: "task_execution.updated",
+  EXECUTION_UPDATE_FAILED: "task_execution.update_failed",
+  EXECUTION_ERROR_SAVED: "task_execution.error_saved",
+  EXECUTION_ERROR_SAVE_FAILED: "task_execution.error_save_failed"
+} as const;
+
+/**
  * 持久化中间件 - 记录任务执行历史到数据库
  *
  * 职责：
@@ -30,21 +51,21 @@ export class PersistenceMiddleware implements TaskMiddleware {
           triggerSource: context.source,
           triggerName: context.triggerName,
           params: context.params || {},
-          status: "running",
+          status: TaskExecutionStatus.RUNNING,
           maxRetries: context.maxRetries || 0,
           startedAt: context.startedAt || dayjs().toDate()
         }
       });
 
       this.logger.debug({
-        event: "task_execution.created",
+        event: PersistenceEvent.EXECUTION_CREATED,
         executionId: context.executionId,
         taskName: context.taskName
       });
     } catch (error) {
       this.logger.error(
         {
-          event: "task_execution.create_failed",
+          event: PersistenceEvent.EXECUTION_CREATE_FAILED,
           executionId: context.executionId,
           taskName: context.taskName,
           error: error instanceof Error ? error.message : String(error)
@@ -64,7 +85,9 @@ export class PersistenceMiddleware implements TaskMiddleware {
       await (this.prisma as any).taskExecution.update({
         where: { id: result.executionId },
         data: {
-          status: result.success ? "success" : "failed",
+          status: result.success
+            ? TaskExecutionStatus.SUCCESS
+            : TaskExecutionStatus.FAILED,
           result: result.data || {},
           error: result.error,
           retryCount: result.retryCount || 0,
@@ -74,7 +97,7 @@ export class PersistenceMiddleware implements TaskMiddleware {
       });
 
       this.logger.debug({
-        event: "task_execution.updated",
+        event: PersistenceEvent.EXECUTION_UPDATED,
         executionId: context.executionId,
         taskName: context.taskName,
         success: result.success
@@ -82,7 +105,7 @@ export class PersistenceMiddleware implements TaskMiddleware {
     } catch (error) {
       this.logger.error(
         {
-          event: "task_execution.update_failed",
+          event: PersistenceEvent.EXECUTION_UPDATE_FAILED,
           executionId: context.executionId,
           taskName: context.taskName,
           error: error instanceof Error ? error.message : String(error)
@@ -98,7 +121,7 @@ export class PersistenceMiddleware implements TaskMiddleware {
       await (this.prisma as any).taskExecution.update({
         where: { id: context.executionId },
         data: {
-          status: "failed",
+          status: TaskExecutionStatus.FAILED,
           error: error.message || String(error),
           retryCount: context.retryCount || 0,
           finishedAt: dayjs().toDate(),
@@ -107,14 +130,14 @@ export class PersistenceMiddleware implements TaskMiddleware {
       });
 
       this.logger.debug({
-        event: "task_execution.error_saved",
+        event: PersistenceEvent.EXECUTION_ERROR_SAVED,
         executionId: context.executionId,
         taskName: context.taskName
       });
     } catch (err) {
       this.logger.error(
         {
-          event: "task_execution.error_save_failed",
+          event: PersistenceEvent.EXECUTION_ERROR_SAVE_FAILED,
           executionId: context.executionId,
           taskName: context.taskName,
           error: err instanceof Error ? err.message : String(err)

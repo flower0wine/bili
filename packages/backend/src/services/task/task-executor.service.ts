@@ -110,8 +110,7 @@ export class TaskExecutorService {
       const data = await this.executeWithRetry<P, D>({
         task,
         params,
-        context,
-        taskAbortController
+        context
       });
 
       const finishedAt = dayjs().toDate();
@@ -163,13 +162,11 @@ export class TaskExecutorService {
   private async executeWithRetry<P, D>({
     task,
     params,
-    context,
-    taskAbortController
+    context
   }: {
     task: TaskDefinition<P, D>;
     params?: P;
     context: TaskContext<P>;
-    taskAbortController: AbortController;
   }): Promise<D> {
     const maxRetries = task.options.retries || 0;
 

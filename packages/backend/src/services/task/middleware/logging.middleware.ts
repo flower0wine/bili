@@ -5,6 +5,16 @@ import { TaskContext, TaskResult } from "../interfaces/task.interface";
 import { TaskMiddleware } from "./task-middleware.interface";
 
 /**
+ * 日志事件名称常量
+ */
+const LogEvent = {
+  TASK_STARTED: "task.started",
+  TASK_COMPLETED: "task.completed",
+  TASK_FAILED: "task.failed",
+  TASK_ERROR: "task.error"
+} as const;
+
+/**
  * 日志中间件 - 记录任务执行日志（结构化）
  */
 @Injectable()
@@ -13,7 +23,7 @@ export class LoggingMiddleware implements TaskMiddleware {
 
   async before<P>(context: TaskContext<P>): Promise<void> {
     this.logger.log({
-      event: "task.started",
+      event: LogEvent.TASK_STARTED,
       executionId: context.executionId,
       taskName: context.taskName,
       source: context.source,
@@ -31,7 +41,7 @@ export class LoggingMiddleware implements TaskMiddleware {
   ): Promise<void> {
     if (result.success) {
       this.logger.log({
-        event: "task.completed",
+        event: LogEvent.TASK_COMPLETED,
         executionId: context.executionId,
         taskName: context.taskName,
         success: true,
@@ -42,7 +52,7 @@ export class LoggingMiddleware implements TaskMiddleware {
       });
     } else {
       this.logger.error({
-        event: "task.failed",
+        event: LogEvent.TASK_FAILED,
         executionId: context.executionId,
         taskName: context.taskName,
         success: false,
@@ -58,7 +68,7 @@ export class LoggingMiddleware implements TaskMiddleware {
 
   async onError<P>(context: TaskContext<P>, error: Error): Promise<void> {
     this.logger.error({
-      event: "task.error",
+      event: LogEvent.TASK_ERROR,
       executionId: context.executionId,
       taskName: context.taskName,
       error: error.message,
