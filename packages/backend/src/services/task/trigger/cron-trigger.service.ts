@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { CronJob, CronTime } from "cron";
+import { CronJob, validateCronExpression } from "cron";
 import dayjs from "dayjs";
 import { Injectable, Logger, OnModuleDestroy } from "@nestjs/common";
 import { SchedulerRegistry } from "@nestjs/schedule";
@@ -192,7 +192,7 @@ export class CronTriggerService implements OnModuleDestroy {
       }
 
       // 验证 Cron 表达式合法性
-      if (!this.validateCronExpression(config.cron)) {
+      if (!validateCronExpression(config.cron).valid) {
         this.logger.error(
           `触发器 ${config.name} (ID: ${config.id}) 的 Cron 表达式非法: ${config.cron}`
         );
@@ -268,20 +268,6 @@ export class CronTriggerService implements OnModuleDestroy {
         `❌ 注册触发器失败: ${config.name} (ID: ${config.id}), 错误: ${error.message}`,
         error.stack
       );
-    }
-  }
-
-  /**
-   * 验证 Cron 表达式合法性
-   * 使用 CronTime 进行验证
-   */
-  private validateCronExpression(cron: string): boolean {
-    try {
-      // 使用 CronTime 尝试解析表达式
-      new CronTime(cron);
-      return true;
-    } catch (error) {
-      return false;
     }
   }
 

@@ -8,25 +8,25 @@ export const triggerConfigs: TriggerConfig[] = [
   {
     name: "user-space-sync-daily",
     taskName: "user-space-sync",
-    cron: "* * * * *",
+    cron: "*/5 * * * * *",
     params: {
-      mids: [2, 3, 4]
+      mids: [2]
     },
     enabled: true, // 默认禁用，需要手动启用
     description: "每天凌晨同步用户空间数据"
-  },
+  }
 
   // 示例：每小时执行一次测试任务
-  {
-    name: "hourly-hello",
-    taskName: "hello-world",
-    cron: "* * * * *", // 每小时
-    params: {
-      name: "Hourly User"
-    },
-    enabled: true, // 启用用于测试
-    description: "每小时执行问候任务"
-  }
+  // {
+  //   name: "hourly-hello",
+  //   taskName: "hello-world",
+  //   cron: "* * * * * *", // 每小时
+  //   params: {
+  //     name: "Hourly User"
+  //   },
+  //   enabled: true, // 启用用于测试
+  //   description: "每小时执行问候任务"
+  // }
 
   // 示例：每5分钟执行一次（用于测试）
   // {
