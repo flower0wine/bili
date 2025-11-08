@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import { Logger } from "nestjs-pino";
 import { Inject, Injectable } from "@nestjs/common";
 import { PrismaService } from "@/services/common/prisma.service";
@@ -46,7 +45,7 @@ export class UserCardSyncTask {
 
   @Task({
     name: "user-card-sync",
-    description: "同步用户名片数据到数据库",
+    description: "同步用户名片数据到数据库（每次插入新记录）",
     timeout: 300000, // 5分钟超时
     retries: 3
   })
@@ -75,36 +74,9 @@ export class UserCardSyncTask {
           throw new TaskCancelledError("user-card-sync", "unknown");
         }
 
-        // 保存到数据库
-        const saved = await this.prisma.userCard.upsert({
-          where: { mid: userData.mid },
-          update: {
-            name: userData.name,
-            sex: userData.sex,
-            face: userData.face,
-            sign: userData.sign,
-            level: userData.level,
-
-            // 统计信息
-            fans: userData.fans,
-            friend: userData.friend,
-            archiveCount: userData.archiveCount,
-            articleCount: userData.articleCount,
-            likeNum: userData.likeNum,
-
-            // 认证与会员信息
-            official: userData.official,
-            vip: userData.vip,
-            pendant: userData.pendant,
-            nameplate: userData.nameplate,
-
-            // 社交信息
-            following: userData.following,
-            space: userData.space,
-
-            updatedAt: dayjs().toDate()
-          },
-          create: {
+        // 每次都插入新记录，用于追踪粉丝量等统计数据的变化趋势
+        const saved = await this.prisma.userCard.create({
+          data: {
             mid: userData.mid,
             name: userData.name,
             sex: userData.sex,
@@ -129,6 +101,13 @@ export class UserCardSyncTask {
             following: userData.following,
             space: userData.space
           }
+        });
+
+        this.logger.log({
+          event: "user_card_sync.record_inserted",
+          mid,
+          fans: userData.fans,
+          message: "插入新的统计记录"
         });
 
         results.push({ mid, success: true, data: saved });

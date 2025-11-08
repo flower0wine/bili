@@ -91,7 +91,10 @@ CREATE TABLE "TaskExecution" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserSpaceData_mid_key" ON "UserSpaceData"("mid");
+CREATE INDEX "UserSpaceData_mid_idx" ON "UserSpaceData"("mid");
+
+-- CreateIndex
+CREATE INDEX "UserSpaceData_createdAt_idx" ON "UserSpaceData"("createdAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "CronTrigger_name_key" ON "CronTrigger"("name");
@@ -106,7 +109,10 @@ CREATE INDEX "CronTrigger_enabled_idx" ON "CronTrigger"("enabled");
 CREATE INDEX "CronTrigger_source_idx" ON "CronTrigger"("source");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserCard_mid_key" ON "UserCard"("mid");
+CREATE INDEX "UserCard_mid_idx" ON "UserCard"("mid");
+
+-- CreateIndex
+CREATE INDEX "UserCard_createdAt_idx" ON "UserCard"("createdAt");
 
 -- CreateIndex
 CREATE INDEX "TaskExecution_taskName_idx" ON "TaskExecution"("taskName");

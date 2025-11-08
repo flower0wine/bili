@@ -1,4 +1,3 @@
-import dayjs from "dayjs";
 import { Logger } from "nestjs-pino";
 import { Inject, Injectable } from "@nestjs/common";
 import { PrismaService } from "@/services/common/prisma.service";
@@ -46,7 +45,7 @@ export class UserSpaceSyncTask {
 
   @Task({
     name: "user-space-sync",
-    description: "同步用户空间数据到数据库",
+    description: "同步用户空间数据到数据库（检测变化后插入新记录）",
     timeout: 300000, // 5分钟超时
     retries: 3
   })
@@ -74,67 +73,61 @@ export class UserSpaceSyncTask {
           throw new TaskCancelledError("user-space-sync", "unknown");
         }
 
-        // 保存到数据库
-        const saved = await this.prisma.userSpaceData.upsert({
-          where: { mid: userData.mid },
-          update: {
-            name: userData.name,
-            sex: userData.sex,
-            face: userData.face,
-            faceNft: userData.faceNft,
-            sign: userData.sign,
-            level: userData.level,
-            birthday: userData.birthday,
-
-            // 认证与会员信息
-            official: userData.official,
-            vip: userData.vip,
-            pendant: userData.pendant,
-            nameplate: userData.nameplate,
-
-            // 社交信息
-            fansBadge: userData.fansBadge,
-            fansMedal: userData.fansMedal,
-            isFollowed: userData.isFollowed,
-            topPhoto: userData.topPhoto,
-
-            // 其他展示信息
-            liveRoom: userData.liveRoom,
-            tags: userData.tags === null ? Prisma.JsonNull : userData.tags,
-            sysNotice: userData.sysNotice,
-            isSeniorMember: userData.isSeniorMember,
-
-            updatedAt: dayjs().toDate()
-          },
-          create: {
-            mid: userData.mid,
-            name: userData.name,
-            sex: userData.sex,
-            face: userData.face,
-            faceNft: userData.faceNft,
-            sign: userData.sign,
-            level: userData.level,
-            birthday: userData.birthday,
-
-            // 认证与会员信息
-            official: userData.official,
-            vip: userData.vip,
-            pendant: userData.pendant,
-            nameplate: userData.nameplate,
-
-            // 社交信息
-            fansBadge: userData.fansBadge,
-            fansMedal: userData.fansMedal,
-            isFollowed: userData.isFollowed,
-            topPhoto: userData.topPhoto,
-
-            // 其他展示信息
-            liveRoom: userData.liveRoom,
-            tags: userData.tags === null ? Prisma.JsonNull : userData.tags,
-            sysNotice: userData.sysNotice,
-            isSeniorMember: userData.isSeniorMember
-          }
+        // 获取最新的一条记录进行对比
+        const latestRecord = await this.prisma.userSpaceData.findFirst({
+          where: { mid },
+          orderBy: { createdAt: "desc" }
         });
+
+        // 检查数据是否有变化
+        const hasChanged = this.hasDataChanged(latestRecord, userData);
+
+        let saved: any = null;
+        if (hasChanged) {
+          // 有变化，插入新记录
+          saved = await this.prisma.userSpaceData.create({
+            data: {
+              mid: userData.mid,
+              name: userData.name,
+              sex: userData.sex,
+              face: userData.face,
+              faceNft: userData.faceNft,
+              sign: userData.sign,
+              level: userData.level,
+              birthday: userData.birthday,
+
+              // 认证与会员信息
+              official: userData.official,
+              vip: userData.vip,
+              pendant: userData.pendant,
+              nameplate: userData.nameplate,
+
+              // 社交信息
+              fansBadge: userData.fansBadge,
+              fansMedal: userData.fansMedal,
+              isFollowed: userData.isFollowed,
+              topPhoto: userData.topPhoto,
+
+              // 其他展示信息
+              liveRoom: userData.liveRoom,
+              tags: userData.tags === null ? Prisma.JsonNull : userData.tags,
+              sysNotice: userData.sysNotice,
+              isSeniorMember: userData.isSeniorMember
+            }
+          });
+
+          this.logger.log({
+            event: "user_space_sync.data_changed",
+            mid,
+            message: "检测到数据变化，插入新记录"
+          });
+        } else {
+          this.logger.log({
+            event: "user_space_sync.data_unchanged",
+            mid,
+            message: "数据无变化，跳过插入"
+          });
+        }
 
         results.push({ mid, success: true, data: saved });
       } catch (error) {
@@ -177,5 +170,72 @@ export class UserSpaceSyncTask {
     }
 
     return result;
+  }
+
+  /**
+   * 检查用户空间数据是否有变化
+   * @param oldData 数据库中的最新记录
+   * @param newData 从API获取的新数据
+   * @returns true表示有变化，false表示无变化
+   */
+  private hasDataChanged(oldData: any, newData: UserSpaceData): boolean {
+    // 如果没有历史记录，说明是新用户，需要插入
+    if (!oldData) {
+      return true;
+    }
+
+    // 需要比较的字段列表（不包括时间戳字段）
+    const fieldsToCompare = [
+      "name",
+      "sex",
+      "face",
+      "faceNft",
+      "sign",
+      "level",
+      "birthday",
+      "fansBadge",
+      "isFollowed",
+      "topPhoto",
+      "isSeniorMember"
+    ];
+
+    // 比较基本字段
+    for (const field of fieldsToCompare) {
+      if (oldData[field] !== newData[field]) {
+        this.logger.debug({
+          event: "user_space_sync.field_changed",
+          field,
+          oldValue: oldData[field],
+          newValue: newData[field]
+        });
+        return true;
+      }
+    }
+
+    // 比较JSON字段（需要深度比较）
+    const jsonFields = [
+      "official",
+      "vip",
+      "pendant",
+      "nameplate",
+      "fansMedal",
+      "liveRoom",
+      "tags",
+      "sysNotice"
+    ];
+
+    for (const field of jsonFields) {
+      const oldValue = JSON.stringify(oldData[field]);
+      const newValue = JSON.stringify(newData[field]);
+      if (oldValue !== newValue) {
+        this.logger.debug({
+          event: "user_space_sync.json_field_changed",
+          field
+        });
+        return true;
+      }
+    }
+
+    return false;
   }
 }
