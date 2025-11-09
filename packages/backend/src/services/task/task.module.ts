@@ -6,6 +6,7 @@ import { UserCardModule } from "@/services/user-card/user-card.module";
 import { UserSpaceModule } from "@/services/user-space/user-space.module";
 import { LoggingMiddleware } from "./middleware/logging.middleware";
 import { PersistenceMiddleware } from "./middleware/persistence.middleware";
+import { TaskExecutionService } from "./task-execution.service";
 import { TaskExecutorService } from "./task-executor.service";
 import { TaskRegistryService } from "./task-registry.service";
 import { TaskController } from "./task.controller";
@@ -24,6 +25,7 @@ import { UserSpaceSyncTask } from "./tasks/user-space-sync.task";
   providers: [
     TaskRegistryService,
     TaskExecutorService,
+    TaskExecutionService,
     LoggingMiddleware,
     PersistenceMiddleware,
     // 注册任务提供者
