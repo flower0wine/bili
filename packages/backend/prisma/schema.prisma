@@ -10,7 +10,7 @@ datasource db {
 
 model UserSpaceData {
   id              Int      @id @default(autoincrement())
-  mid             Int      @unique
+  mid             Int
   name            String
   sex             String
   face            String
@@ -39,6 +39,9 @@ model UserSpaceData {
   
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([mid])
+  @@index([createdAt])
 }
 
 model CronTrigger {
@@ -60,7 +63,7 @@ model CronTrigger {
 
 model UserCard {
   id              Int      @id @default(autoincrement())
-  mid             Int      @unique
+  mid             Int
   name            String
   sex             String
   face            String
@@ -86,6 +89,9 @@ model UserCard {
   
   createdAt       DateTime @default(now()) @db.Timestamptz(6)
   updatedAt       DateTime @updatedAt @db.Timestamptz(6)
+
+  @@index([mid])
+  @@index([createdAt])
 }
 
 model TaskExecution {
