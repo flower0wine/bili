@@ -20,7 +20,6 @@ import {
   Settings,
   Bell,
   Calendar,
-  ChevronRight,
   CheckCircle,
   Upload,
 } from "lucide-react";
@@ -28,112 +27,86 @@ import {
 export default function AppMenuBar() {
   return (
     <Menubar className="bg-white border-b border-slate-200 shadow-sm rounded-b-lg">
-      {/* Projects Menu */}
       <MenubarMenu>
-        <MenubarTrigger className="flex items-center gap-2">
-          <Folder className="w-4 h-4" />
-          Projects
+        <MenubarTrigger>
+          <Folder className="mr-2 h-4 w-4" />
+          项目
         </MenubarTrigger>
-        <MenubarContent className="w-56">
-          <MenubarItem className="flex items-center gap-2">
-            <FolderPlus className="w-4 h-4" />
-            New Project
+        <MenubarContent>
+          <MenubarItem>
+            <FolderPlus className="mr-2 h-4 w-4" />
+            新建项目
           </MenubarItem>
-          <MenubarItem className="flex items-center gap-2">
-            <FileText className="w-4 h-4" />
-            All Projects
-          </MenubarItem>
-          <MenubarItem className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4" />
-            Completed Projects
+          <MenubarItem>
+            <Upload className="mr-2 h-4 w-4" />
+            导入项目
           </MenubarItem>
         </MenubarContent>
       </MenubarMenu>
 
-      {/* Teams Menu with Submenu */}
       <MenubarMenu>
-        <MenubarTrigger className="flex items-center gap-2">
-          <Users className="w-4 h-4" />
-          Teams
+        <MenubarTrigger>
+          <FileText className="mr-2 h-4 w-4" />
+          文件
         </MenubarTrigger>
-        <MenubarContent className="w-56">
-          <MenubarItem className="flex items-center gap-2">
-            <UserCheck className="w-4 h-4" />
-            All Members
-          </MenubarItem>
-          <MenubarItem className="flex items-center gap-2">
-            <FolderPlus className="w-4 h-4" />
-            Create Team
-          </MenubarItem>
-
-          <MenubarSeparator />
-
-          {/* Proper Nested Submenu */}
+        <MenubarContent>
           <MenubarSub>
-            <MenubarSubTrigger className="flex items-center justify-between gap-2">
-              Manage Teams
-            </MenubarSubTrigger>
-            <MenubarSubContent className="w-48">
-              <MenubarItem className="flex items-center gap-2">
-                <Settings className="w-4 h-4" />
-                Team Settings
-              </MenubarItem>
-              <MenubarItem className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Team Members
-              </MenubarItem>
+            <MenubarSubTrigger>新建</MenubarSubTrigger>
+            <MenubarSubContent>
+              <MenubarItem>文件</MenubarItem>
+              <MenubarItem>文件夹</MenubarItem>
             </MenubarSubContent>
           </MenubarSub>
+          <MenubarSeparator />
+          <MenubarItem>保存</MenubarItem>
         </MenubarContent>
       </MenubarMenu>
 
-      {/* Calendar Menu */}
       <MenubarMenu>
-        <MenubarTrigger className="flex items-center gap-2">
-          <Calendar className="w-4 h-4" />
-          Calendar
+        <MenubarTrigger>
+          <Users className="mr-2 h-4 w-4" />
+          用户
         </MenubarTrigger>
-        <MenubarContent className="w-48">
-          <MenubarItem className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            View Calendar
-          </MenubarItem>
-          <MenubarItem className="flex items-center gap-2">
-            <FileText className="w-4 h-4" />
-            Schedule Task
-          </MenubarItem>
-        </MenubarContent>
-      </MenubarMenu>
-
-      {/* Notifications */}
-      <MenubarMenu>
-        <MenubarTrigger className="flex items-center gap-2">
-          <Bell className="w-4 h-4" />
-          Notifications
-        </MenubarTrigger>
-        <MenubarContent className="w-48">
-          <MenubarItem className="flex items-center gap-2">
-            <Bell className="w-4 h-4" />
-            All Notifications
+        <MenubarContent>
+          <MenubarItem>
+            <UserCheck className="mr-2 h-4 w-4" />
+            用户管理
           </MenubarItem>
         </MenubarContent>
       </MenubarMenu>
 
-      {/* Files Menu */}
       <MenubarMenu>
-        <MenubarTrigger className="flex items-center gap-2">
-          <Upload className="w-4 h-4" />
-          Files
+        <MenubarTrigger>
+          <Calendar className="mr-2 h-4 w-4" />
+          任务
         </MenubarTrigger>
-        <MenubarContent className="w-56">
-          <MenubarItem className="flex items-center gap-2">
-            <Upload className="w-4 h-4" />
-            Upload File
+        <MenubarContent>
+          <MenubarItem>
+            <CheckCircle className="mr-2 h-4 w-4" />
+            任务列表
           </MenubarItem>
-          <MenubarItem className="flex items-center gap-2">
-            <FileText className="w-4 h-4" />
-            My Files
-          </MenubarItem>
+        </MenubarContent>
+      </MenubarMenu>
+
+      <MenubarMenu>
+        <MenubarTrigger>
+          <Settings className="mr-2 h-4 w-4" />
+          设置
+        </MenubarTrigger>
+        <MenubarContent>
+          <MenubarItem>偏好设置</MenubarItem>
+          <MenubarItem>系统设置</MenubarItem>
+        </MenubarContent>
+      </MenubarMenu>
+
+      <MenubarMenu>
+        <MenubarTrigger>
+          <Bell className="mr-2 h-4 w-4" />
+          通知
+        </MenubarTrigger>
+        <MenubarContent>
+          <MenubarItem>查看通知</MenubarItem>
+          <MenubarItem>通知设置</MenubarItem>
         </MenubarContent>
       </MenubarMenu>
     </Menubar>
