@@ -1,3 +1,4 @@
+import { VersioningType } from "@nestjs/common";
 import compression from "compression";
 import helmet from "helmet";
 import { Logger } from "nestjs-pino";
@@ -36,6 +37,13 @@ async function bootstrap() {
     swaggerOptions: {
       persistAuthorization: true
     }
+  });
+
+  // 设置全局API前缀和版本控制
+  app.setGlobalPrefix('api');
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
   });
 
   app.use(compression());

@@ -25,12 +25,12 @@ export async function parseResponse<T>(
 ): Promise<[T | null, Http.ErrorResponse | null]>
 
 // 重载：直接传入API函数时自动推断返回类型
-export async function parseResponse<T extends () => Promise<AxiosResponse<Http.ApiResponse<any>>>>(
+export async function parseResponse<T extends () => Promise<AxiosResponse<Http.ApiResponse<unknown>>>>(
   fn: T
 ): Promise<[ReturnType<T> extends Promise<AxiosResponse<Http.ApiResponse<infer U>>> ? U : never, Http.ErrorResponse | null]>
 
 // 重载：传入API函数调用结果时自动推断返回类型
-export async function parseResponse<T extends Promise<AxiosResponse<Http.ApiResponse<any>>>>(
+export async function parseResponse<T extends Promise<AxiosResponse<Http.ApiResponse<unknown>>>>(
   promise: T
 ): Promise<[T extends Promise<AxiosResponse<Http.ApiResponse<infer U>>> ? U : never, Http.ErrorResponse | null]>
 

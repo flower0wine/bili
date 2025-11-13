@@ -3,27 +3,27 @@ import { api } from '@/lib/api/axios';
 
 export const taskApi = {
   getAllTasks: async (): Promise<AxiosResponse<Http.ApiResponse<Task.TaskVO[]>>> => {
-    return await api.get<Http.ApiResponse<Task.TaskVO[]>>('/tasks');
+    return await api.get<Http.ApiResponse<Task.TaskVO[]>>('/v1/tasks');
   },
 
   getTask: async (taskName: string): Promise<AxiosResponse<Http.ApiResponse<Task.TaskVO>>> => {
-    return await api.get<Http.ApiResponse<Task.TaskVO>>(`/tasks/${taskName}`);
+    return await api.get<Http.ApiResponse<Task.TaskVO>>(`/v1/tasks/${taskName}`);
   },
 
   executeTask: async (taskName: string, data: Task.ExecuteTaskDTO): Promise<AxiosResponse<Http.ApiResponse<Task.ExecuteTaskVO>>> => {
-    return await api.post<Http.ApiResponse<Task.ExecuteTaskVO>>(`/tasks/${taskName}/execute`, data);
+    return await api.post<Http.ApiResponse<Task.ExecuteTaskVO>>(`/v1/tasks/${taskName}/execute`, data);
   },
 
   getTaskExecutions: async (query: Task.TaskExecutionQueryDTO): Promise<AxiosResponse<Http.ApiResponse<Task.TaskExecutionListVO>>> => {
-    return await api.get<Http.ApiResponse<Task.TaskExecutionListVO>>('/tasks/executions/history', { params: query });
+    return await api.get<Http.ApiResponse<Task.TaskExecutionListVO>>('/v1/tasks/executions/history', { params: query });
   },
 
   getTaskExecution: async (id: string): Promise<AxiosResponse<Http.ApiResponse<Task.TaskExecutionVO>>> => {
-    return await api.get<Http.ApiResponse<Task.TaskExecutionVO>>(`/tasks/executions/${id}`);
+    return await api.get<Http.ApiResponse<Task.TaskExecutionVO>>(`/v1/tasks/executions/${id}`);
   },
 
   getTaskStats: async (taskName?: string): Promise<AxiosResponse<Http.ApiResponse<Task.TaskStatsVO>>> => {
-    return await api.get<Http.ApiResponse<Task.TaskStatsVO>>('/tasks/stats/summary', {
+    return await api.get<Http.ApiResponse<Task.TaskStatsVO>>('/v1/tasks/stats/summary', {
       params: taskName ? { taskName } : undefined,
     });
   },

@@ -28,16 +28,16 @@ export const triggerConfigs: TriggerConfig[] = [
   //   description: "同步用户名片数据"
   // },
   // 飞书多维表格同步任务（每天凌晨1点执行）
-  {
-    name: "feishu-bitable-sync-daily",
-    taskName: "feishu-bitable-sync",
-    cron: "0 */1 * * * *", // 每天凌晨1点
-    params: {
-      mids: [456664753] // 可以指定用户列表，或留空同步所有用户
-    },
-    enabled: true, // 默认禁用，需要配置飞书应用后手动启用
-    description: "同步用户数据到飞书多维表格"
-  }
+  // {
+  //   name: "feishu-bitable-sync-daily",
+  //   taskName: "feishu-bitable-sync",
+  //   cron: "0 */1 * * * *", // 每天凌晨1点
+  //   params: {
+  //     mids: [456664753] // 可以指定用户列表，或留空同步所有用户
+  //   },
+  //   enabled: true, // 默认禁用，需要配置飞书应用后手动启用
+  //   description: "同步用户数据到飞书多维表格"
+  // }
   // 示例：每小时执行一次测试任务
   // {
   //   name: "hourly-hello",

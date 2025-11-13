@@ -8,7 +8,7 @@ if (!API_BASE_URL) {
 
 // 创建axios实例
 export const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_BASE_URL}/api`,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
