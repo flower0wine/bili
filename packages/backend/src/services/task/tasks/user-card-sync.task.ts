@@ -1,10 +1,9 @@
 import { Logger } from "nestjs-pino";
 import { Inject, Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "@/services/common/prisma.service";
-import {
-  UserCardData,
-  UserCardService
-} from "@/services/user-card/user-card.service";
+import { UserCardTask, UserCardData } from "@/services/user-card/user-card.task";
+import { UserCardTaskParams } from "@/services/user-card/dto/user-card-task-params.dto";
 import { Task } from "../decorators/task.decorator";
 import { TaskCancelledError } from "../interfaces/task.interface";
 
@@ -14,6 +13,7 @@ import { TaskCancelledError } from "../interfaces/task.interface";
 interface SyncParams {
   mids?: number[];
   photo?: boolean;
+  cookie?: string; // 可选的cookie，如果不提供则使用配置中的cookie
 }
 
 /**
@@ -38,7 +38,8 @@ interface SyncResult {
 @Injectable()
 export class UserCardSyncTask {
   constructor(
-    private readonly userCardService: UserCardService,
+    private readonly userCardTask: UserCardTask,
+    private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
     @Inject(Logger) private readonly logger: Logger
   ) {}
@@ -56,6 +57,12 @@ export class UserCardSyncTask {
     const mids = params?.mids || [2]; // 默认用户列表
     const photo = params?.photo !== false; // 默认请求头图
 
+    // 获取cookie，优先使用传入的cookie，否则从环境变量获取
+    const cookie = params?.cookie || this.configService.get<string>("BILIBILI_COOKIE");
+    if (!cookie) {
+      throw new Error("未配置BILIBILI_COOKIE环境变量且未提供cookie参数");
+    }
+
     const results: SyncResult["results"] = [];
 
     for (const mid of mids) {
@@ -65,9 +72,12 @@ export class UserCardSyncTask {
       }
 
       try {
+        // 构造任务参数
+        const taskParams: UserCardTaskParams = { mid, photo, cookie };
+
         // 获取用户名片数据
         const userData: UserCardData =
-          await this.userCardService.getUserCardInfo({ mid, photo });
+          await this.userCardTask.executeGetUserCardInfo(taskParams);
 
         // 再次检查取消状态
         if (signal?.aborted) {

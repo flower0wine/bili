@@ -1,10 +1,12 @@
 import { Logger } from "nestjs-pino";
 import { Inject, Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "@/services/common/prisma.service";
+import { UserSpaceTaskParams } from "@/services/user-space/dto/user-space-task-params.dto";
 import {
   UserSpaceData,
-  UserSpaceService
-} from "@/services/user-space/user-space.service";
+  UserSpaceTask
+} from "@/services/user-space/user-space.task";
 import { Prisma } from "@prisma/client";
 import { Task } from "../decorators/task.decorator";
 import { TaskCancelledError } from "../interfaces/task.interface";
@@ -14,6 +16,7 @@ import { TaskCancelledError } from "../interfaces/task.interface";
  */
 interface SyncParams {
   mids?: number[];
+  cookie?: string; // 可选的cookie，如果不提供则使用配置中的cookie
 }
 
 /**
@@ -38,7 +41,8 @@ interface SyncResult {
 @Injectable()
 export class UserSpaceSyncTask {
   constructor(
-    private readonly userSpaceService: UserSpaceService,
+    private readonly userSpaceTask: UserSpaceTask,
+    private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
     @Inject(Logger) private readonly logger: Logger
   ) {}
@@ -53,7 +57,18 @@ export class UserSpaceSyncTask {
     params?: SyncParams,
     signal?: AbortSignal
   ): Promise<SyncResult> {
-    const mids = params?.mids || [2]; // 默认用户列表
+    const mids = params?.mids; // 默认用户列表
+
+    if (!mids || mids.length === 0) {
+      throw new Error("用户列表为空");
+    }
+
+    // 获取cookie，优先使用传入的cookie，否则从环境变量获取
+    const cookie =
+      params?.cookie || this.configService.get<string>("BILIBILI_COOKIE");
+    if (!cookie) {
+      throw new Error("未配置BILIBILI_COOKIE环境变量且未提供cookie参数");
+    }
 
     const results: SyncResult["results"] = [];
 
@@ -64,9 +79,12 @@ export class UserSpaceSyncTask {
       }
 
       try {
+        // 构造任务参数
+        const taskParams: UserSpaceTaskParams = { mid, cookie };
+
         // 获取用户空间数据
         const userData: UserSpaceData =
-          await this.userSpaceService.getUserSpaceInfo({ mid });
+          await this.userSpaceTask.executeGetUserSpaceInfo(taskParams);
 
         // 再次检查取消状态
         if (signal?.aborted) {

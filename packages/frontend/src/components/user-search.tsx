@@ -3,22 +3,25 @@
 import { useState } from "react";
 
 interface UserSearchProps {
-  onSearch: (userId: string) => void;
+  onSearch: (userId: number) => void;
   isLoading?: boolean;
 }
 
 export function UserSearch({ onSearch, isLoading = false }: UserSearchProps) {
-  const [userId, setUserId] = useState("");
+  const [userId, setUserId] = useState<string>("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (userId.trim()) {
-      onSearch(userId.trim());
+      const numUserId = Number(userId.trim());
+      if (!isNaN(numUserId) && numUserId > 0) {
+        onSearch(numUserId);
+      }
     }
   };
 
-  const handleQuickSearch = (id: string) => {
-    setUserId(id);
+  const handleQuickSearch = (id: number) => {
+    setUserId(id.toString());
     onSearch(id);
   };
 
@@ -32,7 +35,7 @@ export function UserSearch({ onSearch, isLoading = false }: UserSearchProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex gap-2">
             <input
-              type="text"
+              type="number"
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
               placeholder="请输入用户 UID 或数字 ID"
@@ -56,10 +59,10 @@ export function UserSearch({ onSearch, isLoading = false }: UserSearchProps) {
           </h3>
           <div className="flex flex-wrap gap-2">
             {[
-              { id: "672346937", name: "官方测试账号" },
-              { id: "2", name: "碧诗" },
-              { id: "946974", name: "LexBurner" },
-              { id: "22603245", name: "老番茄" },
+              { id: 456664753, name: "官方测试账号" },
+              { id: 2, name: "碧诗" },
+              { id: 946974, name: "LexBurner" },
+              { id: 22603245, name: "老番茄" },
             ].map((user) => (
               <button
                 key={user.id}

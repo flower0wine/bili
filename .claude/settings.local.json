@@ -3,7 +3,10 @@
     "allow": [
       "Bash(pnpm run typecheck)",
       "Bash(pnpm exec tsc:*)",
-      "Bash(pnpm run build:*)"
+      "Bash(pnpm run build:*)",
+      "Bash(pnpm run lint)",
+      "Bash(pnpm add:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

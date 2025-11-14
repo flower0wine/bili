@@ -8,7 +8,19 @@ const nextConfig: NextConfig = {
         destination: 'http://localhost:9000/api/:path*'
       }
     ]
-  }
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
+      }
+    ],
+  },
 };
 
 export default nextConfig;

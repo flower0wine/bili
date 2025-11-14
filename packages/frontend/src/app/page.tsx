@@ -5,9 +5,9 @@ import { UserSearch } from "@/components/user-search";
 import { UserProfile } from "@/components/user-profile";
 
 export default function Home() {
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
-  const handleUserSearch = (userId: string) => {
+  const handleUserSearch = (userId: number) => {
     setSelectedUserId(userId);
   };
 

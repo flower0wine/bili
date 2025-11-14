@@ -3,14 +3,18 @@ import { Request, Response } from "express";
 import { LoggerModule } from "nestjs-pino";
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from "@nestjs/core";
 import { AppController } from "@/app.controller";
 import { AppService } from "@/app.service";
+import { GlobalValidationPipe } from "@/pipes/global-validation.pipe";
 import { PrismaModule } from "@/services/common/prisma.module";
 import { GitModule } from "@/services/git/git.module";
 import { TaskModule } from "@/services/task/task.module";
 import { TriggerModule } from "@/services/task/trigger/trigger.module";
 import { UserCardModule } from "@/services/user-card/user-card.module";
 import { UserSpaceModule } from "@/services/user-space/user-space.module";
+import { GlobalExceptionsFilter } from "./filters/global-exceptions.filter";
+import { TransformInterceptor } from "./interceptors/response-transform.interceptor";
 
 @Module({
   imports: [
@@ -50,6 +54,22 @@ import { UserSpaceModule } from "@/services/user-space/user-space.module";
     TriggerModule
   ],
   controllers: [AppController],
-  providers: [AppService]
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionsFilter
+    },
+    // 全局拦截器
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformInterceptor
+    },
+    // 全局验证管道
+    {
+      provide: APP_PIPE,
+      useClass: GlobalValidationPipe
+    }
+  ]
 })
 export class AppModule {}

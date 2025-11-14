@@ -1,9 +1,14 @@
-import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { STATUS_CODE } from "@/constants";
-import { UserCardRequestDto } from "@/services/user-card/dto/user-card.dto";
+import { Injectable, Logger } from "@nestjs/common";
+import {
+  createPaginatedResponse,
+  normalizePagination,
+  PaginatedResponse,
+  PaginationQuery
+} from "@/interfaces/pagination.interface";
+import { PrismaService } from "@/services/common/prisma.service";
 
 export interface UserCardData {
+  id: number;
   mid: number;
   name: string;
   sex: string;
@@ -27,102 +32,223 @@ export interface UserCardData {
   // 社交信息
   following: boolean;
   space?: object;
+
+  // 时间戳
+  createdAt: Date;
+  updatedAt: Date;
 }
 
+/**
+ * 用户名片数据查询服务
+ * 用于从数据库查询用户名片统计数据
+ */
 @Injectable()
 export class UserCardService {
   private readonly logger = new Logger(UserCardService.name);
 
-  constructor(private configService: ConfigService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async getUserCardInfo(opts: UserCardRequestDto): Promise<UserCardData> {
-    const { mid, photo = false } = opts;
+  /**
+   * 获取指定用户的最新一条用户名片数据
+   * @param mid 用户ID
+   * @returns 用户名片数据
+   */
+  async getLatestUserCardData(mid: number): Promise<UserCardData | null> {
+    this.logger.log(`获取用户 ${mid} 的最新用户名片数据`);
 
-    if (!mid || typeof mid !== "number") {
-      const message = "缺少有效的用户ID";
-      this.logger.warn(message);
-      throw new HttpException(
-        { code: STATUS_CODE.INVALID_ARGUMENT, message },
-        HttpStatus.BAD_REQUEST
-      );
+    const record = await this.prisma.userCard.findFirst({
+      where: { mid },
+      orderBy: { createdAt: "desc" }
+    });
+
+    if (!record) {
+      this.logger.warn(`用户 ${mid} 暂无用户名片数据`);
+      return null;
     }
 
-    // 从环境变量中获取cookie
-    const cookie = this.configService.get<string>("BILIBILI_COOKIE");
-    if (!cookie) {
-      const message = "未配置BILIBILI_COOKIE环境变量";
-      this.logger.error(message);
-      throw new HttpException(
-        { code: STATUS_CODE.INVALID_ARGUMENT, message },
-        HttpStatus.BAD_REQUEST
-      );
+    return this.mapPrismaRecordToUserCardData(record);
+  }
+
+  /**
+   * 分页获取指定用户的所有用户名片数据
+   * @param mid 用户ID
+   * @param query 分页参数
+   * @returns 分页的用户名片数据
+   */
+  async getUserCardDataByMid(
+    mid: number,
+    query: PaginationQuery = {}
+  ): Promise<PaginatedResponse<UserCardData>> {
+    this.logger.log(`分页获取用户 ${mid} 的用户名片数据`);
+
+    const { page, limit, offset } = normalizePagination(query);
+
+    const [records, total] = await Promise.all([
+      this.prisma.userCard.findMany({
+        where: { mid },
+        orderBy: { createdAt: "desc" },
+        skip: offset,
+        take: limit
+      }),
+      this.prisma.userCard.count({
+        where: { mid }
+      })
+    ]);
+
+    const items = records.map((record) =>
+      this.mapPrismaRecordToUserCardData(record)
+    );
+
+    this.logger.log(`用户 ${mid} 共找到 ${total} 条记录，当前第 ${page} 页`);
+
+    return createPaginatedResponse(items, total, page, limit);
+  }
+
+  /**
+   * 分页获取所有用户的最新用户名片数据
+   * @param query 分页参数
+   * @returns 分页的用户名片数据
+   */
+  async getAllLatestUserCardData(
+    query: PaginationQuery = {}
+  ): Promise<PaginatedResponse<UserCardData>> {
+    this.logger.log("分页获取所有用户的最新用户名片数据");
+
+    const { page, limit, offset } = normalizePagination(query);
+
+    // 获取每个用户的最新记录
+    const records = await this.prisma.userCard.findMany({
+      distinct: ["mid"],
+      orderBy: { createdAt: "desc" },
+      skip: offset,
+      take: limit
+    });
+
+    // 获取总用户数
+    const total = await this.prisma.userCard
+      .groupBy({
+        by: ["mid"],
+        _count: true
+      })
+      .then((result) => result.length);
+
+    const items = records.map((record) =>
+      this.mapPrismaRecordToUserCardData(record)
+    );
+
+    this.logger.log(`共找到 ${total} 个用户的最新数据，当前第 ${page} 页`);
+
+    return createPaginatedResponse(items, total, page, limit);
+  }
+
+  /**
+   * 根据粉丝数范围查询用户名片数据
+   * @param minFans 最小粉丝数
+   * @param maxFans 最大粉丝数
+   * @param query 分页参数
+   * @returns 分页的用户名片数据
+   */
+  async getUserCardDataByFansRange(
+    minFans?: number,
+    maxFans?: number,
+    query: PaginationQuery = {}
+  ): Promise<PaginatedResponse<UserCardData>> {
+    this.logger.log(
+      `根据粉丝数范围查询用户名片数据: ${minFans || 0} - ${maxFans || "无上限"}`
+    );
+
+    const { page, limit, offset } = normalizePagination(query);
+
+    const whereClause: any = {};
+    if (minFans !== undefined || maxFans !== undefined) {
+      whereClause.fans = {};
+      if (minFans !== undefined) whereClause.fans.gte = minFans;
+      if (maxFans !== undefined) whereClause.fans.lte = maxFans;
     }
 
-    try {
-      // 构造请求URL
-      const params = new URLSearchParams({
-        mid: mid.toString(),
-        photo: photo.toString()
-      });
+    const [records, total] = await Promise.all([
+      this.prisma.userCard.findMany({
+        where: whereClause,
+        orderBy: { fans: "desc" },
+        skip: offset,
+        take: limit,
+        distinct: ["mid"]
+      }),
+      this.prisma.userCard.count({ where: whereClause })
+    ]);
 
-      const url = `https://api.bilibili.com/x/web-interface/card?${params}`;
-      this.logger.log(`请求用户名片信息: ${url}`);
+    const items = records.map((record) =>
+      this.mapPrismaRecordToUserCardData(record)
+    );
 
-      const res = await fetch(url, {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
-          Referer: "https://www.bilibili.com/",
-          Cookie: cookie
-        }
-      });
+    this.logger.log(`粉丝数范围查询找到 ${total} 条记录，当前第 ${page} 页`);
 
-      const response = await res.json();
+    return createPaginatedResponse(items, total, page, limit);
+  }
 
-      if (response.code !== 0) {
-        const message = `获取用户名片信息失败: ${response.message || "未知错误"}`;
-        this.logger.error(message);
-        throw new HttpException(
-          { code: STATUS_CODE.UNKNOWN_ERROR, message },
-          HttpStatus.BAD_REQUEST
-        );
-      }
+  /**
+   * 获取用户名片数据统计信息
+   * @param mid 用户ID，可选
+   * @returns 统计信息
+   */
+  async getUserCardStats(mid?: number): Promise<{
+    totalRecords: number;
+    uniqueUsers: number;
+    latestRecord: Date | null;
+  }> {
+    const whereClause = mid ? { mid } : {};
 
-      const { data } = response;
-      const { card } = data;
+    const [totalRecords, uniqueUsers, latestRecord] = await Promise.all([
+      this.prisma.userCard.count({ where: whereClause }),
+      this.prisma.userCard
+        .groupBy({
+          by: ["mid"],
+          where: whereClause
+        })
+        .then((result) => result.length),
+      this.prisma.userCard
+        .findFirst({
+          where: whereClause,
+          orderBy: { createdAt: "desc" },
+          select: { createdAt: true }
+        })
+        .then((record) => record?.createdAt || null)
+    ]);
 
-      return {
-        mid: parseInt(card.mid),
-        name: card.name,
-        sex: card.sex,
-        face: card.face,
-        sign: card.sign,
-        level: card.level_info?.current_level,
+    return {
+      totalRecords,
+      uniqueUsers,
+      latestRecord
+    };
+  }
 
-        // 统计信息
-        fans: card.fans,
-        friend: card.friend,
-        archiveCount: data.archive_count,
-        articleCount: data.article_count,
-        likeNum: data.like_num,
-
-        // 认证与会员信息
-        official: card.Official,
-        vip: card.vip,
-        pendant: card.pendant,
-        nameplate: card.nameplate,
-
-        // 社交信息
-        following: data.following,
-        space: data.space
-      };
-    } catch (error: any) {
-      const message = `获取用户名片信息失败：${error?.message || error}`;
-      this.logger.error(message, error?.stack || undefined);
-      throw new HttpException(
-        { message, code: STATUS_CODE.UNKNOWN_ERROR },
-        HttpStatus.BAD_REQUEST
-      );
-    }
+  /**
+   * 将 Prisma 记录映射为 UserCardData 对象
+   * @param record Prisma 记录
+   * @returns UserCardData 对象
+   */
+  private mapPrismaRecordToUserCardData(record: any): UserCardData {
+    return {
+      id: record.id,
+      mid: record.mid,
+      name: record.name,
+      sex: record.sex,
+      face: record.face,
+      sign: record.sign,
+      level: record.level,
+      fans: record.fans,
+      friend: record.friend,
+      archiveCount: record.archiveCount,
+      articleCount: record.articleCount,
+      likeNum: record.likeNum,
+      official: record.official,
+      vip: record.vip,
+      pendant: record.pendant,
+      nameplate: record.nameplate,
+      following: record.following,
+      space: record.space,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt
+    };
   }
 }

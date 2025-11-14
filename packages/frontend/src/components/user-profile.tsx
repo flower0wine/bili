@@ -4,12 +4,12 @@ import { useUserCardInfo, useUserSpaceInfo } from "@/hooks/apis";
 import Image from "next/image";
 
 interface UserProfileProps {
-  userId: string;
+  userId: number;
 }
 
 export function UserProfile({ userId }: UserProfileProps) {
-  const { data: userCard, isLoading: isLoadingCard, error: cardError } = useUserCardInfo({ uid: userId });
-  const { data: userSpace, isLoading: isLoadingSpace, error: spaceError } = useUserSpaceInfo({ uid: userId });
+  const { data: userCard, isLoading: isLoadingCard, error: cardError } = useUserCardInfo(userId);
+  const { data: userSpace, isLoading: isLoadingSpace, error: spaceError } = useUserSpaceInfo(userId);
 
   if (isLoadingCard || isLoadingSpace) {
     return (
@@ -204,7 +204,7 @@ export function UserProfile({ userId }: UserProfileProps) {
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500 dark:text-gray-400">VIP到期</span>
                 <span className="text-sm text-gray-900 dark:text-gray-100">
-                  {new Date(userCard.vip.due_date * 1000).toLocaleDateString()}
+                  {new Date(userCard.vip.due_date).toLocaleDateString()}
                 </span>
               </div>
             )}

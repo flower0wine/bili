@@ -5,17 +5,20 @@ import {
   Catch,
   ExceptionFilter,
   HttpException,
-  HttpStatus
+  HttpStatus,
+  Inject,
+  Injectable
 } from "@nestjs/common";
 import { HttpAdapterHost } from "@nestjs/core";
 import { STATUS_CODE } from "@/constants";
 import { IApiResponse } from "@/types/response.interface";
 import { ResponseUtil } from "@/utils/response.util";
 
+@Injectable()
 @Catch()
 export class GlobalExceptionsFilter implements ExceptionFilter {
   constructor(
-    private readonly httpAdapterHost: HttpAdapterHost,
+    @Inject(HttpAdapterHost) private readonly httpAdapterHost: HttpAdapterHost,
     private readonly logger: Logger
   ) {}
 
