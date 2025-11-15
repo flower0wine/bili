@@ -10,5 +10,4 @@ export {
 } from "./level-config";
 export { LevelProgress } from "./level-progress";
 export { MembershipInfo } from "./membership-info";
-export { StatsCards } from "./stats-cards";
 export { UserBasicInfo } from "./user-basic-info";

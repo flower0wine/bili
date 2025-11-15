@@ -13,7 +13,6 @@ import {
   Decorations,
   LevelProgress,
   MembershipInfo,
-  StatsCards,
   UserBasicInfo,
 } from "./user";
 
@@ -104,14 +103,6 @@ export function UserProfile({ userId }: UserProfileProps) {
 
         {/* 等级进度 */}
         <LevelProgress level={level} isSeniorMember={isSeniorMember} />
-
-        {/* 统计卡片 */}
-        <StatsCards
-          rank={userCard?.rank || 0}
-          moral={userSpace?.moral || 0}
-          level={level}
-          isSeniorMember={isSeniorMember}
-        />
       </div>
 
       {/* 详细信息 */}
