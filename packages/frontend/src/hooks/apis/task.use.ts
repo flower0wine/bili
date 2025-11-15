@@ -1,11 +1,19 @@
-import { useQuery, useMutation, useQueryClient, UseQueryOptions, UseMutationOptions } from '@tanstack/react-query';
-import { taskApi } from '@/apis';
-import { parseResponse } from '@/lib/utils/response-parser';
+import type {
+  UseMutationOptions,
+  UseQueryOptions,
+} from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { taskApi } from "@/apis";
+import { parseResponse } from "@/lib/utils/response-parser";
 
 // Query Hooks - 使用传统的React Query模式
-export const useAllTasks = (options?: Omit<UseQueryOptions<Task.TaskVO[]>, 'queryKey' | 'queryFn'>) => {
+export function useAllTasks(options?: Omit<UseQueryOptions<Task.TaskVO[]>, "queryKey" | "queryFn">) {
   return useQuery({
-    queryKey: ['tasks'],
+    queryKey: ["tasks"],
     queryFn: async () => {
       const [data, error] = await parseResponse(taskApi.getAllTasks);
       if (error) {
@@ -15,16 +23,15 @@ export const useAllTasks = (options?: Omit<UseQueryOptions<Task.TaskVO[]>, 'quer
     },
     ...options,
   });
-};
+}
 
-export const useTask = (
-  taskName: string,
-  options?: Omit<UseQueryOptions<Task.TaskVO>, 'queryKey' | 'queryFn'>
-) => {
+export function useTask(taskName: string, options?: Omit<UseQueryOptions<Task.TaskVO>, "queryKey" | "queryFn">) {
   return useQuery({
-    queryKey: ['tasks', taskName],
+    queryKey: ["tasks", taskName],
     queryFn: async () => {
-      const [data, error] = await parseResponse(() => taskApi.getTask(taskName));
+      const [data, error] = await parseResponse(async () =>
+        taskApi.getTask(taskName),
+      );
       if (error) {
         throw new Error(error.message);
       }
@@ -32,16 +39,18 @@ export const useTask = (
     },
     ...options,
   });
-};
+}
 
-export const useTaskExecutions = (
-  query: Task.TaskExecutionQueryDTO,
-  options?: Omit<UseQueryOptions<Task.TaskExecutionListVO>, 'queryKey' | 'queryFn'>
-) => {
+export function useTaskExecutions(query: Task.TaskExecutionQueryDTO, options?: Omit<
+  UseQueryOptions<Task.TaskExecutionListVO>,
+    "queryKey" | "queryFn"
+>) {
   return useQuery({
-    queryKey: ['tasks', 'executions', 'history', query],
+    queryKey: ["tasks", "executions", "history", query],
     queryFn: async () => {
-      const [data, error] = await parseResponse(() => taskApi.getTaskExecutions(query));
+      const [data, error] = await parseResponse(async () =>
+        taskApi.getTaskExecutions(query),
+      );
       if (error) {
         throw new Error(error.message);
       }
@@ -49,16 +58,15 @@ export const useTaskExecutions = (
     },
     ...options,
   });
-};
+}
 
-export const useTaskExecution = (
-  id: string,
-  options?: Omit<UseQueryOptions<Task.TaskExecutionVO>, 'queryKey' | 'queryFn'>
-) => {
+export function useTaskExecution(id: string, options?: Omit<UseQueryOptions<Task.TaskExecutionVO>, "queryKey" | "queryFn">) {
   return useQuery({
-    queryKey: ['tasks', 'executions', id],
+    queryKey: ["tasks", "executions", id],
     queryFn: async () => {
-      const [data, error] = await parseResponse(() => taskApi.getTaskExecution(id));
+      const [data, error] = await parseResponse(async () =>
+        taskApi.getTaskExecution(id),
+      );
       if (error) {
         throw new Error(error.message);
       }
@@ -66,16 +74,15 @@ export const useTaskExecution = (
     },
     ...options,
   });
-};
+}
 
-export const useTaskStats = (
-  taskName?: string,
-  options?: Omit<UseQueryOptions<Task.TaskStatsVO>, 'queryKey' | 'queryFn'>
-) => {
+export function useTaskStats(taskName?: string, options?: Omit<UseQueryOptions<Task.TaskStatsVO>, "queryKey" | "queryFn">) {
   return useQuery({
-    queryKey: ['tasks', 'stats', taskName],
+    queryKey: ["tasks", "stats", taskName],
     queryFn: async () => {
-      const [data, error] = await parseResponse(() => taskApi.getTaskStats(taskName));
+      const [data, error] = await parseResponse(async () =>
+        taskApi.getTaskStats(taskName),
+      );
       if (error) {
         throw new Error(error.message);
       }
@@ -84,17 +91,27 @@ export const useTaskStats = (
     enabled: !!taskName || options?.enabled,
     ...options,
   });
-};
+}
 
 // Mutation Hooks
-export const useExecuteTask = (
-  options?: UseMutationOptions<Task.ExecuteTaskVO, unknown, { taskName: string; data: Task.ExecuteTaskDTO }>
-) => {
+export function useExecuteTask(options?: UseMutationOptions<
+  Task.ExecuteTaskVO,
+  unknown,
+  { taskName: string; data: Task.ExecuteTaskDTO }
+>) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ taskName, data }: { taskName: string; data: Task.ExecuteTaskDTO }) => {
-      const [result, error] = await parseResponse(() => taskApi.executeTask(taskName, data));
+    mutationFn: async ({
+      taskName,
+      data,
+    }: {
+      taskName: string;
+      data: Task.ExecuteTaskDTO;
+    }) => {
+      const [result, error] = await parseResponse(async () =>
+        taskApi.executeTask(taskName, data),
+      );
       if (error) {
         throw new Error(error.message);
       }
@@ -102,36 +119,44 @@ export const useExecuteTask = (
     },
     onSuccess: () => {
       // Invalidate task executions and stats queries
-      queryClient.invalidateQueries({ queryKey: ['tasks', 'executions'] });
-      queryClient.invalidateQueries({ queryKey: ['tasks', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", "executions"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
     },
     ...options,
   });
-};
+}
 
 // 新增：直接返回[data, error]模式的Hook
-export const useAllTasksSafe = (
-  options?: Omit<UseQueryOptions<[Task.TaskVO[] | null, Http.ErrorResponse | null]>, 'queryKey' | 'queryFn'>
-) => {
+export function useAllTasksSafe(options?: Omit<
+  UseQueryOptions<[Task.TaskVO[] | null, Http.ErrorResponse | null]>,
+    "queryKey" | "queryFn"
+>) {
   return useQuery({
-    queryKey: ['tasks', 'safe'],
-    queryFn: () => parseResponse(taskApi.getAllTasks),
+    queryKey: ["tasks", "safe"],
+    queryFn: async () => parseResponse(taskApi.getAllTasks),
     ...options,
   });
-};
+}
 
-export const useExecuteTaskSafe = (
-  options?: UseMutationOptions<[Task.ExecuteTaskVO | null, Http.ErrorResponse | null], unknown, { taskName: string; data: Task.ExecuteTaskDTO }>
-) => {
+export function useExecuteTaskSafe(options?: UseMutationOptions<
+  [Task.ExecuteTaskVO | null, Http.ErrorResponse | null],
+  unknown,
+  { taskName: string; data: Task.ExecuteTaskDTO }
+>) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ taskName, data }: { taskName: string; data: Task.ExecuteTaskDTO }) =>
-      parseResponse(() => taskApi.executeTask(taskName, data)),
+    mutationFn: async ({
+      taskName,
+      data,
+    }: {
+      taskName: string;
+      data: Task.ExecuteTaskDTO;
+    }) => parseResponse(async () => taskApi.executeTask(taskName, data)),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks', 'executions'] });
-      queryClient.invalidateQueries({ queryKey: ['tasks', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", "executions"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
     },
     ...options,
   });
-};
+}

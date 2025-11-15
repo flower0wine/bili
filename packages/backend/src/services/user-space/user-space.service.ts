@@ -56,12 +56,17 @@ export class UserSpaceService {
    * @param mid 用户ID
    * @returns 用户空间数据
    */
-  async getLatestUserSpaceData(mid: number): Promise<UserSpaceData | null> {
+  async getLatestUserSpaceData(
+    mid: number,
+    query: PaginationQuery = {}
+  ): Promise<UserSpaceData | null> {
     this.logger.log(`获取用户 ${mid} 的最新用户空间数据`);
+
+    const { orderBy } = normalizePagination(query);
 
     const record = await this.prisma.userSpaceData.findFirst({
       where: { mid },
-      orderBy: { createdAt: "desc" }
+      orderBy
     });
 
     if (!record) {
@@ -81,12 +86,12 @@ export class UserSpaceService {
   async getUserSpaceDataByMid(mid: number, query: PaginationQuery = {}): Promise<PaginatedResponse<UserSpaceData>> {
     this.logger.log(`分页获取用户 ${mid} 的用户空间数据`);
 
-    const { page, limit, offset } = normalizePagination(query);
+    const { page, limit, offset, orderBy } = normalizePagination(query);
 
     const [records, total] = await Promise.all([
       this.prisma.userSpaceData.findMany({
         where: { mid },
-        orderBy: { createdAt: "desc" },
+        orderBy,
         skip: offset,
         take: limit
       }),
@@ -110,12 +115,12 @@ export class UserSpaceService {
   async getAllLatestUserSpaceData(query: PaginationQuery = {}): Promise<PaginatedResponse<UserSpaceData>> {
     this.logger.log('分页获取所有用户的最新用户空间数据');
 
-    const { page, limit, offset } = normalizePagination(query);
+    const { page, limit, offset, orderBy } = normalizePagination(query);
 
     // 获取每个用户的最新记录
     const records = await this.prisma.userSpaceData.findMany({
-      distinct: ['mid'],
-      orderBy: { createdAt: "desc" },
+      distinct: ["mid"],
+      orderBy,
       skip: offset,
       take: limit
     });
@@ -148,6 +153,7 @@ export class UserSpaceService {
     this.logger.log(`根据等级范围查询用户空间数据: ${minLevel || 0} - ${maxLevel || '无上限'}`);
 
     const { page, limit, offset } = normalizePagination(query);
+    const orderBy = query.orderBy || { level: 'desc' };
 
     const whereClause: any = {};
     if (minLevel !== undefined || maxLevel !== undefined) {
@@ -159,10 +165,10 @@ export class UserSpaceService {
     const [records, total] = await Promise.all([
       this.prisma.userSpaceData.findMany({
         where: whereClause,
-        orderBy: { level: "desc" },
+        orderBy,
+        distinct: ["mid"],
         skip: offset,
-        take: limit,
-        distinct: ['mid']
+        take: limit
       }),
       this.prisma.userSpaceData.count({ where: whereClause })
     ]);
@@ -182,7 +188,7 @@ export class UserSpaceService {
   async getVerifiedUserSpaceData(query: PaginationQuery = {}): Promise<PaginatedResponse<UserSpaceData>> {
     this.logger.log('根据认证状态查询用户空间数据');
 
-    const { page, limit, offset } = normalizePagination(query);
+    const { page, limit, offset, orderBy } = normalizePagination(query);
 
     const [records, total] = await Promise.all([
       this.prisma.userSpaceData.findMany({
@@ -191,10 +197,10 @@ export class UserSpaceService {
             not: null as any
           }
         },
-        orderBy: { createdAt: "desc" },
+        orderBy,
+        distinct: ["mid"],
         skip: offset,
-        take: limit,
-        distinct: ['mid']
+        take: limit
       }),
       this.prisma.userSpaceData.count({
         where: {
@@ -265,7 +271,7 @@ export class UserSpaceService {
   async searchUserSpaceData(keyword: string, query: PaginationQuery = {}): Promise<PaginatedResponse<UserSpaceData>> {
     this.logger.log(`搜索用户空间数据: ${keyword}`);
 
-    const { page, limit, offset } = normalizePagination(query);
+    const { page, limit, offset, orderBy } = normalizePagination(query);
 
     const [records, total] = await Promise.all([
       this.prisma.userSpaceData.findMany({
@@ -275,10 +281,10 @@ export class UserSpaceService {
             mode: 'insensitive'
           }
         },
-        orderBy: { createdAt: "desc" },
+        orderBy,
+        distinct: ["mid"],
         skip: offset,
-        take: limit,
-        distinct: ['mid']
+        take: limit
       }),
       this.prisma.userSpaceData.count({
         where: {
@@ -329,4 +335,5 @@ export class UserSpaceService {
       updatedAt: record.updatedAt
     };
   }
-}
+
+  }

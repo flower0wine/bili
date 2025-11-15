@@ -11,17 +11,26 @@ declare namespace Http {
     readonly GIT_CLONE_FAILED: 9001;
   };
 
-  export type StatusCode =
-    | 0  // OK
-    | 1  // UNKNOWN_ERROR
-    | 1001  // INVALID_ARGUMENT
-    | 1002  // ALREADY_EXISTS
-    | 1003  // NOT_FOUND
-    | 2001  // UNAUTHENTICATED
-    | 2003  // PERMISSION_DENIED
-    | 9001  // GIT_CLONE_FAILED
+  export type StatusCode
+    = | 0 // OK
+      | 1 // UNKNOWN_ERROR
+      | 1001 // INVALID_ARGUMENT
+      | 1002 // ALREADY_EXISTS
+      | 1003 // NOT_FOUND
+      | 2001 // UNAUTHENTICATED
+      | 2003 // PERMISSION_DENIED
+      | 9001 // GIT_CLONE_FAILED
     // HTTP 状态码类型
-    | 200 | 201 | 204 | 400 | 401 | 403 | 404 | 500 | 502 | 503;
+      | 200
+      | 201
+      | 204
+      | 400
+      | 401
+      | 403
+      | 404
+      | 500
+      | 502
+      | 503;
 
   // 通用API响应接口，与后端 IApiResponse 保持一致
   export interface ApiResponse<T = unknown, E = unknown> {

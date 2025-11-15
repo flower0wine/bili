@@ -138,3 +138,8 @@ packages/frontend/src/
 - **Feishu Integration**: Uses @larksuiteoapi/node-sdk for Feishu API operations
 - **React Query**: Frontend uses @tanstack/react-query for data fetching and caching
 - **Type Safety**: Full TypeScript coverage with strict mode enabled
+
+## 限制
+
+- 不要添加没有要求的功能
+- 只能在已有信息当中思考，不要凭空捏造无关的内容，除非用户要求

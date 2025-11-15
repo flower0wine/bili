@@ -11,7 +11,7 @@ declare namespace Task {
 
   export interface ExecuteTaskVO {
     taskId: string;
-    status: 'running' | 'completed' | 'failed' | 'cancelled';
+    status: "running" | "completed" | "failed" | "cancelled";
     startTime: string;
     endTime?: string;
     duration?: number;
@@ -22,8 +22,8 @@ declare namespace Task {
   export interface TaskExecutionVO {
     id: string;
     taskName: string;
-    status: 'running' | 'completed' | 'failed' | 'cancelled';
-    triggerSource: 'manual' | 'cron' | 'api';
+    status: "running" | "completed" | "failed" | "cancelled";
+    triggerSource: "manual" | "cron" | "api";
     startTime: string;
     endTime?: string;
     duration?: number;
@@ -36,8 +36,8 @@ declare namespace Task {
 
   export interface TaskExecutionQueryDTO {
     taskName?: string;
-    status?: 'running' | 'completed' | 'failed' | 'cancelled';
-    triggerSource?: 'manual' | 'cron' | 'api';
+    status?: "running" | "completed" | "failed" | "cancelled";
+    triggerSource?: "manual" | "cron" | "api";
     page?: number;
     pageSize?: number;
     startTime?: string;

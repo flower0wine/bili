@@ -53,12 +53,17 @@ export class UserCardService {
    * @param mid 用户ID
    * @returns 用户名片数据
    */
-  async getLatestUserCardData(mid: number): Promise<UserCardData | null> {
+  async getLatestUserCardData(
+    mid: number,
+    query: PaginationQuery = {}
+  ): Promise<UserCardData | null> {
     this.logger.log(`获取用户 ${mid} 的最新用户名片数据`);
+
+    const { orderBy } = normalizePagination(query);
 
     const record = await this.prisma.userCard.findFirst({
       where: { mid },
-      orderBy: { createdAt: "desc" }
+      orderBy
     });
 
     if (!record) {
@@ -82,11 +87,12 @@ export class UserCardService {
     this.logger.log(`分页获取用户 ${mid} 的用户名片数据`);
 
     const { page, limit, offset } = normalizePagination(query);
+    const orderBy = query.orderBy || { createdAt: "asc" };
 
     const [records, total] = await Promise.all([
       this.prisma.userCard.findMany({
         where: { mid },
-        orderBy: { createdAt: "desc" },
+        orderBy,
         skip: offset,
         take: limit
       }),
@@ -114,12 +120,12 @@ export class UserCardService {
   ): Promise<PaginatedResponse<UserCardData>> {
     this.logger.log("分页获取所有用户的最新用户名片数据");
 
-    const { page, limit, offset } = normalizePagination(query);
+    const { page, limit, offset, orderBy } = normalizePagination(query);
 
     // 获取每个用户的最新记录
     const records = await this.prisma.userCard.findMany({
       distinct: ["mid"],
-      orderBy: { createdAt: "desc" },
+      orderBy,
       skip: offset,
       take: limit
     });
@@ -158,6 +164,7 @@ export class UserCardService {
     );
 
     const { page, limit, offset } = normalizePagination(query);
+    const orderBy = query.orderBy || { fans: "desc" };
 
     const whereClause: any = {};
     if (minFans !== undefined || maxFans !== undefined) {
@@ -169,10 +176,10 @@ export class UserCardService {
     const [records, total] = await Promise.all([
       this.prisma.userCard.findMany({
         where: whereClause,
-        orderBy: { fans: "desc" },
+        orderBy,
+        distinct: ["mid"],
         skip: offset,
-        take: limit,
-        distinct: ["mid"]
+        take: limit
       }),
       this.prisma.userCard.count({ where: whereClause })
     ]);

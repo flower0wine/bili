@@ -4,6 +4,8 @@ declare namespace UserCard {
   }
 
   export interface UserCardVO {
+    id: number;
+    mid: number;
     name: string;
     sex: string;
     face: string;
@@ -11,6 +13,11 @@ declare namespace UserCard {
     rank: number;
     level: number;
     silence: number;
+    fans: number;
+    friend: number;
+    archiveCount: number;
+    articleCount: number;
+    likeNum: number;
     vip: {
       type: number;
       status: number;
@@ -22,5 +29,11 @@ declare namespace UserCard {
       title: string;
       desc: string;
     };
+    pendant?: Record<string, unknown>;
+    nameplate?: Record<string, unknown>;
+    following: boolean;
+    space?: Record<string, unknown>;
+    createdAt: string;
+    updatedAt: string;
   }
 }
