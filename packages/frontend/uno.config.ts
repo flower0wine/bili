@@ -49,6 +49,6 @@ export default defineConfig({
       counts: {
         "light-sweep": "infinite"
       }
-    }
+    },
   }
 });

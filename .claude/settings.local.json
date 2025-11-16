@@ -13,5 +13,18 @@
     ],
     "deny": [],
     "ask": []
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | read file_path; if [[ \"$file_path\" == *.js || \"$file_path\" == *.ts || \"$file_path\" == *.jsx || \"$file_path\" == *.tsx ]]; then npx eslint --fix \"$file_path\" && npx prettier --write \"$file_path\"; fi"
+          }
+        ]
+      }
+    ]
   }
 }

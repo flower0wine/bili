@@ -42,10 +42,11 @@ const eslintConfig = antfu({
     "style/no-multiple-empty-lines": "off",
     "prefer-promise-reject-errors": "off",
     "node/prefer-global/process": "off",
+    "ts/no-misused-promises": "off",
 
     // 允许 console，但警告
-    "no-console": "warn",
-    "no-unused-vars": "warn",
+    "no-console": "off",
+    "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": "warn",
   },
 });

@@ -1,20 +1,20 @@
 "use client";
 
 import {
+  BasicDetails,
+  Decorations,
+  FollowerChart,
+  FollowingChart,
+  LevelProgress,
+  MembershipInfo,
+  UserBasicInfo,
+} from "@/components/user";
+import {
   useUserCardHistoryData,
   useUserCardInfo,
   useUserSpaceInfo,
 } from "@/hooks/apis";
 import { cn } from "@/lib/utils";
-import { FollowerChart } from "./follower-chart";
-import { FollowingChart } from "./following-chart";
-import {
-  BasicDetails,
-  Decorations,
-  LevelProgress,
-  MembershipInfo,
-  UserBasicInfo,
-} from "./user";
 
 interface UserProfileProps {
   userId: number;

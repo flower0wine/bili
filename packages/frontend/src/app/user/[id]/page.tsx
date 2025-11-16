@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { UserProfile } from "@/components/user-profile";
+import { UserProfile } from "@/components/user/user-profile";
 
 export default function UserPage() {
   const params = useParams();
