@@ -16,7 +16,7 @@ interface BasicDetailsProps {
 
 export function BasicDetails({ userCard, userSpace }: BasicDetailsProps) {
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       <div className="flex justify-between">
         <span className="text-sm text-gray-500 dark:text-gray-400">性别</span>
         <span className="text-sm text-gray-900 dark:text-gray-100">

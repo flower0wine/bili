@@ -33,7 +33,7 @@ export function FormDialogSuspense({
         </DialogHeader>
 
         <motion.div
-          className="py-4 space-y-6"
+          className="py-4 flex flex-col gap-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.1 }}
@@ -47,7 +47,7 @@ export function FormDialogSuspense({
                 duration: 0.3,
                 delay: 0.2 + index * 0.1,
               }}
-              className="space-y-2"
+              className="flex flex-col gap-2"
             >
               {/* 字段标签 */}
               <div className="h-4 w-24 animate-pulse rounded bg-muted" />
@@ -65,14 +65,14 @@ export function FormDialogSuspense({
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.4 }}
-            className="space-y-2"
+            className="flex flex-col gap-2"
           >
             <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {Array.from({ length: 3 }).map((_, index) => (
                 <div
                   key={`option-${index}`}
-                  className="flex items-center space-x-2"
+                  className="flex items-center gap-2"
                 >
                   <div className="h-4 w-4 animate-pulse rounded bg-muted" />
                   <div className="h-4 w-32 animate-pulse rounded bg-muted" />
@@ -84,7 +84,7 @@ export function FormDialogSuspense({
 
         {/* 对话框底部按钮 */}
         <motion.div
-          className="flex justify-end pt-4 space-x-2"
+          className="flex justify-end pt-4 gap-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.5 }}

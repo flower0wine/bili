@@ -103,13 +103,13 @@ export function TriggerForm({ open, onOpenChange, trigger, onSave }: TriggerForm
           </motion.div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="py-4 space-y-6">
+        <form onSubmit={handleSubmit} className="py-4 flex flex-col gap-6">
           {/* 触发器名称 */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.1 }}
-            className="space-y-2"
+            className="flex flex-col gap-2"
           >
             <Label htmlFor="name">触发器名称</Label>
             <Input
@@ -126,7 +126,7 @@ export function TriggerForm({ open, onOpenChange, trigger, onSave }: TriggerForm
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.2 }}
-            className="space-y-2"
+            className="flex flex-col gap-2"
           >
             <Label htmlFor="taskName">关联任务</Label>
             <Select
@@ -151,10 +151,10 @@ export function TriggerForm({ open, onOpenChange, trigger, onSave }: TriggerForm
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.3 }}
-            className="space-y-2"
+            className="flex flex-col gap-2"
           >
             <Label htmlFor="cron">Cron 表达式</Label>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <Input
                 id="cron"
                 value={formData.cron}
@@ -174,7 +174,7 @@ export function TriggerForm({ open, onOpenChange, trigger, onSave }: TriggerForm
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.4 }}
-            className="space-y-2"
+            className="flex flex-col gap-2"
           >
             <Label htmlFor="description">描述</Label>
             <Textarea
@@ -191,7 +191,7 @@ export function TriggerForm({ open, onOpenChange, trigger, onSave }: TriggerForm
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3, delay: 0.5 }}
-            className="flex items-center space-x-2"
+            className="flex items-center gap-2"
           >
             <Switch
               id="enabled"
@@ -206,7 +206,7 @@ export function TriggerForm({ open, onOpenChange, trigger, onSave }: TriggerForm
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.6 }}
-            className="flex justify-end pt-4 space-x-2"
+            className="flex justify-end pt-4 gap-2"
           >
             <Button
               type="button"
@@ -254,7 +254,7 @@ export function CreateTriggerPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {/* 页面标题 */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

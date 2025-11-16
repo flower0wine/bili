@@ -103,20 +103,20 @@ export function CardSkeleton({
       }}
     >
       {showHeader && (
-        <div className="flex items-center justify-between pb-2 space-y-0">
+        <div className="flex items-center justify-between pb-2">
           <LoadingSkeleton width={120} />
           <LoadingSkeleton variant="circular" width={16} height={16} />
         </div>
       )}
 
-      <div className="space-y-3">
+      <div className="flex flex-col gap-3">
         <LoadingSkeleton height={32} width={80} />
         <LoadingSkeleton width={150} />
       </div>
 
       {showFooter && (
         <div className="mt-4 border-t pt-4">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <LoadingSkeleton width={12} height={12} variant="circular" />
             <LoadingSkeleton width={100} />
           </div>
@@ -137,7 +137,7 @@ export function TableRowSkeleton({
   return (
     <motion.div
       className={cn(
-        "flex items-center space-x-4 p-4 border-b",
+        "flex items-center gap-4 p-4 border-b",
         className
       )}
       initial={{ opacity: 0, x: -20 }}
@@ -168,11 +168,11 @@ export function ListSkeleton({
   className?: string;
 }) {
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn("flex flex-col gap-4", className)}>
       {Array.from({ length: itemCount }).map((_, index) => (
         <motion.div
           key={`list-skeleton-${index}`}
-          className="flex items-center space-x-4"
+          className="flex items-center gap-4"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{
@@ -184,7 +184,7 @@ export function ListSkeleton({
             <LoadingSkeleton variant="circular" width={40} height={40} />
           )}
 
-          <div className="flex-1 space-y-2">
+          <div className="flex-1 flex flex-col gap-2">
             <LoadingSkeleton width={index % 2 === 0 ? 200 : 250} />
             {showDescription && (
               <LoadingSkeleton width="60%" />
@@ -209,11 +209,11 @@ export function FormSkeleton({
   className?: string;
 }) {
   return (
-    <div className={cn("space-y-6", className)}>
+    <div className={cn("flex flex-col gap-6", className)}>
       {Array.from({ length: fieldCount }).map((_, index) => (
         <motion.div
           key={`form-skeleton-${index}`}
-          className="space-y-2"
+          className="flex flex-col gap-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
@@ -229,7 +229,7 @@ export function FormSkeleton({
 
       {showButtons && (
         <motion.div
-          className="flex justify-end pt-4 space-x-2"
+          className="flex justify-end pt-4 gap-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: fieldCount * 0.1 }}

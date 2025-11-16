@@ -27,14 +27,14 @@ export function StatsCardSuspense({ count = 1, showTrend = true }: StatsCardSusp
           }}
           className="border rounded-lg bg-card p-6 text-card-foreground shadow-sm"
         >
-          <div className="flex items-center justify-between pb-2 space-y-0">
+          <div className="flex items-center justify-between pb-2">
             <div className="h-4 w-20 animate-pulse rounded bg-muted" />
             {showTrend && (
               <div className="h-4 w-4 animate-pulse rounded-full bg-muted" />
             )}
           </div>
 
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <div className="h-8 w-16 animate-pulse rounded bg-muted" />
             <div className="h-3 w-24 animate-pulse rounded bg-muted" />
           </div>
@@ -42,7 +42,7 @@ export function StatsCardSuspense({ count = 1, showTrend = true }: StatsCardSusp
           {/* 如果需要，可以添加额外的骨架屏元素 */}
           {showTrend && (
             <div className="mt-4 border-t pt-4">
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center gap-2">
                 <div className="h-3 w-3 animate-pulse rounded bg-muted" />
                 <div className="h-3 w-20 animate-pulse rounded bg-muted" />
               </div>

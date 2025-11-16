@@ -106,7 +106,7 @@ export function TriggerManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {/* 页面标题和操作 */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -120,7 +120,7 @@ export function TriggerManagement() {
             管理定时任务触发器和调度配置
           </p>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <Button size="sm" onClick={() => window.location.href = "/admin/triggers/create"}>
             <Plus className="mr-2 h-4 w-4" />
             创建触发器
@@ -133,7 +133,7 @@ export function TriggerManagement() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
-        className="flex items-center space-x-4"
+        className="flex items-center gap-4"
       >
         <div className="relative max-w-md flex-1">
           <Settings className="absolute left-3 top-1/2 h-4 w-4 transform text-muted-foreground -translate-y-1/2" />
@@ -231,7 +231,7 @@ export function TriggerManagement() {
                       </AnimatedTableCell>
 
                       <AnimatedTableCell className="col-span-2">
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center gap-2">
                           <motion.div
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
@@ -296,7 +296,7 @@ export function TriggerManagement() {
           {" "}
           个触发器
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" disabled>
             上一页
           </Button>

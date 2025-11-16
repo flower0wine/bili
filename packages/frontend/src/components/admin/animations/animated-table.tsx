@@ -50,7 +50,7 @@ export function AnimatedTableContainer({
 }: AnimatedTableProps) {
   return (
     <motion.div
-      className={cn("space-y-4", className)}
+      className={cn("flex flex-col gap-4", className)}
       variants={tableContainerVariants}
       initial="initial"
       animate="animate"
@@ -144,11 +144,11 @@ export function AnimatedTableSkeleton({
   className?: string;
 }) {
   return (
-    <div className={cn("space-y-3", className)}>
+    <div className={cn("flex flex-col gap-3", className)}>
       {Array.from({ length: rowCount }).map((_, rowIndex) => (
         <motion.div
           key={`skeleton-row-${rowIndex}`}
-          className="flex items-center border rounded-md p-4 space-x-4"
+          className="flex items-center border rounded-md p-4 gap-4"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{

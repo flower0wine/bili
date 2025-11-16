@@ -9,7 +9,7 @@ Frontend package for a task scheduling system with Bilibili user data integratio
 ## Key Technologies
 
 - **Framework**: Next.js 15.5.6 (App Router) + React 19
-- **Styling**: UnoCSS + shadcn/ui + unocss-preset-animations
+- **Styling**: Tailwind CSS + shadcn/ui
 - **State Management**: @tanstack/react-query for server state
 - **HTTP Client**: axios
 - **Icons**: Lucide React + Carbon Icons
@@ -38,7 +38,7 @@ pnpm run lint:fix         # Auto-fix ESLint issues
 - Styling: 2-space indentation, double quotes, semicolons
 - TypeScript: Strict mode enabled with some safety rules relaxed
 - Console usage: Allowed (warning level)
-- UnoCSS class names: Supported and validated
+- Tailwind CSS class names: Supported and validated
 
 ### TypeScript Configuration
 
@@ -47,9 +47,9 @@ pnpm run lint:fix         # Auto-fix ESLint issues
 - Strict mode enabled with incremental compilation
 - JSX and Next.js types supported
 
-### Styling with UnoCSS
+### Styling with Tailwind CSS
 
-- Uses UnoCSS instead of traditional Tailwind CSS
+- Uses Tailwind CSS 4 with modern utility-first approach
 - shadcn/ui preset with built-in color system
 - Icon presets, animations, and variant groups enabled
 - Media query-based dark mode support

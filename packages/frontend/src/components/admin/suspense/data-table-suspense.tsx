@@ -15,7 +15,7 @@ export function DataTableSuspense({
 }: DataTableSuspenseProps) {
   return (
     <motion.div
-      className="space-y-4"
+      className="flex flex-col gap-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
@@ -28,11 +28,11 @@ export function DataTableSuspense({
           transition={{ duration: 0.3 }}
           className="flex items-center justify-between"
         >
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <div className="h-10 w-64 animate-pulse border rounded-md bg-muted" />
             <div className="h-10 w-10 animate-pulse border rounded-md bg-muted" />
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <div className="h-10 w-32 animate-pulse border rounded-md bg-muted" />
             <div className="h-10 w-24 animate-pulse border rounded-md bg-muted" />
           </div>
@@ -98,7 +98,7 @@ export function DataTableSuspense({
         <div className="text-sm text-muted-foreground">
           <div className="h-4 w-32 animate-pulse rounded bg-muted" />
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           {Array.from({ length: 5 }).map((_, index) => (
             <div
               key={`pagination-${index}`}

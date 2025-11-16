@@ -33,7 +33,7 @@ export function UserSearch({ isLoading = false }: UserSearchProps) {
           查询用户信息
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex gap-2">
             <input
               type="number"
@@ -95,7 +95,7 @@ export function UserSearch({ isLoading = false }: UserSearchProps) {
             </svg>
             使用说明
           </h4>
-          <ul className="text-sm text-blue-700 space-y-1 dark:text-blue-300">
+          <ul className="text-sm text-blue-700 flex flex-col gap-1 dark:text-blue-300">
             <li>• 输入 B 站用户的 UID 或数字 ID</li>
             <li>• 点击快速查询可以直接查看预设用户</li>
             <li>• 查询结果包含用户的详细信息、统计数据等</li>

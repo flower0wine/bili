@@ -3,7 +3,6 @@ import setupLocatorUI from "@locator/runtime";
 import { Geist, Geist_Mono } from "next/font/google";
 import { QueryProvider } from "@/providers/query-provider";
 import "./globals.css";
-import "@unocss/reset/tailwind.css";
 
 if (process.env.NODE_ENV === "development") {
   setupLocatorUI();

@@ -23,7 +23,7 @@ export function MembershipInfo({
   userSpace,
 }: MembershipInfoProps) {
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       <div className="flex justify-between">
         <span className="text-sm text-gray-500 dark:text-gray-400">
           VIP 状态

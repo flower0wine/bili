@@ -167,7 +167,7 @@ export function DashboardContent() {
 
   if (tasksLoading || statsLoading) {
     return (
-      <div className="space-y-8">
+      <div className="flex flex-col gap-8">
         {/* 页面标题骨架 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -195,7 +195,7 @@ export function DashboardContent() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-8">
       {/* 页面标题 */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -285,14 +285,14 @@ export function DashboardContent() {
                 </div>
               )
             : (
-                <div className="space-y-4">
+                <div className="flex flex-col gap-4">
                   {recentActivities.map((activity, index) => (
                     <motion.div
                       key={`${activity.task}-${index}`}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: 0.6 + index * 0.1 }}
-                      className="flex items-center justify-between space-y-0"
+                      className="flex items-center justify-between"
                     >
                       <div className="flex items-center gap-2">
                         {getStatusIcon(activity.status)}

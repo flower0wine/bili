@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 export function AdminPageSuspense() {
   return (
     <motion.div
-      className="space-y-8"
+      className="flex flex-col gap-8"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
@@ -17,7 +17,7 @@ export function AdminPageSuspense() {
         transition={{ duration: 0.3 }}
         className="flex items-center justify-between"
       >
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           <div className="h-8 w-32 animate-pulse rounded-lg bg-muted" />
           <div className="h-4 w-48 animate-pulse rounded bg-muted" />
         </div>
@@ -38,11 +38,11 @@ export function AdminPageSuspense() {
             }}
             className="border rounded-lg bg-card p-6 shadow-sm"
           >
-            <div className="flex items-center justify-between pb-2 space-y-0">
+            <div className="flex items-center justify-between pb-2">
               <div className="h-4 w-20 animate-pulse rounded bg-muted" />
               <div className="h-4 w-4 animate-pulse rounded-full bg-muted" />
             </div>
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               <div className="h-8 w-16 animate-pulse rounded bg-muted" />
               <div className="h-3 w-24 animate-pulse rounded bg-muted" />
             </div>
@@ -78,13 +78,13 @@ export function AdminPageSuspense() {
           className="border rounded-lg bg-card p-6 shadow-sm"
         >
           <div className="mb-4 h-6 w-24 animate-pulse rounded bg-muted" />
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             {Array.from({ length: 3 }).map((_, index) => (
               <div
                 key={`activity-skeleton-${index}`}
-                className="flex items-center justify-between space-y-0"
+                className="flex items-center justify-between"
               >
-                <div className="space-y-1">
+                <div className="flex flex-col gap-1">
                   <div className="h-4 w-32 animate-pulse rounded bg-muted" />
                   <div className="h-3 w-24 animate-pulse rounded bg-muted" />
                 </div>

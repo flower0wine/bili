@@ -139,7 +139,7 @@ export function AnimatedStatCard({
         boxShadow: "0 10px 30px -10px rgba(0, 0, 0, 0.3)"
       }}
     >
-      <div className="flex items-center justify-between pb-2 space-y-0">
+      <div className="flex items-center justify-between pb-2">
         <motion.p
           className="text-sm font-medium"
           initial={{ opacity: 0, y: -10 }}
@@ -150,7 +150,7 @@ export function AnimatedStatCard({
         </motion.p>
 
         <motion.div
-          className="flex items-center space-x-1"
+          className="flex items-center gap-1"
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.3, delay: delay + 0.3 }}
@@ -164,7 +164,7 @@ export function AnimatedStatCard({
         </motion.div>
       </div>
 
-      <div className="space-y-1">
+      <div className="flex flex-col gap-1">
         <AnimatedNumber
           value={value}
           className="text-2xl font-bold"
@@ -172,7 +172,7 @@ export function AnimatedStatCard({
         />
 
         <motion.div
-          className="flex items-center space-x-2"
+          className="flex items-center gap-2"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: delay + 0.4 }}

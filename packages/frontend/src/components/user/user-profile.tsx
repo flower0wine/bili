@@ -68,7 +68,7 @@ export function UserProfile({ userId }: UserProfileProps) {
   if (cardError || spaceError || !userCard || !userSpace) {
     return (
       <div className="mx-auto max-w-4xl p-6">
-        <div className="animate-shake border border-red-200 rounded-lg bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
+        <div className="animate-pulse border border-red-200 rounded-lg bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
           <h2 className="mb-2 flex items-center gap-2 text-red-800 font-semibold dark:text-red-200">
             <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
               <path
@@ -88,7 +88,7 @@ export function UserProfile({ userId }: UserProfileProps) {
   }
 
   return (
-    <div className="mx-auto max-w-4xl p-6 space-y-6">
+    <div className="mx-auto max-w-4xl p-6 flex flex-col gap-6">
       {/* 用户基本信息 */}
       <div className={cn(
         "rounded-lg bg-white p-6 shadow-md dark:bg-gray-800",
@@ -129,7 +129,7 @@ export function UserProfile({ userId }: UserProfileProps) {
       <Decorations userSpace={userSpace} />
 
       {/* 图表 */}
-      <div className="space-y-6">
+      <div className="flex flex-col gap-6">
         <FollowerChart data={historyData || []} isLoading={isLoadingHistory} />
         <FollowingChart data={historyData || []} isLoading={isLoadingHistory} />
       </div>
