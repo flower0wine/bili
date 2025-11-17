@@ -116,7 +116,7 @@ export class CronTriggerService implements OnModuleDestroy {
           cron: config.cron,
           enabled: config.enabled,
           params: config.params,
-          description: config.description,
+          description: config.description || undefined,
           source: config.source
         });
       }

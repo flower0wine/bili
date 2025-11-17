@@ -1,6 +1,6 @@
-import { createHash } from "crypto";
 import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "@/services/common/prisma.service";
+import { generateStableId } from "@/utils";
 import { toError } from "@/utils/error.util";
 import {
   ConfigChangeListener,
@@ -73,10 +73,17 @@ export class DatabaseConfigProvider implements ITriggerConfigProvider {
 
   async load(): Promise<TriggerConfigSource[]> {
     try {
-      const triggers = await this.prisma.cronTrigger.findMany({
-        where: {
+      const triggers = (
+        await this.prisma.cronTrigger.findMany({
+          where: {
+            source: ConfigSource.DATABASE
+          }
+        })
+      ).map((item) => {
+        return {
+          ...item,
           source: ConfigSource.DATABASE
-        }
+        };
       });
 
       // 验证并转换为标准格式
@@ -90,13 +97,13 @@ export class DatabaseConfigProvider implements ITriggerConfigProvider {
         }
 
         validConfigs.push({
-          id: this.generateStableId(trigger.id), // 使用数据库ID生成稳定UUID
+          id: generateStableId(), // 使用数据库ID生成稳定UUID
           name: trigger.name,
           taskName: trigger.taskName,
           cron: trigger.cron,
           params: trigger.params,
           enabled: trigger.enabled ?? true, // 默认启用
-          description: trigger.description ?? undefined,
+          description: trigger.description ?? null,
           source: ConfigSource.DATABASE
         });
       }
@@ -114,25 +121,6 @@ export class DatabaseConfigProvider implements ITriggerConfigProvider {
       );
       return [];
     }
-  }
-
-  /**
-   * 生成稳定的数据库触发器ID
-   * 使用配置源 + 数据库ID生成，确保与文件配置不冲突
-   */
-  private generateStableId(dbId: number): string {
-    // 使用配置源类型 + 数据库ID生成唯一且稳定的ID
-    const uniqueKey = `${ConfigSource.DATABASE}:${dbId}`;
-    const hash = createHash("sha256").update(uniqueKey).digest("hex");
-
-    // 转换为UUID格式
-    return [
-      hash.substring(0, 8),
-      hash.substring(8, 12),
-      hash.substring(12, 16),
-      hash.substring(16, 20),
-      hash.substring(20, 32)
-    ].join("-");
   }
 
   /**

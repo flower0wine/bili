@@ -8,6 +8,7 @@ import {
   Put
 } from "@nestjs/common";
 import { PrismaService } from "@/services/common/prisma.service";
+import { generateStableId } from "@/utils";
 import { DatabaseConfigProvider } from "./config/database.provider";
 import { ConfigSource } from "./config/trigger-config-loader.service";
 import { CreateTriggerDto, UpdateTriggerDto } from "./dto/trigger.dto";
@@ -40,11 +41,12 @@ export class TriggerController {
   async createTrigger(@Body() data: CreateTriggerDto) {
     const trigger = await this.prisma.cronTrigger.create({
       data: {
+        id: generateStableId(),
         name: data.name,
         taskName: data.taskName,
         cron: data.cron,
         params: data.params || {},
-        description: data.description,
+        description: data.description || null,
         enabled: data.enabled ?? true,
         source: ConfigSource.DATABASE
       }
@@ -62,7 +64,7 @@ export class TriggerController {
   @Put(":id")
   async updateTrigger(@Param("id") id: string, @Body() data: UpdateTriggerDto) {
     const trigger = await this.prisma.cronTrigger.update({
-      where: { id: parseInt(id) },
+      where: { id },
       data
     });
 
@@ -78,7 +80,7 @@ export class TriggerController {
   @Delete(":id")
   async deleteTrigger(@Param("id") id: string) {
     await this.prisma.cronTrigger.delete({
-      where: { id: parseInt(id) }
+      where: { id }
     });
 
     // 通知配置变更，触发自动重新加载
@@ -93,7 +95,7 @@ export class TriggerController {
   @Post(":id/toggle")
   async toggleTrigger(@Param("id") id: string) {
     const trigger = await this.prisma.cronTrigger.findUnique({
-      where: { id: parseInt(id) }
+      where: { id }
     });
 
     if (!trigger) {
@@ -101,7 +103,7 @@ export class TriggerController {
     }
 
     const updated = await this.prisma.cronTrigger.update({
-      where: { id: parseInt(id) },
+      where: { id },
       data: { enabled: !trigger.enabled }
     });
 

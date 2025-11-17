@@ -16,7 +16,7 @@ export interface TriggerConfigSource {
   cron: string;
   params?: any;
   enabled: boolean;
-  description?: string;
+  description: string | null;
   source: ConfigSource; // 配置来源标识
 }
 

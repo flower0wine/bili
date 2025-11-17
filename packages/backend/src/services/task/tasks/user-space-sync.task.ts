@@ -4,7 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "@/services/common/prisma.service";
 import { UserSpaceTaskParams } from "@/services/user-space/dto/user-space-task-params.dto";
 import { UserSpaceTask } from "@/services/user-space/user-space.task";
-import { Prisma, UserSpaceData } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { Task } from "../decorators/task.decorator";
 import { TaskCancelledError } from "../interfaces/task.interface";
 
@@ -95,9 +95,12 @@ export class UserSpaceSyncTask {
         });
 
         // 检查数据是否有变化
-        const hasChanged = this.hasDataChanged(latestRecord, userData);
+        let hasChanged = false;
+        if (latestRecord) {
+          hasChanged = this.hasDataChanged(latestRecord, userData);
+        }
 
-        let saved: any = null;
+        let saved: any;
         if (hasChanged) {
           // 有变化，插入新记录
           saved = await this.prisma.userSpaceData.create({
@@ -112,21 +115,32 @@ export class UserSpaceSyncTask {
               birthday: userData.birthday,
 
               // 认证与会员信息
-              official: userData.official,
-              vip: userData.vip,
-              pendant: userData.pendant,
-              nameplate: userData.nameplate,
+              official: {
+                ...userData.official
+              },
+              vip: {
+                ...userData.vip
+              },
+              pendant: {
+                ...userData.pendant
+              },
+              nameplate: {
+                ...userData.nameplate
+              },
 
               // 社交信息
               fansBadge: userData.fansBadge,
-              fansMedal: userData.fansMedal,
               isFollowed: userData.isFollowed,
               topPhoto: userData.topPhoto,
 
               // 其他展示信息
-              liveRoom: userData.liveRoom,
+              liveRoom: {
+                ...userData.liveRoom,
+                watched_show: {
+                  ...userData.liveRoom?.watched_show
+                }
+              },
               tags: userData.tags === null ? Prisma.JsonNull : userData.tags,
-              sysNotice: userData.sysNotice,
               isSeniorMember: userData.isSeniorMember
             }
           });
@@ -193,10 +207,7 @@ export class UserSpaceSyncTask {
    * @param newData 从API获取的新数据
    * @returns true表示有变化，false表示无变化
    */
-  private hasDataChanged(
-    oldData: UserSpaceData,
-    newData: UserSpaceData
-  ): boolean {
+  private hasDataChanged(oldData: object, newData: object): boolean {
     // 如果没有历史记录，说明是新用户，需要插入
     if (!oldData) {
       return true;
