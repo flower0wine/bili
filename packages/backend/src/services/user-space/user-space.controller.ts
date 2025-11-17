@@ -1,5 +1,4 @@
 import { Controller, Get, Param, Query } from "@nestjs/common";
-import { UserSpaceService } from "@/services/user-space/user-space.service";
 import { PaginationQueryDto } from "@/dto/pagination-query.dto";
 import { UserIdParamDto } from "@/dto/user-id-param.dto";
 import {
@@ -7,6 +6,7 @@ import {
   UserSpaceSearchQueryDto,
   UserSpaceStatsQueryDto
 } from "@/services/user-space/dto/user-space-query.dto";
+import { UserSpaceService } from "@/services/user-space/user-space.service";
 
 @Controller("user-space")
 export class UserSpaceController {
@@ -26,9 +26,7 @@ export class UserSpaceController {
   }
 
   @Get("latest")
-  async getAllLatestUserSpaceData(
-    @Query() query: PaginationQueryDto
-  ) {
+  async getAllLatestUserSpaceData(@Query() query: PaginationQueryDto) {
     return await this.userSpaceService.getAllLatestUserSpaceData(query);
   }
 
@@ -44,23 +42,16 @@ export class UserSpaceController {
   }
 
   @Get("verified")
-  async getVerifiedUserSpaceData(
-    @Query() query: PaginationQueryDto
-  ) {
+  async getVerifiedUserSpaceData(@Query() query: PaginationQueryDto) {
     return await this.userSpaceService.getVerifiedUserSpaceData(query);
   }
 
   @Get("search")
-  async searchUserSpaceData(
-    @Query() query: UserSpaceSearchQueryDto
-  ) {
-    return await this.userSpaceService.searchUserSpaceData(
-      query.keyword,
-      {
-        page: query.page,
-        limit: query.limit
-      }
-    );
+  async searchUserSpaceData(@Query() query: UserSpaceSearchQueryDto) {
+    return await this.userSpaceService.searchUserSpaceData(query.keyword, {
+      page: query.page,
+      limit: query.limit
+    });
   }
 
   @Get("stats")

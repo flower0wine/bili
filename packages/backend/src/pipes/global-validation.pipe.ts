@@ -1,12 +1,12 @@
+import { plainToInstance } from "class-transformer";
+import { validate, ValidationError } from "class-validator";
 import {
   ArgumentMetadata,
   Injectable,
   PipeTransform,
-  Type,
-} from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
-import { validate, ValidationError } from 'class-validator';
-import { ValidationException } from '../exceptions/business.exception';
+  Type
+} from "@nestjs/common";
+import { ValidationException } from "../exceptions/business.exception";
 
 /**
  * 全局验证管道
@@ -22,18 +22,18 @@ export class GlobalValidationPipe implements PipeTransform<any> {
     }
 
     // 开发金手指：检查是否跳过验证
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       const request = this.getCurrentRequest();
-      
-      if (request && request.headers['x-dev-cheat'] === 'skip-validation') {
-        console.log('🔧 开发金手指：跳过验证');
+
+      if (request && request.headers["x-dev-cheat"] === "skip-validation") {
+        console.log("🔧 开发金手指：跳过验证");
         return plainToInstance(metatype, value);
       }
     }
 
     // 转换为类实例
     const object = plainToInstance(metatype, value);
-    
+
     // 执行验证
     const errors = await validate(object, {
       whitelist: true, // 自动移除未定义的属性
@@ -41,23 +41,23 @@ export class GlobalValidationPipe implements PipeTransform<any> {
       transform: true, // 自动转换类型
       validationError: {
         target: false, // 不包含验证目标对象
-        value: false, // 不包含验证值
-      },
+        value: false // 不包含验证值
+      }
     });
 
     if (errors.length > 0) {
       // 开发环境：提供更详细的错误信息
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🚨 验证错误详情:', {
-          errors: errors.map(err => ({
+      if (process.env.NODE_ENV === "development") {
+        console.log("🚨 验证错误详情:", {
+          errors: errors.map((err) => ({
             property: err.property,
             value: err.value,
             constraints: err.constraints
           })),
-          hint: '可使用 x-dev-cheat: skip-validation 跳过验证'
+          hint: "可使用 x-dev-cheat: skip-validation 跳过验证"
         });
       }
-      
+
       const errorMessages = this.buildErrorMessage(errors);
       throw new ValidationException(errorMessages);
     }
@@ -89,22 +89,24 @@ export class GlobalValidationPipe implements PipeTransform<any> {
    */
   private buildErrorMessage(errors: ValidationError[]): string {
     const messages: string[] = [];
-    
-    const processError = (error: ValidationError, prefix = '') => {
+
+    const processError = (error: ValidationError, prefix = "") => {
       const property = prefix ? `${prefix}.${error.property}` : error.property;
-      
+
       if (error.constraints) {
         const constraintMessages = Object.values(error.constraints);
-        messages.push(...constraintMessages.map(msg => `${property}: ${msg}`));
+        messages.push(
+          ...constraintMessages.map((msg) => `${property}: ${msg}`)
+        );
       }
-      
+
       if (error.children && error.children.length > 0) {
-        error.children.forEach(child => processError(child, property));
+        error.children.forEach((child) => processError(child, property));
       }
     };
 
-    errors.forEach(error => processError(error));
-    
-    return messages.join('; ');
+    errors.forEach((error) => processError(error));
+
+    return messages.join("; ");
   }
 }

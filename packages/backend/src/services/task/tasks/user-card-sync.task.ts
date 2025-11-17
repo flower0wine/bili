@@ -2,8 +2,11 @@ import { Logger } from "nestjs-pino";
 import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "@/services/common/prisma.service";
-import { UserCardTask, UserCardData } from "@/services/user-card/user-card.task";
 import { UserCardTaskParams } from "@/services/user-card/dto/user-card-task-params.dto";
+import {
+  UserCardData,
+  UserCardTask
+} from "@/services/user-card/user-card.task";
 import { Task } from "../decorators/task.decorator";
 import { TaskCancelledError } from "../interfaces/task.interface";
 
@@ -58,7 +61,8 @@ export class UserCardSyncTask {
     const photo = params?.photo !== false; // 默认请求头图
 
     // 获取cookie，优先使用传入的cookie，否则从环境变量获取
-    const cookie = params?.cookie || this.configService.get<string>("BILIBILI_COOKIE");
+    const cookie =
+      params?.cookie || this.configService.get<string>("BILIBILI_COOKIE");
     if (!cookie) {
       throw new Error("未配置BILIBILI_COOKIE环境变量且未提供cookie参数");
     }

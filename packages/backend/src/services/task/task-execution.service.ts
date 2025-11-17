@@ -164,7 +164,7 @@ export class TaskExecutionService {
    * 映射数据库模型到 VO
    */
   private mapToVo(
-    execution: Prisma.TaskExecutionGetPayload<{}>
+    execution: Prisma.TaskExecutionGetPayload<object>
   ): TaskExecutionVo {
     const {
       id,

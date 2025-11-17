@@ -169,8 +169,12 @@ export class UserCardService {
     const whereClause: any = {};
     if (minFans !== undefined || maxFans !== undefined) {
       whereClause.fans = {};
-      if (minFans !== undefined) whereClause.fans.gte = minFans;
-      if (maxFans !== undefined) whereClause.fans.lte = maxFans;
+      if (minFans !== undefined) {
+        whereClause.fans.gte = minFans;
+      }
+      if (maxFans !== undefined) {
+        whereClause.fans.lte = maxFans;
+      }
     }
 
     const [records, total] = await Promise.all([

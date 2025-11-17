@@ -19,7 +19,7 @@ export async function getUsersData(mids?: number[]) {
   ]);
 
   // 合并数据
-  const userMap = new Map();
+  const userMap = new Map<string, any>();
 
   spaceData.forEach((space) => {
     userMap.set(space.mid, {

@@ -1,4 +1,4 @@
-import { IsNumber, IsString, IsNotEmpty, Min, MaxLength, Matches, IsOptional } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 /**
  * 用户空间任务参数

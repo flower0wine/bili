@@ -28,8 +28,12 @@ import { TransformInterceptor } from "./interceptors/response-transform.intercep
             hdr && typeof hdr === "string" && hdr.length > 0
               ? hdr
               : randomUUID();
-          if (req) req.id = id;
-          if (res) res.setHeader("x-request-id", id);
+          if (req) {
+            req.id = id;
+          }
+          if (res) {
+            res.setHeader("x-request-id", id);
+          }
           return id;
         },
         // 关闭每次请求/响应的自动日志

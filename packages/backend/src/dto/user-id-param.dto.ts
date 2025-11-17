@@ -1,5 +1,5 @@
-import { IsNumber, IsNotEmpty, Min } from "class-validator";
 import { Type } from "class-transformer";
+import { IsNotEmpty, IsNumber, Min } from "class-validator";
 
 /**
  * 用户ID路径参数DTO

@@ -12,7 +12,6 @@ async function bootstrap() {
   });
   app.useLogger(app.get(Logger));
 
-  
   // 设置全局API前缀和版本控制
   app.setGlobalPrefix("api");
   app.enableVersioning({

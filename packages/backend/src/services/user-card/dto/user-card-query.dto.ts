@@ -1,5 +1,5 @@
-import { IsNumber, IsOptional, IsInt, Min, Max } from "class-validator";
 import { Type } from "class-transformer";
+import { IsInt, IsNumber, IsOptional, Max, Min } from "class-validator";
 import { PaginationQueryDto } from "@/dto/pagination-query.dto";
 
 /**

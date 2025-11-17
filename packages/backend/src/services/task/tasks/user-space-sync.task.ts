@@ -196,7 +196,10 @@ export class UserSpaceSyncTask {
    * @param newData 从API获取的新数据
    * @returns true表示有变化，false表示无变化
    */
-  private hasDataChanged(oldData: any, newData: UserSpaceDataResponse): boolean {
+  private hasDataChanged(
+    oldData: any,
+    newData: UserSpaceDataResponse
+  ): boolean {
     // 如果没有历史记录，说明是新用户，需要插入
     if (!oldData) {
       return true;

@@ -1,5 +1,14 @@
-import { IsNumber, IsOptional, IsString, IsNotEmpty, IsInt, Min, Max, MaxLength } from "class-validator";
 import { Type } from "class-transformer";
+import {
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  MaxLength,
+  Min
+} from "class-validator";
 import { PaginationQueryDto } from "@/dto/pagination-query.dto";
 
 /**
@@ -41,4 +50,3 @@ export class UserSpaceStatsQueryDto {
   @Min(1, { message: "用户ID必须大于0" })
   mid?: number;
 }
-

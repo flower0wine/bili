@@ -1,11 +1,11 @@
 import { Controller, Get, Param, Query } from "@nestjs/common";
-import { UserCardService } from "@/services/user-card/user-card.service";
 import { PaginationQueryDto } from "@/dto/pagination-query.dto";
 import { UserIdParamDto } from "@/dto/user-id-param.dto";
 import {
   UserCardFansRangeQueryDto,
   UserCardStatsQueryDto
 } from "@/services/user-card/dto/user-card-query.dto";
+import { UserCardService } from "@/services/user-card/user-card.service";
 
 @Controller("user-card")
 export class UserCardController {
@@ -25,16 +25,12 @@ export class UserCardController {
   }
 
   @Get("latest")
-  async getAllLatestUserCardData(
-    @Query() query: PaginationQueryDto
-  ) {
+  async getAllLatestUserCardData(@Query() query: PaginationQueryDto) {
     return await this.userCardService.getAllLatestUserCardData(query);
   }
 
   @Get("fans-range")
-  async getUserCardDataByFansRange(
-    @Query() query: UserCardFansRangeQueryDto
-  ) {
+  async getUserCardDataByFansRange(@Query() query: UserCardFansRangeQueryDto) {
     return await this.userCardService.getUserCardDataByFansRange(
       query.minFans,
       query.maxFans,

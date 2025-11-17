@@ -10,7 +10,6 @@ import {
 import { PrismaService } from "@/services/common/prisma.service";
 import { DatabaseConfigProvider } from "./config/database.provider";
 import { ConfigSource } from "./config/trigger-config-loader.service";
-import { CronTriggerService } from "./cron-trigger.service";
 import { CreateTriggerDto, UpdateTriggerDto } from "./dto/trigger.dto";
 
 /**
@@ -21,7 +20,6 @@ import { CreateTriggerDto, UpdateTriggerDto } from "./dto/trigger.dto";
 export class TriggerController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly cronTriggerService: CronTriggerService,
     private readonly databaseConfigProvider: DatabaseConfigProvider
   ) {}
 
@@ -30,7 +28,7 @@ export class TriggerController {
    */
   @Get()
   async getAllTriggers() {
-    return await (this.prisma as any).cronTrigger.findMany({
+    return await this.prisma.cronTrigger.findMany({
       orderBy: { createdAt: "desc" }
     });
   }
@@ -40,7 +38,7 @@ export class TriggerController {
    */
   @Post()
   async createTrigger(@Body() data: CreateTriggerDto) {
-    const trigger = await (this.prisma as any).cronTrigger.create({
+    const trigger = await this.prisma.cronTrigger.create({
       data: {
         name: data.name,
         taskName: data.taskName,
@@ -63,7 +61,7 @@ export class TriggerController {
    */
   @Put(":id")
   async updateTrigger(@Param("id") id: string, @Body() data: UpdateTriggerDto) {
-    const trigger = await (this.prisma as any).cronTrigger.update({
+    const trigger = await this.prisma.cronTrigger.update({
       where: { id: parseInt(id) },
       data
     });
@@ -79,7 +77,7 @@ export class TriggerController {
    */
   @Delete(":id")
   async deleteTrigger(@Param("id") id: string) {
-    await (this.prisma as any).cronTrigger.delete({
+    await this.prisma.cronTrigger.delete({
       where: { id: parseInt(id) }
     });
 
@@ -94,11 +92,15 @@ export class TriggerController {
    */
   @Post(":id/toggle")
   async toggleTrigger(@Param("id") id: string) {
-    const trigger = await (this.prisma as any).cronTrigger.findUnique({
+    const trigger = await this.prisma.cronTrigger.findUnique({
       where: { id: parseInt(id) }
     });
 
-    const updated = await (this.prisma as any).cronTrigger.update({
+    if (!trigger) {
+      throw new Error("Trigger not found");
+    }
+
+    const updated = await this.prisma.cronTrigger.update({
       where: { id: parseInt(id) },
       data: { enabled: !trigger.enabled }
     });

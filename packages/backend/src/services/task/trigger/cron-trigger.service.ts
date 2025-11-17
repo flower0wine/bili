@@ -172,10 +172,10 @@ export class CronTriggerService implements OnModuleDestroy {
 
     // 统一删除
     if (toRemove.length > 0) {
-      this.logger.log(`移除 ${toRemove.length} 个已废弃的触发器`);
       for (const triggerId of toRemove) {
-        this.removeTrigger(triggerId);
+        void this.removeTrigger(triggerId);
       }
+      this.logger.log(`移除 ${toRemove.length} 个已废弃的触发器`);
     }
   }
 

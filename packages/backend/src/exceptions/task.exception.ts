@@ -5,7 +5,7 @@
 export class TaskException extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'TaskException';
+    this.name = "TaskException";
 
     // 确保堆栈跟踪正确
     Error.captureStackTrace(this, TaskException);

@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { PrismaService } from "@/services/common/prisma.service";
 import {
-  PaginatedResponse,
-  PaginationQuery,
   createPaginatedResponse,
-  normalizePagination
+  normalizePagination,
+  PaginatedResponse,
+  PaginationQuery
 } from "@/interfaces/pagination.interface";
+import { PrismaService } from "@/services/common/prisma.service";
 
 export interface UserSpaceData {
   id: number;
@@ -83,7 +83,10 @@ export class UserSpaceService {
    * @param query 分页参数
    * @returns 分页的用户空间数据
    */
-  async getUserSpaceDataByMid(mid: number, query: PaginationQuery = {}): Promise<PaginatedResponse<UserSpaceData>> {
+  async getUserSpaceDataByMid(
+    mid: number,
+    query: PaginationQuery = {}
+  ): Promise<PaginatedResponse<UserSpaceData>> {
     this.logger.log(`分页获取用户 ${mid} 的用户空间数据`);
 
     const { page, limit, offset, orderBy } = normalizePagination(query);
@@ -100,7 +103,9 @@ export class UserSpaceService {
       })
     ]);
 
-    const items = records.map(record => this.mapPrismaRecordToUserSpaceData(record));
+    const items = records.map((record) =>
+      this.mapPrismaRecordToUserSpaceData(record)
+    );
 
     this.logger.log(`用户 ${mid} 共找到 ${total} 条记录，当前第 ${page} 页`);
 
@@ -112,8 +117,10 @@ export class UserSpaceService {
    * @param query 分页参数
    * @returns 分页的用户空间数据
    */
-  async getAllLatestUserSpaceData(query: PaginationQuery = {}): Promise<PaginatedResponse<UserSpaceData>> {
-    this.logger.log('分页获取所有用户的最新用户空间数据');
+  async getAllLatestUserSpaceData(
+    query: PaginationQuery = {}
+  ): Promise<PaginatedResponse<UserSpaceData>> {
+    this.logger.log("分页获取所有用户的最新用户空间数据");
 
     const { page, limit, offset, orderBy } = normalizePagination(query);
 
@@ -126,12 +133,16 @@ export class UserSpaceService {
     });
 
     // 获取总用户数
-    const total = await this.prisma.userSpaceData.groupBy({
-      by: ['mid'],
-      _count: true
-    }).then(result => result.length);
+    const total = await this.prisma.userSpaceData
+      .groupBy({
+        by: ["mid"],
+        _count: true
+      })
+      .then((result) => result.length);
 
-    const items = records.map(record => this.mapPrismaRecordToUserSpaceData(record));
+    const items = records.map((record) =>
+      this.mapPrismaRecordToUserSpaceData(record)
+    );
 
     this.logger.log(`共找到 ${total} 个用户的最新数据，当前第 ${page} 页`);
 
@@ -150,16 +161,22 @@ export class UserSpaceService {
     maxLevel?: number,
     query: PaginationQuery = {}
   ): Promise<PaginatedResponse<UserSpaceData>> {
-    this.logger.log(`根据等级范围查询用户空间数据: ${minLevel || 0} - ${maxLevel || '无上限'}`);
+    this.logger.log(
+      `根据等级范围查询用户空间数据: ${minLevel || 0} - ${maxLevel || "无上限"}`
+    );
 
     const { page, limit, offset } = normalizePagination(query);
-    const orderBy = query.orderBy || { level: 'desc' };
+    const orderBy = query.orderBy || { level: "desc" };
 
     const whereClause: any = {};
     if (minLevel !== undefined || maxLevel !== undefined) {
       whereClause.level = {};
-      if (minLevel !== undefined) whereClause.level.gte = minLevel;
-      if (maxLevel !== undefined) whereClause.level.lte = maxLevel;
+      if (minLevel !== undefined) {
+        whereClause.level.gte = minLevel;
+      }
+      if (maxLevel !== undefined) {
+        whereClause.level.lte = maxLevel;
+      }
     }
 
     const [records, total] = await Promise.all([
@@ -173,7 +190,9 @@ export class UserSpaceService {
       this.prisma.userSpaceData.count({ where: whereClause })
     ]);
 
-    const items = records.map(record => this.mapPrismaRecordToUserSpaceData(record));
+    const items = records.map((record) =>
+      this.mapPrismaRecordToUserSpaceData(record)
+    );
 
     this.logger.log(`等级范围查询找到 ${total} 条记录，当前第 ${page} 页`);
 
@@ -185,8 +204,10 @@ export class UserSpaceService {
    * @param query 分页参数
    * @returns 分页的用户空间数据
    */
-  async getVerifiedUserSpaceData(query: PaginationQuery = {}): Promise<PaginatedResponse<UserSpaceData>> {
-    this.logger.log('根据认证状态查询用户空间数据');
+  async getVerifiedUserSpaceData(
+    query: PaginationQuery = {}
+  ): Promise<PaginatedResponse<UserSpaceData>> {
+    this.logger.log("根据认证状态查询用户空间数据");
 
     const { page, limit, offset, orderBy } = normalizePagination(query);
 
@@ -211,7 +232,9 @@ export class UserSpaceService {
       })
     ]);
 
-    const items = records.map(record => this.mapPrismaRecordToUserSpaceData(record));
+    const items = records.map((record) =>
+      this.mapPrismaRecordToUserSpaceData(record)
+    );
 
     this.logger.log(`认证用户查询找到 ${total} 条记录，当前第 ${page} 页`);
 
@@ -231,28 +254,38 @@ export class UserSpaceService {
   }> {
     const whereClause = mid ? { mid } : {};
 
-    const [totalRecords, uniqueUsers, latestRecord, levelDistribution] = await Promise.all([
-      this.prisma.userSpaceData.count({ where: whereClause }),
-      this.prisma.userSpaceData.groupBy({
-        by: ['mid'],
-        where: whereClause
-      }).then(result => result.length),
-      this.prisma.userSpaceData.findFirst({
-        where: whereClause,
-        orderBy: { createdAt: "desc" },
-        select: { createdAt: true }
-      }).then(record => record?.createdAt || null),
-      this.prisma.userSpaceData.groupBy({
-        by: ['level'],
-        where: whereClause,
-        _count: true
-      }).then(result =>
-        result.reduce((acc, item) => {
-          acc[item.level] = item._count;
-          return acc;
-        }, {} as Record<number, number>)
-      )
-    ]);
+    const [totalRecords, uniqueUsers, latestRecord, levelDistribution] =
+      await Promise.all([
+        this.prisma.userSpaceData.count({ where: whereClause }),
+        this.prisma.userSpaceData
+          .groupBy({
+            by: ["mid"],
+            where: whereClause
+          })
+          .then((result) => result.length),
+        this.prisma.userSpaceData
+          .findFirst({
+            where: whereClause,
+            orderBy: { createdAt: "desc" },
+            select: { createdAt: true }
+          })
+          .then((record) => record?.createdAt || null),
+        this.prisma.userSpaceData
+          .groupBy({
+            by: ["level"],
+            where: whereClause,
+            _count: true
+          })
+          .then((result) =>
+            result.reduce(
+              (acc, item) => {
+                acc[item.level] = item._count;
+                return acc;
+              },
+              {} as Record<number, number>
+            )
+          )
+      ]);
 
     return {
       totalRecords,
@@ -268,7 +301,10 @@ export class UserSpaceService {
    * @param query 分页参数
    * @returns 分页的用户空间数据
    */
-  async searchUserSpaceData(keyword: string, query: PaginationQuery = {}): Promise<PaginatedResponse<UserSpaceData>> {
+  async searchUserSpaceData(
+    keyword: string,
+    query: PaginationQuery = {}
+  ): Promise<PaginatedResponse<UserSpaceData>> {
     this.logger.log(`搜索用户空间数据: ${keyword}`);
 
     const { page, limit, offset, orderBy } = normalizePagination(query);
@@ -278,7 +314,7 @@ export class UserSpaceService {
         where: {
           name: {
             contains: keyword,
-            mode: 'insensitive'
+            mode: "insensitive"
           }
         },
         orderBy,
@@ -290,13 +326,15 @@ export class UserSpaceService {
         where: {
           name: {
             contains: keyword,
-            mode: 'insensitive'
+            mode: "insensitive"
           }
         }
       })
     ]);
 
-    const items = records.map(record => this.mapPrismaRecordToUserSpaceData(record));
+    const items = records.map((record) =>
+      this.mapPrismaRecordToUserSpaceData(record)
+    );
 
     this.logger.log(`搜索找到 ${total} 条记录，当前第 ${page} 页`);
 
@@ -335,5 +373,4 @@ export class UserSpaceService {
       updatedAt: record.updatedAt
     };
   }
-
-  }
+}
