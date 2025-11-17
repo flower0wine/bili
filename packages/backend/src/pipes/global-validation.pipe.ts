@@ -76,9 +76,9 @@ export class GlobalValidationPipe implements PipeTransform<any> {
   /**
    * 获取当前请求对象
    */
-  private getCurrentRequest(): any {
+  getCurrentRequest() {
     try {
-      return (global as any).__current_request__ || null;
+      return global.__current_request__ || null;
     } catch {
       return null;
     }

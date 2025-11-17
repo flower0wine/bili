@@ -3,10 +3,12 @@ import { CronJob, validateCronExpression } from "cron";
 import dayjs from "dayjs";
 import { Injectable, Logger, OnModuleDestroy } from "@nestjs/common";
 import { SchedulerRegistry } from "@nestjs/schedule";
+import { toError } from "@/utils/error.util";
 import { TaskExecutorService } from "../task-executor.service";
 import {
   ConfigSource,
-  TriggerConfigLoaderService
+  TriggerConfigLoaderService,
+  TriggerConfigSource
 } from "./config/trigger-config-loader.service";
 
 export interface CronTriggerConfig {
@@ -67,13 +69,15 @@ export class CronTriggerService implements OnModuleDestroy {
           const job = this.schedulerRegistry.getCronJob(jobName);
           await job.stop(); // 停止任务
           this.schedulerRegistry.deleteCronJob(jobName);
-        } catch (err) {
-          this.logger.warn(`清理任务失败: ${jobName}, 错误: ${err.message}`);
+        } catch (e) {
+          const error = toError(e);
+          this.logger.warn(`清理任务失败: ${jobName}, 错误: ${error.message}`);
         }
       }
 
       this.logger.log(`已停止并清理 ${jobNames.length} 个 Cron 任务`);
-    } catch (error) {
+    } catch (e) {
+      const error = toError(e);
       this.logger.error(`清理 Cron 任务失败: ${error.message}`, error.stack);
     }
 
@@ -118,13 +122,14 @@ export class CronTriggerService implements OnModuleDestroy {
       }
 
       // 移除不再存在的触发器
-      await this.removeObsoleteTriggers(configs.map((c) => c.id));
+      this.removeObsoleteTriggers(configs.map((c) => c.id));
 
       const elapsed = dayjs().valueOf() - startTime;
       this.logger.log(
         `触发器同步完成,耗时 ${elapsed}ms,当前注册 ${enabledConfigs.length} 个触发器`
       );
-    } catch (error) {
+    } catch (e) {
+      const error = toError(e);
       this.logger.error(
         `从配置源加载触发器失败: ${error.message}`,
         error.stack
@@ -135,7 +140,7 @@ export class CronTriggerService implements OnModuleDestroy {
   /**
    * 计算配置哈希,用于变更检测
    */
-  private computeConfigHash(configs: any[]): string {
+  private computeConfigHash(configs: TriggerConfigSource[]) {
     const configStr = JSON.stringify(
       configs.map((c) => ({
         id: c.id,
@@ -153,7 +158,7 @@ export class CronTriggerService implements OnModuleDestroy {
    * 移除已经不再配置中的触发器
    * 统一使用 ID 作为键,确保准确匹配
    */
-  private async removeObsoleteTriggers(currentTriggerIds: string[]) {
+  removeObsoleteTriggers(currentTriggerIds: string[]) {
     const registeredTriggers = this.schedulerRegistry.getCronJobs();
     const registeredJobNames = Array.from(registeredTriggers.keys());
 
@@ -213,12 +218,18 @@ export class CronTriggerService implements OnModuleDestroy {
 
         // CronJob 不支持运行时修改 cron 表达式,必须重建
         // 比较现有 cron 表达式和新的是否相同
-        const existingCronTime = (existingJob as any).cronTime;
-        const existingCronPattern = existingCronTime?.source || "";
+        const existingCronTime = existingJob.cronTime;
+        const existingCronPattern = existingCronTime.source;
 
-        if (existingCronPattern !== config.cron) {
+        let pattern: string | null = null;
+
+        if (typeof existingCronPattern !== "string") {
+          pattern = existingCronPattern.toISO();
+        }
+
+        if (pattern && pattern !== config.cron) {
           this.logger.debug(
-            `触发器 ${config.name} (ID: ${config.id}) 的 Cron 表达式已变更 (${existingCronPattern} -> ${config.cron}),需要重建`
+            `触发器 ${config.name} (ID: ${config.id}) 的 Cron 表达式已变更 (${pattern} -> ${config.cron}),需要重建`
           );
           needsRecreate = true;
         }
@@ -236,9 +247,10 @@ export class CronTriggerService implements OnModuleDestroy {
             this.logger.debug(
               `已停止并删除旧触发器: ${config.name} (ID: ${config.id})`
             );
-          } catch (err) {
+          } catch (e) {
+            const error = toError(e);
             this.logger.warn(
-              `删除旧触发器失败: ${config.name} (ID: ${config.id}), 错误: ${err.message}`
+              `删除旧触发器失败: ${config.name} (ID: ${config.id}), 错误: ${error.message}`
             );
           }
         }
@@ -268,7 +280,8 @@ export class CronTriggerService implements OnModuleDestroy {
           `触发器 ${config.name} (ID: ${config.id}) 配置未变更,跳过重建`
         );
       }
-    } catch (error) {
+    } catch (e) {
+      const error = toError(e);
       this.logger.error(
         `❌ 注册触发器失败: ${config.name} (ID: ${config.id}), 错误: ${error.message}`,
         error.stack
@@ -288,7 +301,8 @@ export class CronTriggerService implements OnModuleDestroy {
         await job.stop(); // 先停止定时器
         this.schedulerRegistry.deleteCronJob(fullName);
         this.logger.log(`✅ 触发器已停止并移除: ${triggerId}`);
-      } catch (error) {
+      } catch (e) {
+        const error = toError(e);
         this.logger.error(
           `❌ 移除触发器失败: ${triggerId}, 错误: ${error.message}`,
           error.stack
@@ -315,7 +329,8 @@ export class CronTriggerService implements OnModuleDestroy {
     // 异步执行任务,不等待结果
     this.taskExecutor
       .execute(config.taskName, config.params, "cron", config.name)
-      .catch((error) => {
+      .catch((e) => {
+        const error = toError(e);
         // 捕获错误避免未处理的 Promise rejection
         this.logger.error({
           triggerId: config.id,

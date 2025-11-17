@@ -2,36 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { TaskException } from "@/exceptions/task.exception";
 import { UserSpaceTaskParams } from "@/services/user-space/dto/user-space-task-params.dto";
 import { encWbi, getWbiKeys } from "@/utils/wbi.util";
-import { UserSpaceData } from "./types";
-
-export interface UserSpaceDataResponse {
-  mid: number;
-  name: string;
-  sex: string;
-  face: string;
-  face_nft: number;
-  sign: string;
-  level: number;
-  birthday?: string;
-
-  // 认证与会员信息
-  official?: object;
-  vip?: object;
-  pendant?: object;
-  nameplate?: object;
-
-  // 社交信息
-  fans_badge: boolean;
-  fans_medal?: object;
-  is_followed: boolean;
-  top_photo?: string;
-
-  // 其他展示信息
-  live_room?: object;
-  tags?: string[] | null;
-  sys_notice?: object;
-  is_senior_member: number;
-}
+import { IUserSpace } from "../types/bili";
 
 /**
  * 用户空间任务
@@ -48,9 +19,7 @@ export class UserSpaceTask {
    * @param params 任务参数
    * @returns 用户空间数据
    */
-  async executeGetUserSpaceInfo(
-    params: UserSpaceTaskParams
-  ): Promise<UserSpaceData> {
+  async executeGetUserSpaceInfo(params: UserSpaceTaskParams) {
     const { mid, cookie } = params;
 
     // 验证参数
@@ -110,7 +79,76 @@ export class UserSpaceTask {
       const result = (await response.json()) as {
         code: number;
         message: string;
-        data: UserSpaceDataResponse;
+        data: {
+          mid: string;
+          name: string;
+          sex: string;
+          face: string;
+          face_nft: number;
+          sign: string;
+          level: number;
+          birthday: string;
+
+          // 认证与会员信息
+          official: {
+            type: number;
+            desc: string;
+            role: number;
+            title: string;
+          };
+          vip: {
+            type: number;
+            status: number;
+            due_date: number;
+            vipStatus: number;
+            vipStatusDue: number;
+            theme_type: number;
+            label: {
+              path: string;
+              text: string;
+              label_theme: string;
+            };
+            avatar_subscript: number;
+            nickname_color: string;
+          };
+          pendant: {
+            pid: number;
+            name: string;
+            image: string;
+            expire: number;
+          };
+          nameplate: {
+            nid: number;
+            name: string;
+            image: string;
+            expire: number;
+            guard_type: number;
+          };
+          live_room: {
+            url: string;
+            cover: string;
+            title: string;
+            roomid: number;
+            liveStatus: number;
+            roomStatus: number;
+            roundStatus: number;
+            watched_show: {
+              num: number;
+              icon: string;
+              switch: boolean;
+              icon_web: string;
+              text_large: string;
+              text_small: string;
+              icon_location: string;
+            };
+            broadcast_type: number;
+          };
+          tags: string[];
+          fans_badge: boolean;
+          is_followed: boolean;
+          top_photo: string;
+          is_senior_member: number;
+        };
       };
 
       // 检查API响应
@@ -129,9 +167,12 @@ export class UserSpaceTask {
         throw new TaskException(message);
       }
 
+      this.logger.log(
+        `成功获取用户 ${mid} ${data.name} 的空间信息: ${JSON.stringify(data)}`
+      );
       // 构造返回数据
-      const userSpaceData = {
-        mid: data.mid || mid,
+      const userSpaceData: IUserSpace = {
+        mid: parseInt(data.mid),
         name: data.name || "未知用户",
         sex: data.sex || "未知",
         face: data.face || "",
@@ -148,21 +189,19 @@ export class UserSpaceTask {
 
         // 社交信息
         fansBadge: data.fans_badge || false,
-        fansMedal: data.fans_medal,
         isFollowed: data.is_followed || false,
         topPhoto: data.top_photo,
 
         // 其他展示信息
         liveRoom: data.live_room,
         tags: data.tags,
-        sysNotice: data.sys_notice,
         isSeniorMember: data.is_senior_member || 0
       };
 
-      this.logger.log(`成功获取用户 ${mid} 的空间信息: ${userSpaceData.name}`);
-      return userSpaceData as UserSpaceData;
+      return userSpaceData;
     } catch (error: any) {
       // 如果是已知的任务异常，直接重新抛出
+
       if (error instanceof TaskException) {
         throw error;
       }

@@ -1,4 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { toError } from "@/utils/error.util";
 
 /**
  * 配置源枚举
@@ -131,7 +132,8 @@ export class TriggerConfigLoaderService {
             );
           }
         }
-      } catch (error) {
+      } catch (e) {
+        const error = toError(e);
         this.logger.error(
           `从配置源 ${provider.getName()} 加载配置失败: ${error.message}`,
           error.stack

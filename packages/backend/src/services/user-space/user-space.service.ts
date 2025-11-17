@@ -2,44 +2,10 @@ import { Injectable, Logger } from "@nestjs/common";
 import {
   createPaginatedResponse,
   normalizePagination,
-  PaginatedResponse,
   PaginationQuery
 } from "@/interfaces/pagination.interface";
 import { PrismaService } from "@/services/common/prisma.service";
-
-export interface UserSpaceData {
-  id: number;
-  mid: number;
-  name: string;
-  sex: string;
-  face: string;
-  faceNft: number;
-  sign: string;
-  level: number;
-  birthday?: string;
-
-  // 认证与会员信息
-  official?: object;
-  vip?: object;
-  pendant?: object;
-  nameplate?: object;
-
-  // 社交信息
-  fansBadge: boolean;
-  fansMedal?: object;
-  isFollowed: boolean;
-  topPhoto?: string;
-
-  // 其他展示信息
-  liveRoom?: object;
-  tags?: string[] | null;
-  sysNotice?: object;
-  isSeniorMember: number;
-
-  // 时间戳
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { Prisma, UserSpaceData } from "@prisma/client";
 
 /**
  * 用户空间数据查询服务
@@ -74,7 +40,7 @@ export class UserSpaceService {
       return null;
     }
 
-    return this.mapPrismaRecordToUserSpaceData(record);
+    return record;
   }
 
   /**
@@ -83,10 +49,7 @@ export class UserSpaceService {
    * @param query 分页参数
    * @returns 分页的用户空间数据
    */
-  async getUserSpaceDataByMid(
-    mid: number,
-    query: PaginationQuery = {}
-  ): Promise<PaginatedResponse<UserSpaceData>> {
+  async getUserSpaceDataByMid(mid: number, query: PaginationQuery = {}) {
     this.logger.log(`分页获取用户 ${mid} 的用户空间数据`);
 
     const { page, limit, offset, orderBy } = normalizePagination(query);
@@ -103,13 +66,9 @@ export class UserSpaceService {
       })
     ]);
 
-    const items = records.map((record) =>
-      this.mapPrismaRecordToUserSpaceData(record)
-    );
-
     this.logger.log(`用户 ${mid} 共找到 ${total} 条记录，当前第 ${page} 页`);
 
-    return createPaginatedResponse(items, total, page, limit);
+    return createPaginatedResponse(records, total, page, limit);
   }
 
   /**
@@ -117,9 +76,7 @@ export class UserSpaceService {
    * @param query 分页参数
    * @returns 分页的用户空间数据
    */
-  async getAllLatestUserSpaceData(
-    query: PaginationQuery = {}
-  ): Promise<PaginatedResponse<UserSpaceData>> {
+  async getAllLatestUserSpaceData(query: PaginationQuery = {}) {
     this.logger.log("分页获取所有用户的最新用户空间数据");
 
     const { page, limit, offset, orderBy } = normalizePagination(query);
@@ -140,13 +97,9 @@ export class UserSpaceService {
       })
       .then((result) => result.length);
 
-    const items = records.map((record) =>
-      this.mapPrismaRecordToUserSpaceData(record)
-    );
-
     this.logger.log(`共找到 ${total} 个用户的最新数据，当前第 ${page} 页`);
 
-    return createPaginatedResponse(items, total, page, limit);
+    return createPaginatedResponse(records, total, page, limit);
   }
 
   /**
@@ -160,7 +113,7 @@ export class UserSpaceService {
     minLevel?: number,
     maxLevel?: number,
     query: PaginationQuery = {}
-  ): Promise<PaginatedResponse<UserSpaceData>> {
+  ) {
     this.logger.log(
       `根据等级范围查询用户空间数据: ${minLevel || 0} - ${maxLevel || "无上限"}`
     );
@@ -168,7 +121,7 @@ export class UserSpaceService {
     const { page, limit, offset } = normalizePagination(query);
     const orderBy = query.orderBy || { level: "desc" };
 
-    const whereClause: any = {};
+    const whereClause: Prisma.UserSpaceDataWhereInput = {};
     if (minLevel !== undefined || maxLevel !== undefined) {
       whereClause.level = {};
       if (minLevel !== undefined) {
@@ -190,13 +143,9 @@ export class UserSpaceService {
       this.prisma.userSpaceData.count({ where: whereClause })
     ]);
 
-    const items = records.map((record) =>
-      this.mapPrismaRecordToUserSpaceData(record)
-    );
-
     this.logger.log(`等级范围查询找到 ${total} 条记录，当前第 ${page} 页`);
 
-    return createPaginatedResponse(items, total, page, limit);
+    return createPaginatedResponse(records, total, page, limit);
   }
 
   /**
@@ -204,9 +153,7 @@ export class UserSpaceService {
    * @param query 分页参数
    * @returns 分页的用户空间数据
    */
-  async getVerifiedUserSpaceData(
-    query: PaginationQuery = {}
-  ): Promise<PaginatedResponse<UserSpaceData>> {
+  async getVerifiedUserSpaceData(query: PaginationQuery = {}) {
     this.logger.log("根据认证状态查询用户空间数据");
 
     const { page, limit, offset, orderBy } = normalizePagination(query);
@@ -215,7 +162,7 @@ export class UserSpaceService {
       this.prisma.userSpaceData.findMany({
         where: {
           official: {
-            not: null as any
+            not: undefined
           }
         },
         orderBy,
@@ -226,19 +173,15 @@ export class UserSpaceService {
       this.prisma.userSpaceData.count({
         where: {
           official: {
-            not: null as any
+            not: undefined
           }
         }
       })
     ]);
 
-    const items = records.map((record) =>
-      this.mapPrismaRecordToUserSpaceData(record)
-    );
-
     this.logger.log(`认证用户查询找到 ${total} 条记录，当前第 ${page} 页`);
 
-    return createPaginatedResponse(items, total, page, limit);
+    return createPaginatedResponse(records, total, page, limit);
   }
 
   /**
@@ -246,12 +189,7 @@ export class UserSpaceService {
    * @param mid 用户ID，可选
    * @returns 统计信息
    */
-  async getUserSpaceStats(mid?: number): Promise<{
-    totalRecords: number;
-    uniqueUsers: number;
-    latestRecord: Date | null;
-    levelDistribution: Record<number, number>;
-  }> {
+  async getUserSpaceStats(mid?: number) {
     const whereClause = mid ? { mid } : {};
 
     const [totalRecords, uniqueUsers, latestRecord, levelDistribution] =
@@ -301,10 +239,7 @@ export class UserSpaceService {
    * @param query 分页参数
    * @returns 分页的用户空间数据
    */
-  async searchUserSpaceData(
-    keyword: string,
-    query: PaginationQuery = {}
-  ): Promise<PaginatedResponse<UserSpaceData>> {
+  async searchUserSpaceData(keyword: string, query: PaginationQuery = {}) {
     this.logger.log(`搜索用户空间数据: ${keyword}`);
 
     const { page, limit, offset, orderBy } = normalizePagination(query);
@@ -332,45 +267,8 @@ export class UserSpaceService {
       })
     ]);
 
-    const items = records.map((record) =>
-      this.mapPrismaRecordToUserSpaceData(record)
-    );
-
     this.logger.log(`搜索找到 ${total} 条记录，当前第 ${page} 页`);
 
-    return createPaginatedResponse(items, total, page, limit);
-  }
-
-  /**
-   * 将 Prisma 记录映射为 UserSpaceData 对象
-   * @param record Prisma 记录
-   * @returns UserSpaceData 对象
-   */
-  private mapPrismaRecordToUserSpaceData(record: any): UserSpaceData {
-    return {
-      id: record.id,
-      mid: record.mid,
-      name: record.name,
-      sex: record.sex,
-      face: record.face,
-      faceNft: record.faceNft,
-      sign: record.sign,
-      level: record.level,
-      birthday: record.birthday,
-      official: record.official,
-      vip: record.vip,
-      pendant: record.pendant,
-      nameplate: record.nameplate,
-      fansBadge: record.fansBadge,
-      fansMedal: record.fansMedal,
-      isFollowed: record.isFollowed,
-      topPhoto: record.topPhoto,
-      liveRoom: record.liveRoom,
-      tags: record.tags,
-      sysNotice: record.sysNotice,
-      isSeniorMember: record.isSeniorMember,
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt
-    };
+    return createPaginatedResponse(records, total, page, limit);
   }
 }

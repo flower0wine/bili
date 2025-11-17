@@ -2,11 +2,9 @@ import { Logger } from "nestjs-pino";
 import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "@/services/common/prisma.service";
+import { IUserCard } from "@/services/types/bili";
 import { UserCardTaskParams } from "@/services/user-card/dto/user-card-task-params.dto";
-import {
-  UserCardData,
-  UserCardTask
-} from "@/services/user-card/user-card.task";
+import { UserCardTask } from "@/services/user-card/user-card.task";
 import { Task } from "../decorators/task.decorator";
 import { TaskCancelledError } from "../interfaces/task.interface";
 
@@ -80,7 +78,7 @@ export class UserCardSyncTask {
         const taskParams: UserCardTaskParams = { mid, photo, cookie };
 
         // 获取用户名片数据
-        const userData: UserCardData =
+        const userData: IUserCard =
           await this.userCardTask.executeGetUserCardInfo(taskParams);
 
         // 再次检查取消状态
@@ -106,14 +104,21 @@ export class UserCardSyncTask {
             likeNum: userData.likeNum,
 
             // 认证与会员信息
-            official: userData.official,
-            vip: userData.vip,
-            pendant: userData.pendant,
-            nameplate: userData.nameplate,
+            official: {
+              ...userData.official
+            },
+            vip: {
+              ...userData.vip
+            },
+            pendant: {
+              ...userData.pendant
+            },
+            nameplate: {
+              ...userData.nameplate
+            },
 
             // 社交信息
-            following: userData.following,
-            space: userData.space
+            following: userData.following
           }
         });
 

@@ -3,11 +3,8 @@ import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "@/services/common/prisma.service";
 import { UserSpaceTaskParams } from "@/services/user-space/dto/user-space-task-params.dto";
-import {
-  UserSpaceDataResponse,
-  UserSpaceTask
-} from "@/services/user-space/user-space.task";
-import { Prisma } from "@prisma/client";
+import { UserSpaceTask } from "@/services/user-space/user-space.task";
+import { Prisma, UserSpaceData } from "@prisma/client";
 import { Task } from "../decorators/task.decorator";
 import { TaskCancelledError } from "../interfaces/task.interface";
 
@@ -83,7 +80,7 @@ export class UserSpaceSyncTask {
         const taskParams: UserSpaceTaskParams = { mid, cookie };
 
         // 获取用户空间数据
-        const userData: UserSpaceDataResponse =
+        const userData =
           await this.userSpaceTask.executeGetUserSpaceInfo(taskParams);
 
         // 再次检查取消状态
@@ -197,8 +194,8 @@ export class UserSpaceSyncTask {
    * @returns true表示有变化，false表示无变化
    */
   private hasDataChanged(
-    oldData: any,
-    newData: UserSpaceDataResponse
+    oldData: UserSpaceData,
+    newData: UserSpaceData
   ): boolean {
     // 如果没有历史记录，说明是新用户，需要插入
     if (!oldData) {
@@ -226,8 +223,8 @@ export class UserSpaceSyncTask {
         this.logger.debug({
           event: "user_space_sync.field_changed",
           field,
-          oldValue: oldData[field],
-          newValue: newData[field]
+          oldValue: JSON.stringify(oldData[field]),
+          newValue: JSON.stringify(newData[field])
         });
         return true;
       }

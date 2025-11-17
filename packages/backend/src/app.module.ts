@@ -8,7 +8,6 @@ import { AppController } from "@/app.controller";
 import { AppService } from "@/app.service";
 import { GlobalValidationPipe } from "@/pipes/global-validation.pipe";
 import { PrismaModule } from "@/services/common/prisma.module";
-import { GitModule } from "@/services/git/git.module";
 import { TaskModule } from "@/services/task/task.module";
 import { TriggerModule } from "@/services/task/trigger/trigger.module";
 import { UserCardModule } from "@/services/user-card/user-card.module";
@@ -51,7 +50,6 @@ import { TransformInterceptor } from "./interceptors/response-transform.intercep
         }
       }
     }),
-    GitModule,
     UserSpaceModule,
     UserCardModule,
     TaskModule,

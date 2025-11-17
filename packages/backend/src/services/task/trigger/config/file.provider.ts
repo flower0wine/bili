@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { createJiti } from "jiti";
 import { Injectable, Logger } from "@nestjs/common";
+import { toError } from "@/utils/error.util";
 import {
   ConfigSource,
   ITriggerConfigProvider,
@@ -41,7 +42,7 @@ export class ConfigFileProvider implements ITriggerConfigProvider {
     return ConfigSource.CONFIG_FILE;
   }
 
-  async load(): Promise<TriggerConfigSource[]> {
+  async load() {
     try {
       // 检查配置文件是否存在
       if (!this.configFilePath) {
@@ -54,8 +55,8 @@ export class ConfigFileProvider implements ITriggerConfigProvider {
         interopDefault: true
       });
       const configModule = (await jiti.import(this.configFilePath)) as any;
-      const triggerConfigs =
-        configModule.default || configModule.triggerConfigs;
+      const triggerConfigs = (configModule.default ||
+        configModule.triggerConfigs) as TriggerConfigSource[];
 
       if (!Array.isArray(triggerConfigs)) {
         this.logger.error(
@@ -65,7 +66,7 @@ export class ConfigFileProvider implements ITriggerConfigProvider {
       }
 
       // 验证并转换为标准格式
-      const validConfigs: TriggerConfigSource[] = [];
+      const validConfigs = [] as TriggerConfigSource[];
       for (let i = 0; i < triggerConfigs.length; i++) {
         const config = triggerConfigs[i];
 
@@ -91,7 +92,8 @@ export class ConfigFileProvider implements ITriggerConfigProvider {
       );
 
       return validConfigs;
-    } catch (error) {
+    } catch (e) {
+      const error = toError(e);
       this.logger.error(
         `从配置文件加载触发器配置失败: ${error.message}`,
         error.stack

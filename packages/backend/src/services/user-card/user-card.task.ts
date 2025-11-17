@@ -1,32 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { TaskException } from "@/exceptions/task.exception";
+import { IUserCard } from "@/services/types/bili";
 import { UserCardTaskParams } from "@/services/user-card/dto/user-card-task-params.dto";
-
-export interface UserCardData {
-  mid: number;
-  name: string;
-  sex: string;
-  face: string;
-  sign: string;
-  level: number;
-
-  // 统计信息
-  fans: number;
-  friend: number;
-  archiveCount: number;
-  articleCount: number;
-  likeNum: number;
-
-  // 认证与会员信息
-  official?: object;
-  vip?: object;
-  pendant?: object;
-  nameplate?: object;
-
-  // 社交信息
-  following: boolean;
-  space?: object;
-}
+import { toError } from "@/utils/error.util";
 
 /**
  * 用户名片任务
@@ -43,9 +19,7 @@ export class UserCardTask {
    * @param params 任务参数
    * @returns 用户名片数据
    */
-  async executeGetUserCardInfo(
-    params: UserCardTaskParams
-  ): Promise<UserCardData> {
+  async executeGetUserCardInfo(params: UserCardTaskParams) {
     const { mid, photo = false, cookie } = params;
 
     // 验证参数
@@ -90,7 +64,65 @@ export class UserCardTask {
         throw new TaskException(message);
       }
 
-      const result = await response.json();
+      const result = (await response.json()) as {
+        code: number;
+        message: string;
+        data: {
+          card: {
+            level_info: {
+              current_level: number;
+            };
+            mid: string;
+            name: string;
+            sex: string;
+            face: string;
+            sign: string;
+            fans: number;
+            friend: number;
+            official: {
+              type: number;
+              desc: string;
+              title: string;
+              role: number;
+            };
+            vip: {
+              type: number;
+              status: number;
+              due_date: number;
+              vipStatus: number;
+              vipType: number;
+            };
+            pendant: {
+              pid: number;
+              name: string;
+              image: string;
+              image_small: string;
+              image_mid: string;
+              image_large: string;
+            };
+            nameplate: {
+              nid: number;
+              name: string;
+              image: string;
+              image_small: string;
+              image_mid: string;
+              image_large: string;
+            };
+          };
+          archive_count: number;
+          article_count: number;
+          like_num: number;
+          following: boolean;
+          space: {
+            archive: {
+              count: number;
+            };
+            article: {
+              count: number;
+            };
+          };
+        };
+      };
 
       // 检查API响应
       if (result.code !== 0) {
@@ -109,9 +141,13 @@ export class UserCardTask {
         throw new TaskException(message);
       }
 
+      this.logger.log(
+        `成功获取用户 ${mid} ${card.name} 的名片信息: ${JSON.stringify(card)}`
+      );
+
       // 构造返回数据
-      const userCardData: UserCardData = {
-        mid: parseInt(card.mid) || mid,
+      const userCardData: IUserCard = {
+        mid: parseInt(card.mid),
         name: card.name || "未知用户",
         sex: card.sex || "未知",
         face: card.face || "",
@@ -126,27 +162,21 @@ export class UserCardTask {
         likeNum: data.like_num || 0,
 
         // 认证与会员信息
-        official: card.Official,
+        official: card.official,
         vip: card.vip,
         pendant: card.pendant,
         nameplate: card.nameplate,
 
         // 社交信息
-        following: data.following || false,
-        space: data.space
+        following: data.following || false
       };
 
-      this.logger.log(`成功获取用户 ${mid} 的名片信息: ${userCardData.name}`);
+      this.logger.debug(`用户名片信息: ${JSON.stringify(userCardData)}`);
       return userCardData;
-    } catch (error: any) {
-      // 如果是已知的任务异常，直接重新抛出
-      if (error instanceof TaskException) {
-        throw error;
-      }
-
-      // 处理其他未预期的错误
-      const message = `获取用户名片信息失败：${error?.message || error}`;
-      this.logger.error(message, error?.stack || undefined);
+    } catch (e) {
+      const error = toError(e);
+      const message = `获取用户名片信息失败：${error.message}`;
+      this.logger.error(message, error.stack);
       throw new TaskException(message);
     }
   }

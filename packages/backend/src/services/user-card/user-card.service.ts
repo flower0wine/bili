@@ -2,41 +2,10 @@ import { Injectable, Logger } from "@nestjs/common";
 import {
   createPaginatedResponse,
   normalizePagination,
-  PaginatedResponse,
   PaginationQuery
 } from "@/interfaces/pagination.interface";
 import { PrismaService } from "@/services/common/prisma.service";
-
-export interface UserCardData {
-  id: number;
-  mid: number;
-  name: string;
-  sex: string;
-  face: string;
-  sign: string;
-  level: number;
-
-  // 统计信息
-  fans: number;
-  friend: number;
-  archiveCount: number;
-  articleCount: number;
-  likeNum: number;
-
-  // 认证与会员信息
-  official?: object;
-  vip?: object;
-  pendant?: object;
-  nameplate?: object;
-
-  // 社交信息
-  following: boolean;
-  space?: object;
-
-  // 时间戳
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { Prisma } from "@prisma/client";
 
 /**
  * 用户名片数据查询服务
@@ -53,10 +22,7 @@ export class UserCardService {
    * @param mid 用户ID
    * @returns 用户名片数据
    */
-  async getLatestUserCardData(
-    mid: number,
-    query: PaginationQuery = {}
-  ): Promise<UserCardData | null> {
+  async getLatestUserCardData(mid: number, query: PaginationQuery = {}) {
     this.logger.log(`获取用户 ${mid} 的最新用户名片数据`);
 
     const { orderBy } = normalizePagination(query);
@@ -71,7 +37,7 @@ export class UserCardService {
       return null;
     }
 
-    return this.mapPrismaRecordToUserCardData(record);
+    return record;
   }
 
   /**
@@ -80,10 +46,7 @@ export class UserCardService {
    * @param query 分页参数
    * @returns 分页的用户名片数据
    */
-  async getUserCardDataByMid(
-    mid: number,
-    query: PaginationQuery = {}
-  ): Promise<PaginatedResponse<UserCardData>> {
+  async getUserCardDataByMid(mid: number, query: PaginationQuery = {}) {
     this.logger.log(`分页获取用户 ${mid} 的用户名片数据`);
 
     const { page, limit, offset } = normalizePagination(query);
@@ -101,13 +64,9 @@ export class UserCardService {
       })
     ]);
 
-    const items = records.map((record) =>
-      this.mapPrismaRecordToUserCardData(record)
-    );
-
     this.logger.log(`用户 ${mid} 共找到 ${total} 条记录，当前第 ${page} 页`);
 
-    return createPaginatedResponse(items, total, page, limit);
+    return createPaginatedResponse(records, total, page, limit);
   }
 
   /**
@@ -115,9 +74,7 @@ export class UserCardService {
    * @param query 分页参数
    * @returns 分页的用户名片数据
    */
-  async getAllLatestUserCardData(
-    query: PaginationQuery = {}
-  ): Promise<PaginatedResponse<UserCardData>> {
+  async getAllLatestUserCardData(query: PaginationQuery = {}) {
     this.logger.log("分页获取所有用户的最新用户名片数据");
 
     const { page, limit, offset, orderBy } = normalizePagination(query);
@@ -138,13 +95,9 @@ export class UserCardService {
       })
       .then((result) => result.length);
 
-    const items = records.map((record) =>
-      this.mapPrismaRecordToUserCardData(record)
-    );
-
     this.logger.log(`共找到 ${total} 个用户的最新数据，当前第 ${page} 页`);
 
-    return createPaginatedResponse(items, total, page, limit);
+    return createPaginatedResponse(records, total, page, limit);
   }
 
   /**
@@ -158,7 +111,7 @@ export class UserCardService {
     minFans?: number,
     maxFans?: number,
     query: PaginationQuery = {}
-  ): Promise<PaginatedResponse<UserCardData>> {
+  ) {
     this.logger.log(
       `根据粉丝数范围查询用户名片数据: ${minFans || 0} - ${maxFans || "无上限"}`
     );
@@ -166,7 +119,7 @@ export class UserCardService {
     const { page, limit, offset } = normalizePagination(query);
     const orderBy = query.orderBy || { fans: "desc" };
 
-    const whereClause: any = {};
+    const whereClause: Prisma.UserCardWhereInput = {};
     if (minFans !== undefined || maxFans !== undefined) {
       whereClause.fans = {};
       if (minFans !== undefined) {
@@ -188,13 +141,9 @@ export class UserCardService {
       this.prisma.userCard.count({ where: whereClause })
     ]);
 
-    const items = records.map((record) =>
-      this.mapPrismaRecordToUserCardData(record)
-    );
-
     this.logger.log(`粉丝数范围查询找到 ${total} 条记录，当前第 ${page} 页`);
 
-    return createPaginatedResponse(items, total, page, limit);
+    return createPaginatedResponse(records, total, page, limit);
   }
 
   /**
@@ -230,36 +179,6 @@ export class UserCardService {
       totalRecords,
       uniqueUsers,
       latestRecord
-    };
-  }
-
-  /**
-   * 将 Prisma 记录映射为 UserCardData 对象
-   * @param record Prisma 记录
-   * @returns UserCardData 对象
-   */
-  private mapPrismaRecordToUserCardData(record: any): UserCardData {
-    return {
-      id: record.id,
-      mid: record.mid,
-      name: record.name,
-      sex: record.sex,
-      face: record.face,
-      sign: record.sign,
-      level: record.level,
-      fans: record.fans,
-      friend: record.friend,
-      archiveCount: record.archiveCount,
-      articleCount: record.articleCount,
-      likeNum: record.likeNum,
-      official: record.official,
-      vip: record.vip,
-      pendant: record.pendant,
-      nameplate: record.nameplate,
-      following: record.following,
-      space: record.space,
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt
     };
   }
 }

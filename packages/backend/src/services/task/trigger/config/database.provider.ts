@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "@/services/common/prisma.service";
+import { toError } from "@/utils/error.util";
 import {
   ConfigChangeListener,
   ConfigSource,
@@ -60,7 +61,8 @@ export class DatabaseConfigProvider implements ITriggerConfigProvider {
     for (const listener of this.changeListeners) {
       try {
         await listener(configs);
-      } catch (error) {
+      } catch (e) {
+        const error = toError(e);
         this.logger.error(
           `执行配置变更监听器失败: ${error.message}`,
           error.stack
@@ -104,7 +106,8 @@ export class DatabaseConfigProvider implements ITriggerConfigProvider {
       );
 
       return validConfigs;
-    } catch (error) {
+    } catch (e) {
+      const error = toError(e);
       this.logger.error(
         `从数据库加载触发器配置失败: ${error.message}`,
         error.stack
@@ -135,7 +138,7 @@ export class DatabaseConfigProvider implements ITriggerConfigProvider {
   /**
    * 验证配置项是否合法
    */
-  private validateConfig(config: any, index: number): boolean {
+  private validateConfig(config: TriggerConfigSource, index: number): boolean {
     const requiredFields = ["name", "taskName", "cron"];
     const missingFields = requiredFields.filter(
       (field) => !config[field] || typeof config[field] !== "string"
