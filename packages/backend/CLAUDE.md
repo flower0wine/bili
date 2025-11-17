@@ -13,7 +13,6 @@ This is the **backend** package of a monorepo for a task scheduling system built
 - **Task Scheduling**: @nestjs/schedule + custom decoupled architecture
 - **External APIs**: @larksuiteoapi/node-sdk (Feishu), Bilibili API integration
 - **Logging**: nestjs-pino with structured logging
-- **Documentation**: Swagger/OpenAPI with @nestjs/swagger
 
 ## Development Commands
 
@@ -103,7 +102,6 @@ Triggers are configured in `trigger.config.ts` and can be managed via API:
 
 - **Global Prefix**: `/api`
 - **Versioning**: URI-based (default: v1)
-- **Documentation**: Swagger at `/docs`
 - **Authentication**: Bearer token support
 - **Validation**: Global DTO validation
 - **Error Handling**: Centralized exception filters
@@ -124,10 +122,9 @@ Key models:
 ## Development Workflow
 
 1. **Local Development**: Use `pnpm run start:dev` for hot reloading
-2. **API Testing**: Use Swagger UI at `/docs` or included `.http` files
-3. **Database Changes**: Create Prisma migrations, then generate client
-4. **Adding Tasks**: Create task classes with `@Task` decorator, auto-discovered
-5. **Adding Triggers**: Update `trigger.config.ts` or use API endpoints
+2. **Database Changes**: Create Prisma migrations, then generate client
+3. **Adding Tasks**: Create task classes with `@Task` decorator, auto-discovered
+4. **Adding Triggers**: Update `trigger.config.ts` or use API endpoints
 
 ## Environment Variables
 

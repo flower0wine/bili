@@ -4,7 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "@/services/common/prisma.service";
 import { UserSpaceTaskParams } from "@/services/user-space/dto/user-space-task-params.dto";
 import {
-  UserSpaceData,
+  UserSpaceDataResponse,
   UserSpaceTask
 } from "@/services/user-space/user-space.task";
 import { Prisma } from "@prisma/client";
@@ -83,7 +83,7 @@ export class UserSpaceSyncTask {
         const taskParams: UserSpaceTaskParams = { mid, cookie };
 
         // 获取用户空间数据
-        const userData: UserSpaceData =
+        const userData: UserSpaceDataResponse =
           await this.userSpaceTask.executeGetUserSpaceInfo(taskParams);
 
         // 再次检查取消状态
@@ -196,7 +196,7 @@ export class UserSpaceSyncTask {
    * @param newData 从API获取的新数据
    * @returns true表示有变化，false表示无变化
    */
-  private hasDataChanged(oldData: any, newData: UserSpaceData): boolean {
+  private hasDataChanged(oldData: any, newData: UserSpaceDataResponse): boolean {
     // 如果没有历史记录，说明是新用户，需要插入
     if (!oldData) {
       return true;

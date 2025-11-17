@@ -33,6 +33,7 @@ pnpm run lint:fix         # Auto-fix ESLint issues
 ## Code Standards
 
 ### ESLint Configuration
+
 - Base: @antfu/eslint-config
 - Styling: 2-space indentation, double quotes, semicolons
 - TypeScript: Strict mode enabled with some safety rules relaxed
@@ -40,12 +41,14 @@ pnpm run lint:fix         # Auto-fix ESLint issues
 - UnoCSS class names: Supported and validated
 
 ### TypeScript Configuration
+
 - Target: ES2017
 - Path alias: `@/*` maps to `./src/*`
 - Strict mode enabled with incremental compilation
 - JSX and Next.js types supported
 
 ### Styling with UnoCSS
+
 - Uses UnoCSS instead of traditional Tailwind CSS
 - shadcn/ui preset with built-in color system
 - Icon presets, animations, and variant groups enabled
@@ -93,6 +96,7 @@ src/
 ## Build Configuration
 
 ### Next.js Configuration (next.config.ts)
+
 - Turbopack enabled for development and build
 - API proxy: `/api/*` -> `http://localhost:9000/api/*`
 - Image optimization: All external domains allowed
@@ -106,6 +110,7 @@ src/
 ## API Integration
 
 The frontend connects to a backend service running on `localhost:9000` with the following main API modules:
+
 - User space data management
 - User card information
 - Task scheduling and execution

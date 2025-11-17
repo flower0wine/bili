@@ -82,7 +82,6 @@ Tasks are automatically discovered and registered when the backend starts.
 
 ## API Documentation
 
-- **Swagger UI**: Available at `/docs` endpoint when backend is running
 - **Task Management**: List, execute, monitor tasks via REST API
 - **Trigger Management**: Create, update, disable/enable cron triggers
 - **Execution History**: Complete task execution logging and monitoring
@@ -128,8 +127,7 @@ packages/frontend/src/
 1. **Setup**: Install pnpm, run `pnpm install` at root
 2. **Database**: Configure PostgreSQL and run migrations
 3. **Development**: Use `pnpm run dev` to start all packages
-4. **API Testing**: Use Swagger UI at `/docs` for backend API testing
-5. **Frontend**: Next.js App Router with Turbopack for fast development
+4. **Fontend**: Next.js App Router with Turbopack for fast development
 
 ## Key Implementation Details
 

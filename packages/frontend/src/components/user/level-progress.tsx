@@ -79,7 +79,7 @@ export function LevelProgress({ level, isSeniorMember }: LevelProgressProps) {
           </div>
 
           {/* 光扫效果 */}
-          <div className="animate-light-sweep pointer-events-none absolute inset-0 from-transparent via-white/60 to-transparent bg-gradient-to-r" />
+          <div className="pointer-events-none absolute inset-0 animate-light-sweep from-transparent via-white/60 to-transparent bg-gradient-to-r" />
         </div>
       </div>
     </div>

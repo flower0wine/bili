@@ -44,9 +44,9 @@ const eslintConfig = antfu({
     "node/prefer-global/process": "off",
 
     // 允许 console，但警告
-    "no-console": "warn",
-    "no-unused-vars": "warn",
-    "@typescript-eslint/no-unused-vars": "warn",
+    "no-console": "off",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "off",
   },
 });
 

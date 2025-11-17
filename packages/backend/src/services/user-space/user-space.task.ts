@@ -2,13 +2,14 @@ import { Injectable, Logger } from "@nestjs/common";
 import { TaskException } from "@/exceptions/task.exception";
 import { UserSpaceTaskParams } from "@/services/user-space/dto/user-space-task-params.dto";
 import { encWbi, getWbiKeys } from "@/utils/wbi.util";
+import { UserSpaceData } from "./types";
 
-export interface UserSpaceData {
+export interface UserSpaceDataResponse {
   mid: number;
   name: string;
   sex: string;
   face: string;
-  faceNft: number;
+  face_nft: number;
   sign: string;
   level: number;
   birthday?: string;
@@ -20,16 +21,16 @@ export interface UserSpaceData {
   nameplate?: object;
 
   // 社交信息
-  fansBadge: boolean;
-  fansMedal?: object;
-  isFollowed: boolean;
-  topPhoto?: string;
+  fans_badge: boolean;
+  fans_medal?: object;
+  is_followed: boolean;
+  top_photo?: string;
 
   // 其他展示信息
-  liveRoom?: object;
+  live_room?: object;
   tags?: string[] | null;
-  sysNotice?: object;
-  isSeniorMember: number;
+  sys_notice?: object;
+  is_senior_member: number;
 }
 
 /**
@@ -106,7 +107,11 @@ export class UserSpaceTask {
         throw new TaskException(message);
       }
 
-      const result = await response.json();
+      const result = (await response.json()) as {
+        code: number;
+        message: string;
+        data: UserSpaceDataResponse;
+      };
 
       // 检查API响应
       if (result.code !== 0) {
@@ -125,7 +130,7 @@ export class UserSpaceTask {
       }
 
       // 构造返回数据
-      const userSpaceData: UserSpaceData = {
+      const userSpaceData = {
         mid: data.mid || mid,
         name: data.name || "未知用户",
         sex: data.sex || "未知",
@@ -155,17 +160,20 @@ export class UserSpaceTask {
       };
 
       this.logger.log(`成功获取用户 ${mid} 的空间信息: ${userSpaceData.name}`);
-      return userSpaceData;
+      return userSpaceData as UserSpaceData;
     } catch (error: any) {
       // 如果是已知的任务异常，直接重新抛出
       if (error instanceof TaskException) {
         throw error;
       }
 
-      // 处理其他未预期的错误
-      const message = `获取用户空间信息失败：${error?.message || error}`;
-      this.logger.error(message, error?.stack || undefined);
-      throw new TaskException(message);
+      if (error instanceof Error) {
+        const message = `获取用户空间信息失败: ${error.message}`;
+        this.logger.error(message);
+        throw new TaskException(message);
+      }
+
+      throw error;
     }
   }
 }
