@@ -29,37 +29,4 @@ export class UserSpaceController {
   async getAllLatestUserSpaceData(@Query() query: PaginationQueryDto) {
     return await this.userSpaceService.getAllLatestUserSpaceData(query);
   }
-
-  @Get("level-range")
-  async getUserSpaceDataByLevelRange(
-    @Query() query: UserSpaceLevelRangeQueryDto
-  ) {
-    return await this.userSpaceService.getUserSpaceDataByLevelRange(
-      query.minLevel,
-      query.maxLevel,
-      query
-    );
-  }
-
-  @Get("verified")
-  async getVerifiedUserSpaceData(@Query() query: PaginationQueryDto) {
-    return await this.userSpaceService.getVerifiedUserSpaceData(query);
-  }
-
-  @Get("search")
-  async searchUserSpaceData(@Query() query: UserSpaceSearchQueryDto) {
-    return await this.userSpaceService.searchUserSpaceData(query.keyword, {
-      page: query.page,
-      limit: query.limit
-    });
-  }
-
-  @Get("stats")
-  async getUserSpaceStats(@Query() query: UserSpaceStatsQueryDto) {
-    const data = await this.userSpaceService.getUserSpaceStats(query.mid);
-    return {
-      ...data,
-      latestRecord: data.latestRecord?.toISOString() || null
-    };
-  }
 }

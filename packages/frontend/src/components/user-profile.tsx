@@ -1,9 +1,9 @@
 "use client";
 
 import {
-  useUserCardHistoryData,
-  useUserCardInfo,
-  useUserSpaceInfo,
+  useLatestUserCardData,
+  useLatestUserSpaceData,
+  useUserFansFriendHistory,
 } from "@/hooks/apis";
 import { cn } from "@/lib/utils";
 import { FollowerChart } from "./follower-chart";
@@ -25,14 +25,14 @@ export function UserProfile({ userId }: UserProfileProps) {
     data: userCard,
     isLoading: isLoadingCard,
     error: cardError,
-  } = useUserCardInfo(userId);
+  } = useLatestUserCardData(userId);
   const {
     data: userSpace,
     isLoading: isLoadingSpace,
     error: spaceError,
-  } = useUserSpaceInfo(userId);
+  } = useLatestUserSpaceData(userId);
   const { data: historyData, isLoading: isLoadingHistory }
-    = useUserCardHistoryData(userId);
+    = useUserFansFriendHistory(userId);
 
   const level = userCard?.level || 0;
   const isSeniorMember = userSpace?.is_senior_member || false;

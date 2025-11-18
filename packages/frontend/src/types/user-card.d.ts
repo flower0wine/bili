@@ -36,4 +36,10 @@ declare namespace UserCard {
     createdAt: string;
     updatedAt: string;
   }
+
+  export interface UserFansFriendVO {
+    fans: number;
+    friend: number;
+    createdAt: string;
+  }
 }

@@ -1,14 +1,7 @@
 import type { AxiosResponse } from "axios";
+import type { PaginatedResponse, PaginationQuery } from "@/types/pagination";
 import { api } from "@/lib/api/axios";
 
-// 定义分页响应类型
-interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  totalPages: number;
-  page: number;
-  limit: number;
-}
 
 export const userCardApi = {
   // 获取指定用户的最新一条用户名片数据
@@ -22,55 +15,18 @@ export const userCardApi = {
 
   // 分页获取指定用户的所有用户名片数据
   getUserCardDataByMid: async (
+    params?: PaginationQuery & { mid?: number },
+  ): Promise<
+    AxiosResponse<Http.ApiResponse<PaginatedResponse<UserCard.UserCardVO>>>
+  > => {
+    return api.get(`/v1/user-card/user`, { params });
+  },
+
+  // 获取用户粉丝关注历史数据
+  getUserFansFriendHistory: async (
     mid: number,
-    params?: { page?: number; limit?: number },
-  ): Promise<
-    AxiosResponse<Http.ApiResponse<PaginatedResponse<UserCard.UserCardVO>>>
-  > => {
-    return api.get(`/v1/user-card/user/${mid}`, { params });
-  },
-
-  // 分页获取所有用户的最新用户名片数据
-  getAllLatestUserCardData: async (params?: {
-    page?: number;
-    limit?: number;
-  }): Promise<
-    AxiosResponse<Http.ApiResponse<PaginatedResponse<UserCard.UserCardVO>>>
-  > => {
-    return api.get("/v1/user-card/latest", { params });
-  },
-
-  // 根据粉丝数范围查询用户名片数据
-  getUserCardDataByFansRange: async (params?: {
-    minFans?: number;
-    maxFans?: number;
-    page?: number;
-    limit?: number;
-  }): Promise<
-    AxiosResponse<Http.ApiResponse<PaginatedResponse<UserCard.UserCardVO>>>
-  > => {
-    return api.get("/v1/user-card/fans-range", { params });
-  },
-
-  // 获取用户名片数据统计信息
-  getUserCardStats: async (
-    mid?: number,
-  ): Promise<
-    AxiosResponse<
-      Http.ApiResponse<{
-        totalRecords: number;
-        uniqueUsers: number;
-        latestRecord: string | null;
-      }>
-    >
-  > => {
-    const url = mid ? `/v1/user-card/stats/${mid}` : "/v1/user-card/stats";
-    return api.get<
-      Http.ApiResponse<{
-        totalRecords: number;
-        uniqueUsers: number;
-        latestRecord: string | null;
-      }>
-    >(url);
+    params?: { startDate?: string; endDate?: string },
+  ): Promise<AxiosResponse<Http.ApiResponse<UserCard.UserFansFriendVO[]>>> => {
+    return api.get(`/v1/user-card/fans-friend/${mid}`, { params });
   },
 };

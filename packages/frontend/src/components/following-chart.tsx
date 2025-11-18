@@ -10,14 +10,7 @@ import { cn } from "@/lib/utils";
 dayjs.extend(relativeTime);
 
 interface FollowingChartProps {
-  data: Array<{
-    id: number;
-    mid: number;
-    fans: number;
-    friend: number;
-    createdAt: string;
-    updatedAt: string;
-  }>;
+  data: UserCard.UserFansFriendVO[];
   isLoading?: boolean;
 }
 

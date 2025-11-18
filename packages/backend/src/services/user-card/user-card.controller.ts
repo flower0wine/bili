@@ -1,9 +1,8 @@
 import { Controller, Get, Param, Query } from "@nestjs/common";
-import { PaginationQueryDto } from "@/dto/pagination-query.dto";
 import { UserIdParamDto } from "@/dto/user-id-param.dto";
 import {
-  UserCardFansRangeQueryDto,
-  UserCardStatsQueryDto
+  UserCardQueryDto,
+  UserFansFriendQueryDto
 } from "@/services/user-card/dto/user-card-query.dto";
 import { UserCardService } from "@/services/user-card/user-card.service";
 
@@ -16,34 +15,20 @@ export class UserCardController {
     return await this.userCardService.getLatestUserCardData(params.mid);
   }
 
-  @Get("user/:mid")
-  async getUserCardDataByMid(
+  @Get("user")
+  async getUserCardDataByMid(@Query() query: UserCardQueryDto) {
+    return await this.userCardService.getUserCardDataByMid(query.mid, query);
+  }
+
+  @Get("fans-friend/:mid")
+  async getUserFansFriendHistory(
     @Param() params: UserIdParamDto,
-    @Query() query: PaginationQueryDto
+    @Query() query: UserFansFriendQueryDto
   ) {
-    return await this.userCardService.getUserCardDataByMid(params.mid, query);
-  }
-
-  @Get("latest")
-  async getAllLatestUserCardData(@Query() query: PaginationQueryDto) {
-    return await this.userCardService.getAllLatestUserCardData(query);
-  }
-
-  @Get("fans-range")
-  async getUserCardDataByFansRange(@Query() query: UserCardFansRangeQueryDto) {
-    return await this.userCardService.getUserCardDataByFansRange(
-      query.minFans,
-      query.maxFans,
-      query
+    return await this.userCardService.getUserFansFriendHistory(
+      params.mid,
+      query.startDate,
+      query.endDate
     );
-  }
-
-  @Get("stats")
-  async getUserCardStats(@Query() query: UserCardStatsQueryDto) {
-    const data = await this.userCardService.getUserCardStats(query.mid);
-    return {
-      ...data,
-      latestRecord: data.latestRecord?.toISOString() || null
-    };
   }
 }
