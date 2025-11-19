@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
+import { PaginationQueryDto } from "@/dto/pagination-query.dto";
 import {
   createPaginatedResponse,
-  normalizePagination,
-  PaginationQuery
+  normalizePagination
 } from "@/interfaces/pagination.interface";
 import { PrismaService } from "@/services/common/prisma.service";
 import { Prisma, UserSpaceData } from "@prisma/client";
@@ -24,7 +24,7 @@ export class UserSpaceService {
    */
   async getLatestUserSpaceData(
     mid: number,
-    query: PaginationQuery = {}
+    query: PaginationQueryDto = {}
   ): Promise<UserSpaceData | null> {
     this.logger.log(`获取用户 ${mid} 的最新用户空间数据`);
 
@@ -49,7 +49,7 @@ export class UserSpaceService {
    * @param query 分页参数
    * @returns 分页的用户空间数据
    */
-  async getUserSpaceDataByMid(mid: number, query: PaginationQuery = {}) {
+  async getUserSpaceDataByMid(mid: number, query: PaginationQueryDto = {}) {
     this.logger.log(`分页获取用户 ${mid} 的用户空间数据`);
 
     const { page, limit, offset, orderBy } = normalizePagination(query);
@@ -76,7 +76,7 @@ export class UserSpaceService {
    * @param query 分页参数
    * @returns 分页的用户空间数据
    */
-  async getAllLatestUserSpaceData(query: PaginationQuery = {}) {
+  async getAllLatestUserSpaceData(query: PaginationQueryDto = {}) {
     this.logger.log("分页获取所有用户的最新用户空间数据");
 
     const { page, limit, offset, orderBy } = normalizePagination(query);

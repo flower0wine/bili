@@ -1,3 +1,4 @@
+
 /**
  * 认证信息类型
  */
@@ -77,25 +78,16 @@ export interface UserConfig {
 }
 
 /**
- * 用户状态字段（不常变化）
+ * 脸部勋章信息
  */
-export interface UserProfileFields extends BaseUserInfo {
-  birthday?: string;
-  // 认证信息 - 使用文本描述
-  officialVerify?: string; // 认证信息：如"官方认证 - 央视新闻官方账号"
-  // 会员信息 - 使用文本描述
-  vipInfo?: string; // 会员信息：如"年度大会员"
-  // 勋章信息
-  nameplateName?: string;
-  nameplateLevel?: string;
-  updatedAt: string;
-}
-
 export interface FaceMedal {
   show: boolean;
   wear: boolean;
 }
 
+/**
+ * 观看显示信息
+ */
 export interface WatchedShow {
   num: number;
   icon: string;
@@ -106,6 +98,9 @@ export interface WatchedShow {
   icon_location: string;
 }
 
+/**
+ * 直播间信息
+ */
 export interface LiveRoomInfo {
   url: string;
   cover: string;
@@ -119,33 +114,7 @@ export interface LiveRoomInfo {
 }
 
 /**
- * 用户卡片信息
- */
-export interface IUserCard extends BaseUserInfo, UserStats, UserConfig {
-  // 社交信息
-  following: boolean;
-}
-
-/**
- * 用户空间信息
- */
-export interface IUserSpace extends BaseUserInfo, UserConfig {
-  faceNft: number;
-  birthday: string;
-
-  // 社交状态
-  fansBadge: boolean;
-  isFollowed: boolean;
-  topPhoto: string;
-
-  // 扩展信息
-  liveRoom: LiveRoomInfo;
-  tags: string[];
-  isSeniorMember: number;
-}
-
-/**
- * 完整用户数据（包含所有信息）
+ * 完整用户数据（包含所有信息）- 对应后端UserData
  */
 export interface UserData extends BaseUserInfo, UserStats, UserConfig {
   faceNft: number;

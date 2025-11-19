@@ -1,23 +1,11 @@
 import type { Metadata } from "next";
 import setupLocatorUI from "@locator/runtime";
-import { Geist, Geist_Mono } from "next/font/google";
 import { QueryProvider } from "@/providers/query-provider";
 import "./globals.css";
-import "@unocss/reset/tailwind.css";
 
 if (process.env.NODE_ENV === "development") {
   setupLocatorUI();
 }
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Bilibili 用户信息查询",
@@ -32,9 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body
-        className={`${geistSans.variable}  ${geistMono.variable} antialiased`}
-      >
+      <body>
         <QueryProvider>{children}</QueryProvider>
       </body>
     </html>

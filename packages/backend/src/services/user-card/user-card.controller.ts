@@ -1,4 +1,5 @@
 import { Controller, Get, Param, Query } from "@nestjs/common";
+import { PaginationQueryDto } from "@/dto/pagination-query.dto";
 import { UserIdParamDto } from "@/dto/user-id-param.dto";
 import {
   UserCardQueryDto,
@@ -11,8 +12,11 @@ export class UserCardController {
   constructor(private readonly userCardService: UserCardService) {}
 
   @Get("latest/:mid")
-  async getLatestUserCardData(@Param() params: UserIdParamDto) {
-    return await this.userCardService.getLatestUserCardData(params.mid);
+  async getLatestUserCardData(
+    @Param() params: UserIdParamDto,
+    @Query() query: PaginationQueryDto
+  ) {
+    return await this.userCardService.getLatestUserCardData(params.mid, query);
   }
 
   @Get("user")

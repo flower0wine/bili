@@ -15,5 +15,5 @@ export class UserFansFriendVo {
   /**
    * 记录时间
    */
-  createdAt!: Date;
+  createdAt!: string;
 }

@@ -10,7 +10,6 @@ const eslintConfig = antfu({
     quotes: "double",
     semi: true,
   },
-  unocss: true,
   ignores: [
     "node_modules/**",
     ".next/**",

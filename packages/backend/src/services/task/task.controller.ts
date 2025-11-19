@@ -106,12 +106,4 @@ export class TaskController {
     }
     return execution;
   }
-
-  /**
-   * 获取任务执行统计信息
-   */
-  @Get("stats/summary")
-  async getTaskStats(@Query("taskName") taskName?: string) {
-    return await this.taskExecutionService.getTaskExecutionStats(taskName);
-  }
 }

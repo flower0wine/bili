@@ -1,11 +1,6 @@
 import { Controller, Get, Param, Query } from "@nestjs/common";
 import { PaginationQueryDto } from "@/dto/pagination-query.dto";
 import { UserIdParamDto } from "@/dto/user-id-param.dto";
-import {
-  UserSpaceLevelRangeQueryDto,
-  UserSpaceSearchQueryDto,
-  UserSpaceStatsQueryDto
-} from "@/services/user-space/dto/user-space-query.dto";
 import { UserSpaceService } from "@/services/user-space/user-space.service";
 
 @Controller("user-space")

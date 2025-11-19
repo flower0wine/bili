@@ -113,31 +113,3 @@ export function useToggleTrigger(options?: UseMutationOptions<Trigger.TriggerVO,
     ...options,
   });
 }
-
-// 新增：直接返回[data, error]模式的Hook
-export function useAllTriggersSafe(options?: Omit<
-  UseQueryOptions<[Trigger.TriggerVO[] | null, Http.ErrorResponse | null]>,
-    "queryKey" | "queryFn"
->) {
-  return useQuery({
-    queryKey: ["triggers", "cron", "safe"],
-    queryFn: async () => parseResponse(triggerApi.getAllTriggers),
-    ...options,
-  });
-}
-
-export function useCreateTriggerSafe(options?: UseMutationOptions<
-  [Trigger.TriggerVO | null, Http.ErrorResponse | null],
-  unknown,
-  Trigger.CreateTriggerDTO
->) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async data => parseResponse(async () => triggerApi.createTrigger(data)),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["triggers", "cron"] });
-    },
-    ...options,
-  });
-}

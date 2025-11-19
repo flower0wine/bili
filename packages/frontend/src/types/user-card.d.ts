@@ -1,45 +1,34 @@
-declare namespace UserCard {
-  export interface UserCardDTO {
-    uid: string;
-  }
+/**
+ * 用户卡片类型定义 - 对应后端IUserCard接口
+ */
 
-  export interface UserCardVO {
-    id: number;
-    mid: number;
-    name: string;
-    sex: string;
-    face: string;
-    sign: string;
-    rank: number;
-    level: number;
-    silence: number;
-    fans: number;
-    friend: number;
-    archiveCount: number;
-    articleCount: number;
-    likeNum: number;
-    vip: {
-      type: number;
-      status: number;
-      due_date: number;
-      label: string;
-    };
-    official: {
-      role: number;
-      title: string;
-      desc: string;
-    };
-    pendant?: Record<string, unknown>;
-    nameplate?: Record<string, unknown>;
-    following: boolean;
-    space?: Record<string, unknown>;
-    createdAt: string;
-    updatedAt: string;
-  }
+import type {
+  BaseUserInfo,
+  UserConfig,
+  UserStats
+} from "./common";
 
-  export interface UserFansFriendVO {
-    fans: number;
-    friend: number;
-    createdAt: string;
-  }
+/**
+ * 用户卡片信息 - 对应后端IUserCard
+ */
+export interface UserCardVO extends BaseUserInfo, UserStats, UserConfig {
+  // 社交信息
+  following: boolean;
+}
+
+export interface UserFansFriendVo {
+  /**
+   * 粉丝数量
+   */
+  fans: number;
+
+  /**
+   * 关注数量
+   */
+  friend: number;
+
+  /**
+   * 记录时间
+   */
+  createdAt: string;
 }

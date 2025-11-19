@@ -10,7 +10,6 @@ import {
 import { taskApi } from "@/apis";
 import { parseResponse } from "@/lib/utils/response-parser";
 
-// Query Hooks - 使用传统的React Query模式
 export function useAllTasks(options?: Omit<UseQueryOptions<Task.TaskVO[]>, "queryKey" | "queryFn">) {
   return useQuery({
     queryKey: ["tasks"],
@@ -119,41 +118,6 @@ export function useExecuteTask(options?: UseMutationOptions<
     },
     onSuccess: () => {
       // Invalidate task executions and stats queries
-      queryClient.invalidateQueries({ queryKey: ["tasks", "executions"] });
-      queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
-    },
-    ...options,
-  });
-}
-
-// 新增：直接返回[data, error]模式的Hook
-export function useAllTasksSafe(options?: Omit<
-  UseQueryOptions<[Task.TaskVO[] | null, Http.ErrorResponse | null]>,
-    "queryKey" | "queryFn"
->) {
-  return useQuery({
-    queryKey: ["tasks", "safe"],
-    queryFn: async () => parseResponse(taskApi.getAllTasks),
-    ...options,
-  });
-}
-
-export function useExecuteTaskSafe(options?: UseMutationOptions<
-  [Task.ExecuteTaskVO | null, Http.ErrorResponse | null],
-  unknown,
-  { taskName: string; data: Task.ExecuteTaskDTO }
->) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({
-      taskName,
-      data,
-    }: {
-      taskName: string;
-      data: Task.ExecuteTaskDTO;
-    }) => parseResponse(async () => taskApi.executeTask(taskName, data)),
-    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks", "executions"] });
       queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
     },

@@ -1,8 +1,9 @@
+import dayjs from "dayjs";
 import { Injectable, Logger } from "@nestjs/common";
+import { PaginationQueryDto } from "@/dto/pagination-query.dto";
 import {
   createPaginatedResponse,
-  normalizePagination,
-  PaginationQuery
+  normalizePagination
 } from "@/interfaces/pagination.interface";
 import { PrismaService } from "@/services/common/prisma.service";
 import { Prisma } from "@prisma/client";
@@ -23,7 +24,7 @@ export class UserCardService {
    * @param mid 用户ID
    * @returns 用户名片数据
    */
-  async getLatestUserCardData(mid: number, query: PaginationQuery = {}) {
+  async getLatestUserCardData(mid: number, query: PaginationQueryDto = {}) {
     this.logger.log(`获取用户 ${mid} 的最新用户名片数据`);
 
     const { orderBy } = normalizePagination(query);
@@ -47,7 +48,7 @@ export class UserCardService {
    * @param query 分页参数
    * @returns 分页的用户名片数据
    */
-  async getUserCardDataByMid(mid?: number, query: PaginationQuery = {}) {
+  async getUserCardDataByMid(mid?: number, query: PaginationQueryDto = {}) {
     const userDescription = mid ? `用户 ${mid}` : "所有用户";
     this.logger.log(`分页获取${userDescription}的用户名片数据`);
 
@@ -127,7 +128,7 @@ export class UserCardService {
       return records.map((record) => ({
         fans: record.fans,
         friend: record.friend,
-        createdAt: record.createdAt
+        createdAt: dayjs(record.createdAt).format("YYYY-MM-DD HH:mm:ss")
       }));
     } catch (error) {
       this.logger.error(
