@@ -90,7 +90,15 @@ export class UserCardTask {
               status: number;
               due_date: number;
               vipStatus: number;
-              vipType: number;
+              vipStatusDue: number;
+              theme_type: number;
+              label: {
+                path: string;
+                text: string;
+                label_theme: string;
+              };
+              avatar_subscript: number;
+              nickname_color: string;
             };
             pendant: {
               pid: number;

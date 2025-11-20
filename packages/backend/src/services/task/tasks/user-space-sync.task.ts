@@ -95,10 +95,10 @@ export class UserSpaceSyncTask {
         });
 
         // 检查数据是否有变化
-        let hasChanged = false;
-        if (latestRecord) {
-          hasChanged = this.hasDataChanged(latestRecord, userData);
-        }
+        const hasChanged = this.hasDataChanged({
+          oldData: latestRecord || undefined,
+          newData: userData
+        });
 
         let saved: any;
         if (hasChanged) {
@@ -207,7 +207,13 @@ export class UserSpaceSyncTask {
    * @param newData 从API获取的新数据
    * @returns true表示有变化，false表示无变化
    */
-  private hasDataChanged(oldData: object, newData: object): boolean {
+  private hasDataChanged({
+    oldData,
+    newData
+  }: {
+    oldData?: object;
+    newData: object;
+  }) {
     // 如果没有历史记录，说明是新用户，需要插入
     if (!oldData) {
       return true;

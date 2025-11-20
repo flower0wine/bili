@@ -12,14 +12,19 @@ export interface OfficialInfo {
  * 会员信息类型
  */
 export interface VipInfo {
-  type: number; // 会员类型
-  status: number; // 会员状态
-  due_date?: string; // 到期时间
-  label?: {
-    text: string; // 会员标签文本
-    bg_color?: string;
-    text_color?: string;
+  type: number;
+  status: number;
+  due_date: number;
+  vipStatus: number;
+  vipStatusDue: number;
+  theme_type: number;
+  label: {
+    path: string;
+    text: string;
+    label_theme: string;
   };
+  avatar_subscript: number;
+  nickname_color: string;
 }
 
 /**
@@ -37,10 +42,12 @@ export interface NameplateInfo {
  * 头像框信息类型
  */
 export interface PendantInfo {
-  pid: number; // 头像框ID
-  name: string; // 头像框名称
-  image?: string;
-  expire?: string; // 过期时间
+  pid: number;
+  name: string;
+  image: string;
+  image_small: string;
+  image_mid: string;
+  image_large: string;
 }
 
 /**

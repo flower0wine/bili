@@ -164,7 +164,7 @@ export class FeishuBitableSyncTask {
           articleCount: card.articleCount,
           likeNum: card.likeNum,
           following: card.following,
-          createdAt: card.createdAt
+          createdAt: dayjs(card.createdAt).format("YYYY-MM-DD HH:mm:ss")
         });
       }
     });
@@ -257,7 +257,7 @@ export class FeishuBitableSyncTask {
       vipInfo,
       nameplateName: nameplate?.name || "",
       nameplateLevel: nameplate?.level || "",
-      updatedAt: dayjs().valueOf() // 使用dayjs获取毫秒级时间戳
+      updatedAt: dayjs().format("YYYY-MM-DD HH:mm:ss")
     };
 
     // 如果没有记录或数据有变化，则插入新记录

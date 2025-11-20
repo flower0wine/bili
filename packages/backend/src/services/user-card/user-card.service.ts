@@ -87,7 +87,7 @@ export class UserCardService {
     mid: number,
     startDate?: string,
     endDate?: string
-  ): Promise<UserFansFriendVo[]> {
+  ) {
     try {
       this.logger.log(
         `获取用户 ${mid} 的粉丝关注历史数据，日期范围：${startDate || "开始"} - ${endDate || "结束"}`

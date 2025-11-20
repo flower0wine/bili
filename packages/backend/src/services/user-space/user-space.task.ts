@@ -115,7 +115,9 @@ export class UserSpaceTask {
             pid: number;
             name: string;
             image: string;
-            expire: number;
+            image_small: string;
+            image_mid: string;
+            image_large: string;
           };
           nameplate: {
             nid: number;
