@@ -167,12 +167,21 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+
+  --letter-spacing: 0;
 }
 
 @layer utilities {
   * {
     color-scheme: light dark;
     border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: var(--letter-spacing);
   }
 
   /* 针对所有滚动条（包括 body、textarea、div 等） */

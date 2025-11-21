@@ -38,8 +38,6 @@ declare namespace Task {
     taskName?: string;
     status?: "running" | "completed" | "failed" | "cancelled";
     triggerSource?: "manual" | "cron" | "api";
-    page?: number;
-    pageSize?: number;
     startTime?: string;
     endTime?: string;
   }

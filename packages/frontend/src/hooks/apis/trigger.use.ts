@@ -1,115 +1,74 @@
-import type {
-  UseMutationOptions,
-  UseQueryOptions,
-} from "@tanstack/react-query";
 import {
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { triggerApi } from "@/apis";
-import { parseResponse } from "@/lib/utils/response-parser";
 
-// Query Hooks - 使用传统的React Query模式
-export function useAllTriggers(options?: Omit<UseQueryOptions<Trigger.TriggerVO[]>, "queryKey" | "queryFn">) {
+// Query Hooks
+export function useAllTriggers() {
   return useQuery({
     queryKey: ["triggers", "cron"],
     queryFn: async () => {
-      const [data, error] = await parseResponse(triggerApi.getAllTriggers);
-      if (error) {
-        throw new Error(error.message);
-      }
-      return data!;
+      const response = await triggerApi.getAllTriggers();
+      return response.data.data!;
     },
-    ...options,
   });
 }
 
 // Mutation Hooks
-export function useCreateTrigger(options?: UseMutationOptions<
-  Trigger.TriggerVO,
-  unknown,
-  Trigger.CreateTriggerDTO
->) {
+export function useCreateTrigger() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data) => {
-      const [result, error] = await parseResponse(async () =>
-        triggerApi.createTrigger(data),
-      );
-      if (error) {
-        throw new Error(error.message);
-      }
-      return result!;
+    mutationFn: async (data: Trigger.CreateTriggerDTO) => {
+      const response = await triggerApi.createTrigger(data);
+      return response.data.data!;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["triggers", "cron"] });
     },
-    ...options,
   });
 }
 
-export function useUpdateTrigger(options?: UseMutationOptions<
-  Trigger.TriggerVO,
-  unknown,
-  { id: string; data: Trigger.UpdateTriggerDTO }
->) {
+export function useUpdateTrigger() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }) => {
-      const [result, error] = await parseResponse(async () =>
-        triggerApi.updateTrigger(id, data),
-      );
-      if (error) {
-        throw new Error(error.message);
-      }
-      return result!;
+    mutationFn: async ({ id, data }: { id: string; data: Trigger.UpdateTriggerDTO }) => {
+      const response = await triggerApi.updateTrigger(id, data);
+      return response.data.data!;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["triggers", "cron"] });
     },
-    ...options,
   });
 }
 
-export function useDeleteTrigger(options?: UseMutationOptions<Trigger.DeleteTriggerVO, unknown, string>) {
+export function useDeleteTrigger() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id) => {
-      const [result, error] = await parseResponse(async () =>
-        triggerApi.deleteTrigger(id),
-      );
-      if (error) {
-        throw new Error(error.message);
-      }
-      return result!;
+    mutationFn: async (id: string) => {
+      const response = await triggerApi.deleteTrigger(id);
+      return response.data.data!;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["triggers", "cron"] });
     },
-    ...options,
   });
 }
 
-export function useToggleTrigger(options?: UseMutationOptions<Trigger.TriggerVO, unknown, string>) {
+export function useToggleTrigger() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id) => {
-      const [result, error] = await parseResponse(async () =>
-        triggerApi.toggleTrigger(id),
-      );
-      if (error) {
-        throw new Error(error.message);
-      }
-      return result!;
+    mutationFn: async (id: string) => {
+      const response = await triggerApi.toggleTrigger(id);
+      return response.data.data!;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["triggers", "cron"] });
     },
-    ...options,
   });
 }

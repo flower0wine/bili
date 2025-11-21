@@ -1,4 +1,5 @@
 import type { AxiosResponse } from "axios";
+import type { PaginationQuery } from "@/types/pagination";
 import { api } from "@/lib/api/axios";
 
 export const taskApi = {
@@ -27,7 +28,7 @@ export const taskApi = {
   },
 
   getTaskExecutions: async (
-    query: Task.TaskExecutionQueryDTO,
+    query: Task.TaskExecutionQueryDTO & PaginationQuery,
   ): Promise<AxiosResponse<Http.ApiResponse<Task.TaskExecutionListVO>>> => {
     return api.get<Http.ApiResponse<Task.TaskExecutionListVO>>(
       "/v1/tasks/executions/history",

@@ -1,103 +1,64 @@
-import type {
-  UseMutationOptions,
-  UseQueryOptions,
-} from "@tanstack/react-query";
+import type { PaginationQuery } from "@/types/pagination";
 import {
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { taskApi } from "@/apis";
-import { parseResponse } from "@/lib/utils/response-parser";
 
-export function useAllTasks(options?: Omit<UseQueryOptions<Task.TaskVO[]>, "queryKey" | "queryFn">) {
+export function useAllTasks() {
   return useQuery({
     queryKey: ["tasks"],
     queryFn: async () => {
-      const [data, error] = await parseResponse(taskApi.getAllTasks);
-      if (error) {
-        throw new Error(error.message);
-      }
-      return data!;
+      const response = await taskApi.getAllTasks();
+      return response.data.data!;
     },
-    ...options,
   });
 }
 
-export function useTask(taskName: string, options?: Omit<UseQueryOptions<Task.TaskVO>, "queryKey" | "queryFn">) {
+export function useTask(taskName: string) {
   return useQuery({
     queryKey: ["tasks", taskName],
     queryFn: async () => {
-      const [data, error] = await parseResponse(async () =>
-        taskApi.getTask(taskName),
-      );
-      if (error) {
-        throw new Error(error.message);
-      }
-      return data!;
+      const response = await taskApi.getTask(taskName);
+      return response.data.data!;
     },
-    ...options,
   });
 }
 
-export function useTaskExecutions(query: Task.TaskExecutionQueryDTO, options?: Omit<
-  UseQueryOptions<Task.TaskExecutionListVO>,
-    "queryKey" | "queryFn"
->) {
+export function useTaskExecutions(query: Task.TaskExecutionQueryDTO & PaginationQuery) {
   return useQuery({
     queryKey: ["tasks", "executions", "history", query],
     queryFn: async () => {
-      const [data, error] = await parseResponse(async () =>
-        taskApi.getTaskExecutions(query),
-      );
-      if (error) {
-        throw new Error(error.message);
-      }
-      return data!;
+      const response = await taskApi.getTaskExecutions(query);
+      return response.data.data!;
     },
-    ...options,
   });
 }
 
-export function useTaskExecution(id: string, options?: Omit<UseQueryOptions<Task.TaskExecutionVO>, "queryKey" | "queryFn">) {
+export function useTaskExecution(id: string) {
   return useQuery({
     queryKey: ["tasks", "executions", id],
     queryFn: async () => {
-      const [data, error] = await parseResponse(async () =>
-        taskApi.getTaskExecution(id),
-      );
-      if (error) {
-        throw new Error(error.message);
-      }
-      return data!;
+      const response = await taskApi.getTaskExecution(id);
+      return response.data.data!;
     },
-    ...options,
   });
 }
 
-export function useTaskStats(taskName?: string, options?: Omit<UseQueryOptions<Task.TaskStatsVO>, "queryKey" | "queryFn">) {
+export function useTaskStats(taskName?: string) {
   return useQuery({
     queryKey: ["tasks", "stats", taskName],
     queryFn: async () => {
-      const [data, error] = await parseResponse(async () =>
-        taskApi.getTaskStats(taskName),
-      );
-      if (error) {
-        throw new Error(error.message);
-      }
-      return data!;
+      const response = await taskApi.getTaskStats(taskName);
+      return response.data.data!;
     },
-    enabled: !!taskName || options?.enabled,
-    ...options,
+    enabled: !!taskName,
   });
 }
 
 // Mutation Hooks
-export function useExecuteTask(options?: UseMutationOptions<
-  Task.ExecuteTaskVO,
-  unknown,
-  { taskName: string; data: Task.ExecuteTaskDTO }
->) {
+export function useExecuteTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -108,19 +69,13 @@ export function useExecuteTask(options?: UseMutationOptions<
       taskName: string;
       data: Task.ExecuteTaskDTO;
     }) => {
-      const [result, error] = await parseResponse(async () =>
-        taskApi.executeTask(taskName, data),
-      );
-      if (error) {
-        throw new Error(error.message);
-      }
-      return result!;
+      const response = await taskApi.executeTask(taskName, data);
+      return response.data.data!;
     },
     onSuccess: () => {
       // Invalidate task executions and stats queries
       queryClient.invalidateQueries({ queryKey: ["tasks", "executions"] });
       queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
     },
-    ...options,
   });
 }
