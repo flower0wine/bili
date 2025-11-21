@@ -33,6 +33,8 @@
   --sidebar-accent-foreground: oklch(0.325 0 0);
   --sidebar-border: oklch(0.9401 0 0);
   --sidebar-ring: oklch(0.7731 0 0);
+  --scrollbar-thumb: #94a3b8;
+  --scrollbar-thumb-hover: #64748b;
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
     "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -90,6 +92,8 @@
   --sidebar-accent-foreground: oklch(0.8074 0.0142 93.0137);
   --sidebar-border: oklch(0.9401 0 0);
   --sidebar-ring: oklch(0.7731 0 0);
+  --scrollbar-thumb: #475569;
+  --scrollbar-thumb-hover: #64748b;
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
     "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
@@ -163,4 +167,46 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+}
+
+@layer utilities {
+  * {
+    color-scheme: light dark;
+    border-color: var(--color-border);
+  }
+
+  /* 针对所有滚动条（包括 body、textarea、div 等） */
+  * {
+    scrollbar-width: thin; /* Firefox 支持：细滚动条 */
+    scrollbar-color: var(--scrollbar-thumb) transparent; /* 滑块颜色 + 轨道颜色（可自定义） */
+  }
+
+  /* Chrome / Edge / Safari 滚动条样式 */
+  *::-webkit-scrollbar {
+    width: 8px; /* 垂直滚动条宽度 */
+    height: 8px; /* 水平滚动条高度 */
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent; /* 轨道背景透明 */
+    border-radius: 9999px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb); /* 滑块颜色 */
+    border-radius: 9999px;
+    border: 2px solid transparent; /* 可选：让滑块看起来更圆润 */
+    background-clip: content-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover); /* hover 时颜色 */
+    border-color: transparent;
+    background-clip: content-box;
+  }
+
+  /* 可选：角落交汇处（两个方向都有滚动条时） */
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 }

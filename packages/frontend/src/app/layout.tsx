@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import setupLocatorUI from "@locator/runtime";
+import { ThemeProvider } from "next-themes";
 import { QueryProvider } from "@/providers/query-provider";
 import "./globals.css";
 
@@ -19,9 +20,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
       <body>
-        <QueryProvider>{children}</QueryProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <QueryProvider>{children}</QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

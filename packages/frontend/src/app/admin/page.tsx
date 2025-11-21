@@ -9,7 +9,7 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
+        <div className="rounded-lg bg-card p-6 shadow border">
           <div className="flex flex-row items-center justify-between space-y-0 pb-2">
             <h3 className="text-sm font-medium">总用户数</h3>
           </div>
@@ -19,7 +19,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
+        <div className="rounded-lg bg-card p-6 shadow border">
           <div className="flex flex-row items-center justify-between space-y-0 pb-2">
             <h3 className="text-sm font-medium">活跃用户</h3>
           </div>
@@ -29,7 +29,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
+        <div className="rounded-lg bg-card p-6 shadow border">
           <div className="flex flex-row items-center justify-between space-y-0 pb-2">
             <h3 className="text-sm font-medium">系统状态</h3>
           </div>
@@ -39,7 +39,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
+        <div className="rounded-lg bg-card p-6 shadow border">
           <div className="flex flex-row items-center justify-between space-y-0 pb-2">
             <h3 className="text-sm font-medium">API 调用</h3>
           </div>
@@ -50,7 +50,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="rounded-lg border bg-card p-6 shadow-sm">
+      <div className="rounded-lg bg-card p-6 shadow border">
         <h3 className="text-lg font-semibold">快速开始</h3>
         <p className="text-sm text-muted-foreground mt-2">
           选择下面的选项开始管理系统
