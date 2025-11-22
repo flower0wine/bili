@@ -26,9 +26,11 @@ export function AdminSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <Collapsible defaultOpen className="group/collapsible">
-                  <CollapsibleTrigger className="flex items-center gap-2 group-data-[state=collapsed]:justify-center">
-                    <LayoutDashboard className="h-4 w-4" />
-                    <span className="group-data-[state=collapsed]:hidden">仪表盘</span>
+                  <CollapsibleTrigger className="flex items-center gap-2 px-1 py-0">
+                    <SidebarNavLink href="/admin">
+                      <LayoutDashboard className="h-4 w-4" />
+                      <span className="group-data-[state=collapsed]:hidden">仪表盘</span>
+                    </SidebarNavLink>
                   </CollapsibleTrigger>
                 </Collapsible>
               </SidebarMenuItem>

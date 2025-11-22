@@ -1,8 +1,10 @@
 "use client";
 
 import Editor, { loader } from "@monaco-editor/react";
+import { Copy } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 
 // import { EditorWorker } from "monaco-editor/esm/vs/editor/common/services/editorWebWorker?worker";
 // import { JSONWorker } from "monaco-editor/esm/vs/language/json/jsonWorker?worker";
@@ -12,8 +14,6 @@ if (typeof window !== "undefined") {
     loader.config({ monaco });
     (window as any).MonacoEnvironment = {
       getWorker(_workerId: string, label: string) {
-        console.log(_workerId, label);
-
         if (label === "json") {
           return new URL("monaco-editor/esm/vs/language/json/jsonWorker", import.meta.url).toString();
         }
@@ -29,6 +29,7 @@ interface JsonViewerProps {
   onChange?: (value: string) => void;
   height?: string;
   className?: string;
+  showCopyButton?: boolean;
 }
 
 export function JsonViewer({
@@ -37,8 +38,10 @@ export function JsonViewer({
   onChange,
   height = "400px",
   className = "",
+  showCopyButton = true,
 }: JsonViewerProps) {
   const { theme } = useTheme();
+  const [copySuccess, setCopySuccess] = useState(false);
 
   const jsonString = useMemo(() => {
     try {
@@ -49,10 +52,37 @@ export function JsonViewer({
     }
   }, [data]);
 
+  const handleCopyJSON = () => {
+    navigator.clipboard.writeText(jsonString).then(() => {
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    }).catch((err) => {
+      console.error("Failed to copy JSON:", err);
+    });
+  };
+
   return (
-    <div className={className}>
+    <div className={cn("border rounded-lg overflow-hidden", className)}>
+      {showCopyButton && (
+        <div className="flex items-center justify-between px-4 py-3 bg-muted border-b">
+          <span className="text-sm font-medium text-muted-foreground">JSON 数据</span>
+          <button
+            type="button"
+            onClick={handleCopyJSON}
+            className={cn(
+              "flex items-center gap-2 px-3 py-1.5 rounded text-sm font-medium transition-colors",
+              copySuccess
+                ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200"
+                : "bg-background hover:bg-primary text-primary-foreground"
+            )}
+          >
+            <Copy className="w-4 h-4" />
+            {copySuccess ? "已复制" : "复制"}
+          </button>
+        </div>
+      )}
       <Editor
-        height={height}
+        height={showCopyButton ? `calc(${height} - 53px)` : height}
         defaultLanguage="json"
         value={jsonString}
         onChange={(value) => {

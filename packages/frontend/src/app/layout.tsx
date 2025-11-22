@@ -3,6 +3,7 @@ import setupLocatorUI from "@locator/runtime";
 import { ThemeProvider } from "next-themes";
 import { QueryProvider } from "@/providers/query-provider";
 import "./globals.css";
+import "./animation.css";
 
 if (process.env.NODE_ENV === "development") {
   setupLocatorUI();

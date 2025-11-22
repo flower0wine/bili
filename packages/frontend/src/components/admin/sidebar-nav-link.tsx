@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SidebarMenuButton, SidebarMenuSubButton } from "@/components/ui/sidebar/sidebar-menu";
+import { cn } from "@/lib/utils";
 import styles from "./sidebar-nav-link.module.css";
 
 interface SidebarNavLinkProps {
@@ -39,7 +40,7 @@ export function SidebarNavLink({
 
   return (
     <Component asChild>
-      <Link href={href} className={`${className} ${activeClassName}`}>
+      <Link href={href} className={cn(activeClassName, className)}>
         {children}
       </Link>
     </Component>

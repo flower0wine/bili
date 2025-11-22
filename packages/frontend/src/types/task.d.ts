@@ -22,14 +22,17 @@ declare namespace Task {
   export interface TaskExecutionVO {
     id: string;
     taskName: string;
-    status: "running" | "completed" | "failed" | "cancelled";
     triggerSource: "manual" | "cron" | "api";
+    triggerName: string;
+    params: Record<string, unknown>;
+    status: "running" | "success" | "completed" | "failed" | "cancelled";
+    result?: unknown;
+    error?: string | null;
+    retryCount: number;
+    maxRetries: number;
     startedAt: string;
     finishedAt?: string;
     duration?: number;
-    result?: unknown;
-    error?: string;
-    params: Record<string, unknown>;
     createdAt: string;
     updatedAt: string;
   }
