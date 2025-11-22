@@ -1,3 +1,4 @@
+import type { ApiResponse } from "@/types/http";
 import type { PaginatedResponse } from "@/types/pagination";
 import type { UserSpaceVO } from "@/types/user-space";
 import { api } from "@/lib/api/axios";
@@ -7,7 +8,7 @@ export const userSpaceApi = {
   getLatestUserSpaceData: async (
     mid: number,
   ) => {
-    return api.get<Http.ApiResponse<UserSpaceVO>>(
+    return api.get<ApiResponse<UserSpaceVO>>(
       `/v1/user-space/latest/${mid}`,
     );
   },

@@ -1,8 +1,9 @@
+import type { TriggerVO } from "@/types/trigger";
 import { triggerApi } from "@/apis";
 import { TriggerList } from "@/components/admin/trigger/list";
 
 export async function TriggerListWrapper() {
-  let initialData: Trigger.TriggerVO[] = [];
+  let initialData: TriggerVO[] = [];
   let error: string | null = null;
 
   try {

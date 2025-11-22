@@ -1,3 +1,4 @@
+import type { ApiResponse } from "@/types/http";
 import type { PaginatedResponse, PaginationQuery } from "@/types/pagination";
 import type { UserCardVO, UserFansFriendVo } from "@/types/user-card";
 import { api } from "@/lib/api/axios";
@@ -8,7 +9,7 @@ export const userCardApi = {
   getLatestUserCardData: async (
     mid: number,
   ) => {
-    return api.get<Http.ApiResponse<UserCardVO>>(
+    return api.get<ApiResponse<UserCardVO>>(
       `/v1/user-card/latest/${mid}`,
     );
   },
@@ -25,6 +26,6 @@ export const userCardApi = {
     mid: number,
     params?: { startDate?: string; endDate?: string },
   ) => {
-    return api.get<Http.ApiResponse<UserFansFriendVo[]>>(`/v1/user-card/fans-friend/${mid}`, { params });
+    return api.get<ApiResponse<UserFansFriendVo[]>>(`/v1/user-card/fans-friend/${mid}`, { params });
   },
 };

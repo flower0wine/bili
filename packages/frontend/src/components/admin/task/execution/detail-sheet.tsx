@@ -1,5 +1,6 @@
 "use client";
 
+import type { TaskExecutionVO } from "@/types/task";
 import { JsonViewer } from "@/components/common/json-viewer";
 import { CollapsibleSection } from "@/components/ui/collapsible-section";
 import {
@@ -14,7 +15,7 @@ import { cn, formatDateTime, formatDuration } from "@/lib/utils";
 interface ExecutionDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  execution: Task.TaskExecutionVO | null;
+  execution: TaskExecutionVO | null;
 }
 
 function DataRow({ label, value, mono = false }: { label: string; value: React.ReactNode; mono?: boolean }) {

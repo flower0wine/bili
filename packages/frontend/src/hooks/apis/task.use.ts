@@ -1,4 +1,5 @@
 import type { PaginationQuery } from "@/types/pagination";
+import type { ExecuteTaskDTO, TaskExecutionListVO, TaskExecutionQueryDTO, TaskVO } from "@/types/task";
 import {
   useMutation,
   useQuery,
@@ -6,7 +7,7 @@ import {
 } from "@tanstack/react-query";
 import { taskApi } from "@/apis";
 
-export function useAllTasks(options?: { initialData?: Task.TaskVO[] }) {
+export function useAllTasks(options?: { initialData?: TaskVO[] }) {
   return useQuery({
     queryKey: ["tasks"],
     queryFn: async () => {
@@ -28,8 +29,8 @@ export function useTask(taskName: string) {
 }
 
 export function useTaskExecutions(
-  query: Task.TaskExecutionQueryDTO & PaginationQuery,
-  options?: { initialData?: Task.TaskExecutionListVO },
+  query: TaskExecutionQueryDTO & PaginationQuery,
+  options?: { initialData?: TaskExecutionListVO },
 ) {
   return useQuery({
     queryKey: ["tasks", "executions", "history", query],
@@ -72,7 +73,7 @@ export function useExecuteTask() {
       data,
     }: {
       taskName: string;
-      data: Task.ExecuteTaskDTO;
+      data: ExecuteTaskDTO;
     }) => {
       const response = await taskApi.executeTask(taskName, data);
       return response.data.data!;

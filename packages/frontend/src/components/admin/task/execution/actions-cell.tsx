@@ -1,11 +1,12 @@
 "use client";
 
+import type { TaskExecutionVO } from "@/types/task";
 import { useState } from "react";
 import { ExecutionDetailSheet } from "@/components/admin/task/execution/detail-sheet";
 import { Button } from "@/components/ui/button";
 
 interface ExecutionActionsCellProps {
-  execution: Task.TaskExecutionVO;
+  execution: TaskExecutionVO;
 }
 
 export function ExecutionActionsCell({ execution }: ExecutionActionsCellProps) {

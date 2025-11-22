@@ -1,10 +1,10 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import type { TaskExecutionVO } from "@/types/task";
+
 import dayjs from "dayjs";
-
 import { ExecutionActionsCell } from "@/components/admin/task/execution/actions-cell";
-
 
 const statusMap: Record<string, { label: string; color: string }> = {
   running: { label: "运行中", color: "bg-blue-100 text-blue-800" },
@@ -18,7 +18,7 @@ const triggerSourceMap: Record<string, string> = {
   api: "API调用",
 };
 
-export const taskExecutionColumns: ColumnDef<Task.TaskExecutionVO>[] = [
+export const taskExecutionColumns: ColumnDef<TaskExecutionVO>[] = [
   {
     accessorKey: "taskName",
     header: "任务名称",

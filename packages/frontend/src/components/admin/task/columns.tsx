@@ -1,9 +1,10 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import type { TaskVO } from "@/types/task";
 import { TaskActionsCell } from "@/components/admin/task/actions-cell";
 
-export const taskColumns: ColumnDef<Task.TaskVO>[] = [
+export const taskColumns: ColumnDef<TaskVO>[] = [
   {
     accessorKey: "name",
     header: "任务名称",

@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import type { TaskExecutionListVO } from "@/types/task";
 import { useState } from "react";
 import { taskExecutionColumns } from "@/components/admin/task/execution/columns";
 import { CommonPagination } from "@/components/common/pagination";
@@ -8,7 +9,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { useTaskExecutions } from "@/hooks/apis/task.use";
 
 interface TaskExecutionListProps {
-  initialData?: Task.TaskExecutionListVO | null;
+  initialData?: TaskExecutionListVO | null;
   initialError: string | null;
 }
 

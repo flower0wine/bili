@@ -1,4 +1,5 @@
 import type { AxiosError, AxiosResponse } from "axios";
+import type { ApiResponse, ErrorResponse } from "@/types/http";
 
 /**
  * API响应解析工具
@@ -22,42 +23,42 @@ import type { AxiosError, AxiosResponse } from "axios";
  */
 export async function parseResponse<T>(
   promiseOrFn:
-    | Promise<AxiosResponse<Http.ApiResponse<T>>>
-    | (() => Promise<AxiosResponse<Http.ApiResponse<T>>>),
-): Promise<[T | null, Http.ErrorResponse | null]>;
+    | Promise<AxiosResponse<ApiResponse<T>>>
+    | (() => Promise<AxiosResponse<ApiResponse<T>>>),
+): Promise<[T | null, ErrorResponse | null]>;
 
 // 重载：直接传入API函数时自动推断返回类型
 export async function parseResponse<
-  T extends () => Promise<AxiosResponse<Http.ApiResponse<unknown>>>,
+  T extends () => Promise<AxiosResponse<ApiResponse<unknown>>>,
 >(
   fn: T,
 ): Promise<
   [
-    ReturnType<T> extends Promise<AxiosResponse<Http.ApiResponse<infer U>>>
+    ReturnType<T> extends Promise<AxiosResponse<ApiResponse<infer U>>>
       ? U
       : never,
-    Http.ErrorResponse | null,
+    ErrorResponse | null,
   ]
 >;
 
 // 重载：传入API函数调用结果时自动推断返回类型
 export async function parseResponse<
-  T extends Promise<AxiosResponse<Http.ApiResponse<unknown>>>,
+  T extends Promise<AxiosResponse<ApiResponse<unknown>>>,
 >(
   promise: T,
 ): Promise<
   [
-    T extends Promise<AxiosResponse<Http.ApiResponse<infer U>>> ? U : never,
-    Http.ErrorResponse | null,
+    T extends Promise<AxiosResponse<ApiResponse<infer U>>> ? U : never,
+    ErrorResponse | null,
   ]
 >;
 
 // 实现
 export async function parseResponse<T>(
   promiseOrFn:
-    | Promise<AxiosResponse<Http.ApiResponse<T>>>
-    | (() => Promise<AxiosResponse<Http.ApiResponse<T>>>),
-): Promise<[T | null, Http.ErrorResponse | null]> {
+    | Promise<AxiosResponse<ApiResponse<T>>>
+    | (() => Promise<AxiosResponse<ApiResponse<T>>>),
+): Promise<[T | null, ErrorResponse | null]> {
   try {
     // 支持直接传入Promise或函数
     const response
@@ -76,7 +77,7 @@ export async function parseResponse<T>(
       }
       else {
         // 业务错误响应
-        const errorResponse: Http.ErrorResponse = {
+        const errorResponse: ErrorResponse = {
           ok: false,
           code: apiResponse.code || 1, // UNKNOWN_ERROR = 1
           message: apiResponse.message || "业务处理失败",
@@ -91,7 +92,7 @@ export async function parseResponse<T>(
   }
   catch (err) {
     // 处理网络错误、HTTP错误等
-    const axiosError = err as AxiosError<Http.ErrorResponse>;
+    const axiosError = err as AxiosError<ErrorResponse>;
 
     if (axiosError.response?.data) {
       // 服务器返回了错误响应
@@ -99,7 +100,7 @@ export async function parseResponse<T>(
     }
 
     // 网络错误或其他未知错误
-    const errorResponse: Http.ErrorResponse = {
+    const errorResponse: ErrorResponse = {
       ok: false,
       code: 1, // UNKNOWN_ERROR = 1
       message: axiosError.message || "网络请求失败",
@@ -129,19 +130,19 @@ export async function parseResponse<T>(
  */
 export async function parseResponses<T extends readonly unknown[]>(responses: {
   [K in keyof T]:
-    | Promise<AxiosResponse<Http.ApiResponse<T[K]>>>
-    | (() => Promise<AxiosResponse<Http.ApiResponse<T[K]>>>);
+    | Promise<AxiosResponse<ApiResponse<T[K]>>>
+    | (() => Promise<AxiosResponse<ApiResponse<T[K]>>>);
 }): Promise<{
-  [K in keyof T]: [T[K] | null, Http.ErrorResponse | null];
+  [K in keyof T]: [T[K] | null, ErrorResponse | null];
 }> {
   const promises = responses.map(
-    async (response): Promise<[unknown, Http.ErrorResponse | null]> =>
+    async (response): Promise<[unknown, ErrorResponse | null]> =>
       parseResponse(response),
   );
 
   const results = await Promise.all(promises);
   return results as {
-    [K in keyof T]: [T[K] | null, Http.ErrorResponse | null];
+    [K in keyof T]: [T[K] | null, ErrorResponse | null];
   };
 }
 
@@ -149,7 +150,7 @@ export async function parseResponses<T extends readonly unknown[]>(responses: {
  * 检查响应是否成功
  */
 export function isSuccess<T>(
-  response: [T | null, Http.ErrorResponse | null],
+  response: [T | null, ErrorResponse | null],
 ): response is [T, null] {
   const [data, error] = response;
   return data !== null && error === null;
@@ -159,8 +160,8 @@ export function isSuccess<T>(
  * 检查响应是否失败
  */
 export function isError<T>(
-  response: [T | null, Http.ErrorResponse | null],
-): response is [null, Http.ErrorResponse] {
+  response: [T | null, ErrorResponse | null],
+): response is [null, ErrorResponse] {
   const [data, error] = response;
   return data === null && error !== null;
 }

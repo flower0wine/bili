@@ -1,12 +1,13 @@
 "use client";
 
 import type { ReactNode } from "react";
+import type { TaskVO } from "@/types/task";
 import { taskColumns } from "@/components/admin/task/columns";
 import { DataTable } from "@/components/ui/data-table";
 import { useAllTasks } from "@/hooks/apis/task.use";
 
 interface TaskListProps {
-  initialData: Task.TaskVO[];
+  initialData: TaskVO[];
   initialError: string | null;
 }
 

@@ -1,13 +1,14 @@
 "use client";
 
 import type { ReactNode } from "react";
+import type { TriggerVO } from "@/types/trigger";
 import { triggerColumns } from "@/components/admin/trigger/columns";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { useAllTriggers } from "@/hooks/apis/trigger.use";
 
 interface TriggerListProps {
-  initialData: Trigger.TriggerVO[];
+  initialData: TriggerVO[];
   initialError: string | null;
 }
 

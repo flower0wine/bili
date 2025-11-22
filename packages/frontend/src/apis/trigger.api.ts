@@ -1,19 +1,18 @@
-import type { AxiosResponse } from "axios";
+import type { ApiResponse } from "@/types/http";
+import type { CreateTriggerDTO, DeleteTriggerVO, TriggerVO, UpdateTriggerDTO } from "@/types/trigger";
 import { api } from "@/lib/api/axios";
 
 export const triggerApi = {
-  getAllTriggers: async (): Promise<
-    AxiosResponse<Http.ApiResponse<Trigger.TriggerVO[]>>
-  > => {
-    return api.get<Http.ApiResponse<Trigger.TriggerVO[]>>(
+  getAllTriggers: async () => {
+    return api.get<ApiResponse<TriggerVO[]>>(
       "/v1/triggers/cron",
     );
   },
 
   createTrigger: async (
-    data: Trigger.CreateTriggerDTO,
-  ): Promise<AxiosResponse<Http.ApiResponse<Trigger.TriggerVO>>> => {
-    return api.post<Http.ApiResponse<Trigger.TriggerVO>>(
+    data: CreateTriggerDTO,
+  ) => {
+    return api.post<ApiResponse<TriggerVO>>(
       "/v1/triggers/cron",
       data,
     );
@@ -21,9 +20,9 @@ export const triggerApi = {
 
   updateTrigger: async (
     id: string,
-    data: Trigger.UpdateTriggerDTO,
-  ): Promise<AxiosResponse<Http.ApiResponse<Trigger.TriggerVO>>> => {
-    return api.put<Http.ApiResponse<Trigger.TriggerVO>>(
+    data: UpdateTriggerDTO,
+  ) => {
+    return api.put<ApiResponse<TriggerVO>>(
       `/v1/triggers/cron/${id}`,
       data,
     );
@@ -31,16 +30,16 @@ export const triggerApi = {
 
   deleteTrigger: async (
     id: string,
-  ): Promise<AxiosResponse<Http.ApiResponse<Trigger.DeleteTriggerVO>>> => {
-    return api.delete<Http.ApiResponse<Trigger.DeleteTriggerVO>>(
+  ) => {
+    return api.delete<ApiResponse<DeleteTriggerVO>>(
       `/v1/triggers/cron/${id}`,
     );
   },
 
   toggleTrigger: async (
     id: string,
-  ): Promise<AxiosResponse<Http.ApiResponse<Trigger.TriggerVO>>> => {
-    return api.post<Http.ApiResponse<Trigger.TriggerVO>>(
+  ) => {
+    return api.post<ApiResponse<TriggerVO>>(
       `/v1/triggers/cron/${id}/toggle`,
     );
   },

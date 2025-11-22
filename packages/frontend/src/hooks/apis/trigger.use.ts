@@ -1,3 +1,4 @@
+import type { CreateTriggerDTO, TriggerVO, UpdateTriggerDTO } from "@/types/trigger";
 import {
   useMutation,
   useQuery,
@@ -6,7 +7,7 @@ import {
 import { triggerApi } from "@/apis";
 
 // Query Hooks
-export function useAllTriggers(options?: { initialData?: Trigger.TriggerVO[] }) {
+export function useAllTriggers(options?: { initialData?: TriggerVO[] }) {
   return useQuery({
     queryKey: ["triggers", "cron"],
     queryFn: async () => {
@@ -22,7 +23,7 @@ export function useCreateTrigger() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: Trigger.CreateTriggerDTO) => {
+    mutationFn: async (data: CreateTriggerDTO) => {
       const response = await triggerApi.createTrigger(data);
       return response.data.data!;
     },
@@ -36,7 +37,7 @@ export function useUpdateTrigger() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Trigger.UpdateTriggerDTO }) => {
+    mutationFn: async ({ id, data }: { id: string; data: UpdateTriggerDTO }) => {
       const response = await triggerApi.updateTrigger(id, data);
       return response.data.data!;
     },

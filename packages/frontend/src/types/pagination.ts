@@ -1,3 +1,5 @@
+import type { ApiResponse } from "./http";
+
 export interface Pagination<T> {
   items: T[];
   total: number;
@@ -9,7 +11,7 @@ export interface Pagination<T> {
 /**
  * 通用分页响应接口
  */
-export type PaginatedResponse<T> = Http.ApiResponse<Pagination<T>>;
+export type PaginatedResponse<T> = ApiResponse<Pagination<T>>;
 
 /**
  * 分页查询参数接口

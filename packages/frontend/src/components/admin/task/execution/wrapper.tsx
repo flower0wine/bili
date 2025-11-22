@@ -1,8 +1,9 @@
+import type { TaskExecutionListVO } from "@/types/task";
 import { taskApi } from "@/apis";
 import { TaskExecutionList } from "@/components/admin/task/execution/list";
 
 export async function TaskExecutionListWrapper() {
-  let initialData: Task.TaskExecutionListVO | null = null;
+  let initialData: TaskExecutionListVO | null = null;
   let error: string | null = null;
 
   try {

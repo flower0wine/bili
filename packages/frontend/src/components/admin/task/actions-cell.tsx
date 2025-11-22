@@ -1,11 +1,12 @@
 "use client";
 
+import type { TaskVO } from "@/types/task";
 import { useState } from "react";
 import { TaskDetailSheet } from "@/components/admin/task/detail-sheet";
 import { Button } from "@/components/ui/button";
 
 interface TaskActionsCellProps {
-  task: Task.TaskVO;
+  task: TaskVO;
 }
 
 export function TaskActionsCell({ task }: TaskActionsCellProps) {

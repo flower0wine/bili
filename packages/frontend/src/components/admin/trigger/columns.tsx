@@ -1,9 +1,10 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import type { TriggerVO } from "@/types/trigger";
 import { TriggerActionsCell } from "@/components/admin/trigger/actions-cell";
 
-export const triggerColumns: ColumnDef<Trigger.TriggerVO>[] = [
+export const triggerColumns: ColumnDef<TriggerVO>[] = [
   {
     accessorKey: "name",
     header: "触发器名称",

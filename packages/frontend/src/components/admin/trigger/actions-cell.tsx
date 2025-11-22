@@ -1,11 +1,12 @@
 "use client";
 
+import type { TriggerVO } from "@/types/trigger";
 import { useState } from "react";
 import { TriggerDetailSheet } from "@/components/admin/trigger/detail-sheet";
 import { Button } from "@/components/ui/button";
 
 interface TriggerActionsCellProps {
-  trigger: Trigger.TriggerVO;
+  trigger: TriggerVO;
 }
 
 export function TriggerActionsCell({ trigger }: TriggerActionsCellProps) {

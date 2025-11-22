@@ -1,8 +1,9 @@
+import type { TaskVO } from "@/types/task";
 import { taskApi } from "@/apis";
 import { TaskList } from "@/components/admin/task/list";
 
 export async function TaskListWrapper() {
-  let initialData: Task.TaskVO[] = [];
+  let initialData: TaskVO[] = [];
   let error: string | null = null;
 
   try {

@@ -1,5 +1,6 @@
 "use client";
 
+import type { TaskVO } from "@/types/task";
 import { JsonViewer } from "@/components/common/json-viewer";
 import { CollapsibleSection } from "@/components/ui/collapsible-section";
 import {
@@ -14,7 +15,7 @@ import { cn } from "@/lib/utils";
 interface TaskDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  task: Task.TaskVO | null;
+  task: TaskVO | null;
 }
 
 function DataRow({ label, value, mono = false }: { label: string; value: React.ReactNode; mono?: boolean }) {

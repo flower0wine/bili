@@ -1,5 +1,6 @@
 "use client";
 
+import type { TriggerVO } from "@/types/trigger";
 import { JsonViewer } from "@/components/common/json-viewer";
 import { CollapsibleSection } from "@/components/ui/collapsible-section";
 import {
@@ -14,7 +15,7 @@ import { cn, formatDateTime } from "@/lib/utils";
 interface TriggerDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  trigger: Trigger.TriggerVO | null;
+  trigger: TriggerVO | null;
 }
 
 function DataRow({ label, value, mono = false }: { label: string; value: React.ReactNode; mono?: boolean }) {
@@ -61,7 +62,8 @@ export function TriggerDetailSheet({
                   trigger.enabled
                     ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                     : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
-                }`}>
+                }`}
+                >
                   {trigger.enabled ? "启用" : "禁用"}
                 </span>
               )}
