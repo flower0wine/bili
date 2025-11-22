@@ -6,13 +6,14 @@ import {
 } from "@tanstack/react-query";
 import { taskApi } from "@/apis";
 
-export function useAllTasks() {
+export function useAllTasks(options?: { initialData?: Task.TaskVO[] }) {
   return useQuery({
     queryKey: ["tasks"],
     queryFn: async () => {
       const response = await taskApi.getAllTasks();
       return response.data.data!;
     },
+    initialData: options?.initialData,
   });
 }
 
@@ -26,13 +27,17 @@ export function useTask(taskName: string) {
   });
 }
 
-export function useTaskExecutions(query: Task.TaskExecutionQueryDTO & PaginationQuery) {
+export function useTaskExecutions(
+  query: Task.TaskExecutionQueryDTO & PaginationQuery,
+  options?: { initialData?: Task.TaskExecutionListVO },
+) {
   return useQuery({
     queryKey: ["tasks", "executions", "history", query],
     queryFn: async () => {
       const response = await taskApi.getTaskExecutions(query);
       return response.data.data!;
     },
+    initialData: options?.initialData,
   });
 }
 

@@ -6,7 +6,7 @@ import { Sidebar } from "@/components/ui/sidebar/sidebar";
 import { SidebarContent } from "@/components/ui/sidebar/sidebar-content";
 import { SidebarGroup, SidebarGroupContent, SidebarGroupLabel } from "@/components/ui/sidebar/sidebar-group";
 import { SidebarHeader } from "@/components/ui/sidebar/sidebar-header";
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubItem } from "@/components/ui/sidebar/sidebar-menu";
+import { SidebarMenu, SidebarMenuItem, SidebarMenuSub, SidebarMenuSubItem } from "@/components/ui/sidebar/sidebar-menu";
 
 export function AdminSidebar() {
   return (
@@ -24,25 +24,20 @@ export function AdminSidebar() {
           <SidebarGroupLabel>系统</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-
               <SidebarMenuItem>
                 <Collapsible defaultOpen className="group/collapsible">
-                  <CollapsibleTrigger asChild>
-                    <SidebarNavLink href="/admin" className="flex items-center gap-2">
-                      <LayoutDashboard className="h-4 w-4" />
-                      <span>仪表盘</span>
-                    </SidebarNavLink>
+                  <CollapsibleTrigger className="flex items-center gap-2 group-data-[state=collapsed]:justify-center">
+                    <LayoutDashboard className="h-4 w-4" />
+                    <span className="group-data-[state=collapsed]:hidden">仪表盘</span>
                   </CollapsibleTrigger>
                 </Collapsible>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <Collapsible defaultOpen className="group/collapsible">
-                  <CollapsibleTrigger className="w-full">
-                    <SidebarMenuButton className="flex items-center gap-2 w-full">
-                      <CheckSquare className="h-4 w-4" />
-                      <span>任务管理</span>
-                      <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                    </SidebarMenuButton>
+                  <CollapsibleTrigger className="flex items-center gap-2 group-data-[state=collapsed]:justify-center">
+                    <CheckSquare className="h-4 w-4" />
+                    <span className="group-data-[state=collapsed]:hidden">任务管理</span>
+                    <ChevronDown className="w-4 h-4 ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180 group-data-[state=collapsed]:hidden" />
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <SidebarMenuSub>
@@ -63,12 +58,10 @@ export function AdminSidebar() {
 
               <SidebarMenuItem>
                 <Collapsible defaultOpen className="group/collapsible">
-                  <CollapsibleTrigger className="w-full">
-                    <SidebarMenuButton className="flex items-center gap-2 w-full">
-                      <Zap className="h-4 w-4" />
-                      <span>触发器管理</span>
-                      <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
-                    </SidebarMenuButton>
+                  <CollapsibleTrigger className="flex items-center gap-2 group-data-[state=collapsed]:justify-center">
+                    <Zap className="h-4 w-4" />
+                    <span className="group-data-[state=collapsed]:hidden">触发器管理</span>
+                    <ChevronDown className="w-4 h-4 ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180 group-data-[state=collapsed]:hidden" />
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <SidebarMenuSub>

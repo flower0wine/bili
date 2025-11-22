@@ -1,7 +1,10 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
+import dayjs from "dayjs";
+
+import { ExecutionActionsCell } from "@/components/admin/task/execution/execution-actions-cell";
+
 
 const statusMap: Record<string, { label: string; color: string }> = {
   running: { label: "运行中", color: "bg-blue-100 text-blue-800" },
@@ -11,9 +14,8 @@ const statusMap: Record<string, { label: string; color: string }> = {
 };
 
 const triggerSourceMap: Record<string, string> = {
-  manual: "手动",
-  cron: "定时",
-  api: "API",
+  cron: "定时任务",
+  api: "API调用",
 };
 
 export const taskExecutionColumns: ColumnDef<Task.TaskExecutionVO>[] = [
@@ -44,16 +46,16 @@ export const taskExecutionColumns: ColumnDef<Task.TaskExecutionVO>[] = [
     cell: ({ row }) => {
       const source = row.getValue("triggerSource");
       const sourceStr = String(source);
-      return <div className="text-sm">{triggerSourceMap[sourceStr] || sourceStr}</div>;
+      return <div className="text-sm">{triggerSourceMap[sourceStr] || "未知触发源"}</div>;
     },
   },
   {
-    accessorKey: "startTime",
+    accessorKey: "startedAt",
     header: "开始时间",
     cell: ({ row }) => {
-      const time = row.getValue("startTime");
+      const time = row.getValue("startedAt");
       const timeStr = String(time);
-      return <div className="text-sm">{new Date(timeStr).toLocaleString("zh-CN")}</div>;
+      return <div className="text-sm">{dayjs(timeStr).format("YYYY-MM-DD HH:mm:ss")}</div>;
     },
   },
   {
@@ -90,20 +92,7 @@ export const taskExecutionColumns: ColumnDef<Task.TaskExecutionVO>[] = [
     header: "操作",
     cell: ({ row }) => {
       const execution = row.original;
-      return (
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              // TODO: 查看详情
-              console.log("View execution:", execution.id);
-            }}
-          >
-            详情
-          </Button>
-        </div>
-      );
+      return <ExecutionActionsCell execution={execution} />;
     },
   },
 ];

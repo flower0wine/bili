@@ -8,17 +8,21 @@ import { DataTable } from "@/components/ui/data-table";
 import { useTaskExecutions } from "@/hooks/apis/task.use";
 
 interface TaskExecutionListProps {
+  initialData?: Task.TaskExecutionListVO | null;
   initialError: string | null;
 }
 
-export function TaskExecutionList({ initialError }: TaskExecutionListProps): ReactNode {
+export function TaskExecutionList({ initialData, initialError }: TaskExecutionListProps): ReactNode {
   const [page, setPage] = useState(1);
   const limit = 10;
 
-  const { data, isLoading, error: queryError } = useTaskExecutions({
-    page,
-    limit,
-  });
+  const { data, isLoading, error: queryError } = useTaskExecutions(
+    {
+      page,
+      limit,
+    },
+    { initialData: page === 1 && initialData ? initialData : undefined },
+  );
 
   const error = initialError && page === 1 ? initialError : queryError;
   const executions = data?.items ?? [];

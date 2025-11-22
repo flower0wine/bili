@@ -6,13 +6,14 @@ import {
 import { triggerApi } from "@/apis";
 
 // Query Hooks
-export function useAllTriggers() {
+export function useAllTriggers(options?: { initialData?: Trigger.TriggerVO[] }) {
   return useQuery({
     queryKey: ["triggers", "cron"],
     queryFn: async () => {
       const response = await triggerApi.getAllTriggers();
       return response.data.data!;
     },
+    initialData: options?.initialData,
   });
 }
 

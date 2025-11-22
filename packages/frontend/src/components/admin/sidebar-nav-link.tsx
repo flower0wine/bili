@@ -13,7 +13,12 @@ interface SidebarNavLinkProps {
   className?: string;
 }
 
-export function SidebarNavLink({ href, children, isSubItem = false, className = "" }: SidebarNavLinkProps) {
+export function SidebarNavLink({
+  href,
+  children,
+  isSubItem = false,
+  className = "",
+}: SidebarNavLinkProps) {
   const pathname = usePathname();
 
   // 最长路径匹配：只高亮最具体的匹配路由

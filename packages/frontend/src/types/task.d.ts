@@ -12,8 +12,8 @@ declare namespace Task {
   export interface ExecuteTaskVO {
     taskId: string;
     status: "running" | "completed" | "failed" | "cancelled";
-    startTime: string;
-    endTime?: string;
+    startedAt: string;
+    finishedAt?: string;
     duration?: number;
     result?: unknown;
     error?: string;
@@ -24,8 +24,8 @@ declare namespace Task {
     taskName: string;
     status: "running" | "completed" | "failed" | "cancelled";
     triggerSource: "manual" | "cron" | "api";
-    startTime: string;
-    endTime?: string;
+    startedAt: string;
+    finishedAt?: string;
     duration?: number;
     result?: unknown;
     error?: string;
@@ -38,7 +38,7 @@ declare namespace Task {
     taskName?: string;
     status?: "running" | "completed" | "failed" | "cancelled";
     triggerSource?: "manual" | "cron" | "api";
-    startTime?: string;
+    startedAt?: string;
     endTime?: string;
   }
 
