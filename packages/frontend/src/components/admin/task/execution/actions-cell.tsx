@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ExecutionDetailSheet } from "@/components/admin/task/execution/execution-detail-sheet";
+import { ExecutionDetailSheet } from "@/components/admin/task/execution/detail-sheet";
 import { Button } from "@/components/ui/button";
 
 interface ExecutionActionsCellProps {

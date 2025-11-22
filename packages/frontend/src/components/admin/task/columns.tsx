@@ -1,7 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
+import { TaskActionsCell } from "@/components/admin/task/actions-cell";
 
 export const taskColumns: ColumnDef<Task.TaskVO>[] = [
   {
@@ -40,30 +40,7 @@ export const taskColumns: ColumnDef<Task.TaskVO>[] = [
     header: "操作",
     cell: ({ row }) => {
       const task = row.original;
-      return (
-        <div className="flex gap-2">
-          <Button
-            variant="default"
-            size="sm"
-            onClick={() => {
-              // TODO: 执行任务
-              console.log("Execute task:", task.name);
-            }}
-          >
-            执行
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              // TODO: 查看详情
-              console.log("View task:", task.name);
-            }}
-          >
-            详情
-          </Button>
-        </div>
-      );
+      return <TaskActionsCell task={task} />;
     },
   },
 ];

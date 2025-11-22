@@ -3,7 +3,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import dayjs from "dayjs";
 
-import { ExecutionActionsCell } from "@/components/admin/task/execution/execution-actions-cell";
+import { ExecutionActionsCell } from "@/components/admin/task/execution/actions-cell";
 
 
 const statusMap: Record<string, { label: string; color: string }> = {

@@ -9,6 +9,7 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "@/services/common/prisma.service";
 import { generateStableId } from "@/utils";
+import { CronTriggerService } from "./cron-trigger.service";
 import { DatabaseConfigProvider } from "./config/database.provider";
 import { ConfigSource } from "./config/trigger-config-loader.service";
 import { CreateTriggerDto, UpdateTriggerDto } from "./dto/trigger.dto";
@@ -21,17 +22,17 @@ import { CreateTriggerDto, UpdateTriggerDto } from "./dto/trigger.dto";
 export class TriggerController {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly cronTriggerService: CronTriggerService,
     private readonly databaseConfigProvider: DatabaseConfigProvider
   ) {}
 
   /**
    * 获取所有触发器
+   * 从内存中获取所有触发器配置（包括启用和禁用的）
    */
   @Get()
   async getAllTriggers() {
-    return await this.prisma.cronTrigger.findMany({
-      orderBy: { createdAt: "desc" }
-    });
+    return await this.cronTriggerService.getAllTriggerConfigs();
   }
 
   /**

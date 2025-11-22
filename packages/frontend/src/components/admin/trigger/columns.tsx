@@ -1,7 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
+import { TriggerActionsCell } from "@/components/admin/trigger/actions-cell";
 
 export const triggerColumns: ColumnDef<Trigger.TriggerVO>[] = [
   {
@@ -45,7 +45,8 @@ export const triggerColumns: ColumnDef<Trigger.TriggerVO>[] = [
           isEnabled
             ? "bg-green-100 text-green-800"
             : "bg-gray-100 text-gray-800"
-        }`}>
+        }`}
+        >
           {isEnabled ? "启用" : "禁用"}
         </span>
       );
@@ -65,30 +66,7 @@ export const triggerColumns: ColumnDef<Trigger.TriggerVO>[] = [
     header: "操作",
     cell: ({ row }) => {
       const trigger = row.original;
-      return (
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              // TODO: 编辑触发器
-              console.log("Edit trigger:", trigger.id);
-            }}
-          >
-            编辑
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              // TODO: 删除触发器
-              console.log("Delete trigger:", trigger.id);
-            }}
-          >
-            删除
-          </Button>
-        </div>
-      );
+      return <TriggerActionsCell trigger={trigger} />;
     },
   },
 ];

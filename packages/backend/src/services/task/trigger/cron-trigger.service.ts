@@ -314,6 +314,14 @@ export class CronTriggerService implements OnModuleDestroy {
   }
 
   /**
+   * 获取所有触发器配置（包括启用和禁用的）
+   * 从配置加载器获取所有配置，而不仅仅是已注册的触发器
+   */
+  async getAllTriggerConfigs(): Promise<TriggerConfigSource[]> {
+    return await this.configLoader.loadAllConfigs();
+  }
+
+  /**
    * 处理触发器触发事件
    * 触发器只负责触发任务,不等待任务执行完成
    * 任务异步执行,触发器立即返回
