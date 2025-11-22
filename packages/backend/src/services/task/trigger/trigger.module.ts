@@ -12,6 +12,7 @@ import { DatabaseConfigProviderRefactored } from "@/services/task/trigger/config
 import { ConfigFileProvider } from "@/services/task/trigger/config/file.provider";
 import { CronTriggerManagerService } from "@/services/task/trigger/cron-trigger.service";
 import { TriggerController } from "@/services/task/trigger/trigger.controller";
+import { TriggerService } from "@/services/task/trigger/trigger.service";
 
 @Module({
   imports: [ScheduleModule.forRoot(), TaskModule, PrismaModule],
@@ -21,7 +22,8 @@ import { TriggerController } from "@/services/task/trigger/trigger.controller";
     ConfigManager,
     ConfigFileProvider,
     DatabaseConfigProviderRefactored,
-    CronTriggerManagerService
+    CronTriggerManagerService,
+    TriggerService
   ],
   exports: [ConfigManager, CronTriggerManagerService],
   controllers: [TriggerController]

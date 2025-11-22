@@ -46,6 +46,14 @@ export class ConfigProviderManager {
       );
     }
 
+    provider.load().catch((e) => {
+      const error = toError(e);
+      this.logger.error(
+        `加载配置源提供者 ${name} (${source}) 失败: ${error.message}`,
+        error.stack
+      );
+    });
+
     this.providers.push(provider);
     this.providerMap.set(source, provider);
     this.logger.debug(`✅ 注册配置源提供者: ${name} (${source})`);

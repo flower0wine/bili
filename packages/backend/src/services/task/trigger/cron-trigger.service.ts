@@ -117,6 +117,9 @@ export class CronTriggerManagerService implements OnModuleDestroy {
     try {
       // 从 ConfigManager 获取所有配置
       this.logger.debug("开始从 ConfigManager 加载触发器配置...");
+
+      await this.configManager.loadAndInitialize();
+
       const configs = this.configManager.getLoadedConfigs();
 
       if (configs.length === 0) {

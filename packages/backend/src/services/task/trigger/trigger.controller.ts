@@ -7,9 +7,12 @@ import {
   Post,
   Put
 } from "@nestjs/common";
-import { TriggerConfig } from "./config/trigger.schema";
-import { CreateTriggerDto, UpdateTriggerDto } from "./dto/trigger.dto";
-import { TriggerService } from "./trigger.service";
+import { TriggerConfig } from "@/services/task/trigger/config/trigger.schema";
+import {
+  CreateTriggerDto,
+  UpdateTriggerDto
+} from "@/services/task/trigger/dto/trigger.dto";
+import { TriggerService } from "@/services/task/trigger/trigger.service";
 
 /**
  * 触发器 API 控制器

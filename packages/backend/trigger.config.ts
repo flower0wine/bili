@@ -1,10 +1,11 @@
-import { TriggerConfig } from "./src/services/task/trigger";
+import { TriggerConfig } from "./src/services/task/trigger/config/trigger.schema";
 
 /**
  * 触发器配置列表
  */
 export const triggerConfigs: TriggerConfig[] = [
   {
+    id: "user-space-sync-daily",
     name: "user-space-sync-daily",
     taskName: "user-space-sync",
     cron: "*/20 * * * * *",
@@ -12,9 +13,11 @@ export const triggerConfigs: TriggerConfig[] = [
       mids: [456664753]
     },
     enabled: false, // 默认禁用，需要手动启用
-    description: "同步用户空间数据"
+    description: "同步用户空间数据",
+    source: "config_file"
   },
   {
+    id: "user-card-sync-daily",
     name: "user-card-sync-daily",
     taskName: "user-card-sync",
     cron: "*/20 * * * * *", // 每天凌晨
@@ -23,7 +26,8 @@ export const triggerConfigs: TriggerConfig[] = [
       photo: true
     },
     enabled: false, // 默认禁用，需要手动启用
-    description: "同步用户名片数据"
+    description: "同步用户名片数据",
+    source: "config_file"
   }
   // 飞书多维表格同步任务（每天凌晨1点执行）
   // {

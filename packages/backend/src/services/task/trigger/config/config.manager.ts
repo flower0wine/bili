@@ -46,12 +46,7 @@ export class ConfigManager {
   constructor(
     private readonly providerManager: ConfigProviderManager,
     private readonly configLoader: ConfigLoader
-  ) {
-    this.loadAndInitialize().catch((e) => {
-      const error = toError(e);
-      this.logger.error(`加载配置失败: ${error.message}`, error.stack);
-    });
-  }
+  ) {}
 
   /**
    * 从配置加载器加载配置并初始化存储器
