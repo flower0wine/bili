@@ -1,7 +1,7 @@
 import type { ApiResponse } from "@/types/http";
 import type { PaginationQuery } from "@/types/pagination";
 import type { ExecuteTaskDTO, ExecuteTaskVO, TaskExecutionListVO, TaskExecutionQueryDTO, TaskExecutionVO, TaskStatsVO, TaskVO } from "@/types/task";
-import { api } from "@/lib/api/axios";
+import { api } from "@/lib/request/axios";
 
 export const taskApi = {
   getAllTasks: async () => {

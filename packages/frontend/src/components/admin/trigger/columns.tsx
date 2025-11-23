@@ -3,6 +3,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { TriggerVO } from "@/types/trigger";
 import { TriggerActionsCell } from "@/components/admin/trigger/actions-cell";
+import { formatDateTime } from "@/lib/utils";
 
 export const triggerColumns: ColumnDef<TriggerVO>[] = [
   {
@@ -59,7 +60,7 @@ export const triggerColumns: ColumnDef<TriggerVO>[] = [
     cell: ({ row }) => {
       const time = row.getValue("createdAt");
       const timeStr = String(time);
-      return <div className="text-sm">{new Date(timeStr).toLocaleString("zh-CN")}</div>;
+      return <div className="text-sm">{formatDateTime(timeStr)}</div>;
     },
   },
   {

@@ -1,7 +1,7 @@
 import type { ApiResponse } from "@/types/http";
 import type { PaginatedResponse } from "@/types/pagination";
 import type { UserSpaceVO } from "@/types/user-space";
-import { api } from "@/lib/api/axios";
+import { api } from "@/lib/request/axios";
 
 export const userSpaceApi = {
   // 获取指定用户的最新一条用户空间数据

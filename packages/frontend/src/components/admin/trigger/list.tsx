@@ -2,7 +2,10 @@
 
 import type { ReactNode } from "react";
 import type { TriggerVO } from "@/types/trigger";
+
+import { useState } from "react";
 import { triggerColumns } from "@/components/admin/trigger/columns";
+import { TriggerFormSheet } from "@/components/admin/trigger/form-sheet";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { useAllTriggers } from "@/hooks/apis/trigger.use";
@@ -13,6 +16,7 @@ interface TriggerListProps {
 }
 
 export function TriggerList({ initialData, initialError }: TriggerListProps): ReactNode {
+  const [createOpen, setCreateOpen] = useState(false);
   const { data: triggers = initialData, isLoading, error: queryError } = useAllTriggers({
     initialData,
   });
@@ -50,31 +54,35 @@ export function TriggerList({ initialData, initialError }: TriggerListProps): Re
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">触发器管理</h1>
-          <p className="text-sm text-muted-foreground mt-2">
-            共
-            {" "}
-            {triggers.length}
-            {" "}
-            个触发器
-          </p>
+    <>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">触发器管理</h1>
+            <p className="text-sm text-muted-foreground mt-2">
+              共
+              {" "}
+              {triggers.length}
+              {" "}
+              个触发器
+            </p>
+          </div>
+          <Button
+            onClick={() => setCreateOpen(true)}
+          >
+            新建触发器
+          </Button>
         </div>
-        <Button
-          onClick={() => {
-            // TODO: 创建新触发器
-            console.log("Create new trigger");
-          }}
-        >
-          新建触发器
-        </Button>
+
+        <div className="rounded-lg bg-card">
+          <DataTable columns={triggerColumns} data={triggers} />
+        </div>
       </div>
 
-      <div className="rounded-lg bg-card">
-        <DataTable columns={triggerColumns} data={triggers} />
-      </div>
-    </div>
+      <TriggerFormSheet
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+      />
+    </>
   );
 }

@@ -5,6 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { triggerApi } from "@/apis";
+import { ApiError } from "@/lib/request/axios";
 
 // Query Hooks
 export function useAllTriggers(options?: { initialData?: TriggerVO[] }) {
@@ -30,6 +31,16 @@ export function useCreateTrigger() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["triggers", "cron"] });
     },
+    onError: (error) => {
+      // 错误会自动传递到 onError 回调
+      // 可以在这里进行全局错误处理
+      if (ApiError.isApiError(error)) {
+        console.error("API Error:", error.getFullMessage(), error.toJSON());
+      }
+      else {
+        console.error("Unknown error:", error);
+      }
+    },
   });
 }
 
@@ -43,6 +54,14 @@ export function useUpdateTrigger() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["triggers", "cron"] });
+    },
+    onError: (error) => {
+      if (ApiError.isApiError(error)) {
+        console.error("API Error:", error.getFullMessage(), error.toJSON());
+      }
+      else {
+        console.error("Unknown error:", error);
+      }
     },
   });
 }

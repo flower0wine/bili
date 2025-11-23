@@ -2,7 +2,10 @@
 
 import type { TriggerVO } from "@/types/trigger";
 import { useState } from "react";
+
+import { TriggerDeleteDialog } from "@/components/admin/trigger/delete-dialog";
 import { TriggerDetailSheet } from "@/components/admin/trigger/detail-sheet";
+import { TriggerFormSheet } from "@/components/admin/trigger/form-sheet";
 import { Button } from "@/components/ui/button";
 
 interface TriggerActionsCellProps {
@@ -10,7 +13,9 @@ interface TriggerActionsCellProps {
 }
 
 export function TriggerActionsCell({ trigger }: TriggerActionsCellProps) {
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
     <>
@@ -18,34 +23,38 @@ export function TriggerActionsCell({ trigger }: TriggerActionsCellProps) {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => {
-            // TODO: 编辑触发器
-            console.log("Edit trigger:", trigger.id);
-          }}
+          onClick={() => setEditOpen(true)}
         >
           编辑
         </Button>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setSheetOpen(true)}
+          onClick={() => setDetailOpen(true)}
         >
           详情
         </Button>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => {
-            // TODO: 删除触发器
-            console.log("Delete trigger:", trigger.id);
-          }}
+          onClick={() => setDeleteOpen(true)}
         >
           删除
         </Button>
       </div>
+      <TriggerFormSheet
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        trigger={trigger}
+      />
       <TriggerDetailSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        trigger={trigger}
+      />
+      <TriggerDeleteDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
         trigger={trigger}
       />
     </>

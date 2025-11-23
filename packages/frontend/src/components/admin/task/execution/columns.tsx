@@ -3,8 +3,8 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { TaskExecutionVO } from "@/types/task";
 
-import dayjs from "dayjs";
 import { ExecutionActionsCell } from "@/components/admin/task/execution/actions-cell";
+import { formatDateTime, formatDuration } from "@/lib/utils";
 
 const statusMap: Record<string, { label: string; color: string }> = {
   running: { label: "运行中", color: "bg-blue-100 text-blue-800" },
@@ -55,7 +55,7 @@ export const taskExecutionColumns: ColumnDef<TaskExecutionVO>[] = [
     cell: ({ row }) => {
       const time = row.getValue("startedAt");
       const timeStr = String(time);
-      return <div className="text-sm">{dayjs(timeStr).format("YYYY-MM-DD HH:mm:ss")}</div>;
+      return <div className="text-sm">{formatDateTime(timeStr)}</div>;
     },
   },
   {
@@ -68,8 +68,7 @@ export const taskExecutionColumns: ColumnDef<TaskExecutionVO>[] = [
       const durationNum = Number(duration);
       return (
         <div className="text-sm">
-          {(durationNum / 1000).toFixed(2)}
-          s
+          {formatDuration(durationNum)}
         </div>
       );
     },

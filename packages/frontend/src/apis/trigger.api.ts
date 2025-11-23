@@ -1,6 +1,6 @@
 import type { ApiResponse } from "@/types/http";
 import type { CreateTriggerDTO, DeleteTriggerVO, TriggerVO, UpdateTriggerDTO } from "@/types/trigger";
-import { api } from "@/lib/api/axios";
+import { api } from "@/lib/request/axios";
 
 export const triggerApi = {
   getAllTriggers: async () => {

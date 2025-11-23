@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import setupLocatorUI from "@locator/runtime";
 import { ThemeProvider } from "next-themes";
-import { QueryProvider } from "@/providers/query-provider";
+import { QueryProvider } from "@/providers/query.provider";
+import ToastProvider from "@/providers/toast.provider";
 import "./globals.css";
 import "./animation.css";
 
@@ -22,10 +23,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN" suppressHydrationWarning>
-      <body>
+      <body suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <QueryProvider>{children}</QueryProvider>
         </ThemeProvider>
+        <ToastProvider />
       </body>
     </html>
   );

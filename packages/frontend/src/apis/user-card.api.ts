@@ -1,7 +1,7 @@
 import type { ApiResponse } from "@/types/http";
 import type { PaginatedResponse, PaginationQuery } from "@/types/pagination";
 import type { UserCardVO, UserFansFriendVo } from "@/types/user-card";
-import { api } from "@/lib/api/axios";
+import { api } from "@/lib/request/axios";
 
 
 export const userCardApi = {

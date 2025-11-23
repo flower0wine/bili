@@ -1,5 +1,7 @@
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import type { ApiResponse } from "@/types/http";
 import axios from "axios";
+import { ApiError } from "./api-error";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -41,7 +43,7 @@ api.interceptors.request.use(
 
 // 响应拦截器 - 处理通用响应格式
 api.interceptors.response.use(
-  (response: AxiosResponse) => {
+  async (response: AxiosResponse<ApiResponse>) => {
     // 计算请求耗时
     const endTime = new Date();
     const startTime = requestTimestamps.get(response.config);
@@ -58,7 +60,18 @@ api.interceptors.response.use(
       console.log("📦 Response:", response.data);
     }
 
-    return response;
+    if (!response.data.ok) {
+      // 业务错误：HTTP 200 但 ok=false
+      const error = ApiError.businessError(
+        response.data.message || "Unknown error",
+        response.data.code,
+        response.data.data,
+        response.data.error,
+      );
+      return Promise.reject(error);
+    }
+
+    return Promise.resolve(response);
   },
   async (error: AxiosError) => {
     // 计算请求耗时
@@ -79,10 +92,18 @@ api.interceptors.response.use(
       console.error("🚨 Error:", error.response?.data || error.message);
     }
 
-    // 直接抛出原始错误，让上层处理
-    return Promise.reject(error);
+    // 将 AxiosError 转换为 ApiError，保留更多上下文
+    const apiError = ApiError.networkError(
+      error.message || "Network error",
+      error.response?.status
+    );
+    // 保留原始的 AxiosError 信息
+    (apiError as any).originalError = error;
+
+    return Promise.reject(apiError);
   },
 );
 
 
+export { ApiError };
 export default api;

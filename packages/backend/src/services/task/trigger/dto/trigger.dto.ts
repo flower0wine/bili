@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsString
 } from "class-validator";
+import { IsValidCron } from "../decorators/is-valid-cron.decorator";
 
 export class CreateTriggerDto {
   @IsString()
@@ -17,6 +18,7 @@ export class CreateTriggerDto {
 
   @IsString()
   @IsNotEmpty()
+  @IsValidCron()
   cron!: string;
 
   @IsOptional()
@@ -35,6 +37,7 @@ export class CreateTriggerDto {
 export class UpdateTriggerDto {
   @IsOptional()
   @IsString()
+  @IsValidCron()
   cron?: string;
 
   @IsOptional()

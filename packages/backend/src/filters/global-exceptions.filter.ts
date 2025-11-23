@@ -11,6 +11,7 @@ import {
 } from "@nestjs/common";
 import { HttpAdapterHost } from "@nestjs/core";
 import { STATUS_CODE } from "@/constants";
+import { BusinessException } from "@/exceptions/business.exception";
 import { IApiResponse } from "@/types/response.interface";
 import { ResponseUtil } from "@/utils/response.util";
 
@@ -37,12 +38,17 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
     const code = status >= 400 ? Number(status) : STATUS_CODE.UNKNOWN_ERROR;
-    const message =
-      exception instanceof HttpException
-        ? exception.message
-        : "Internal server error";
 
-    // 记录结构化错误日志（不深入解析异常体）
+    let message = "Internal server error";
+    let errorObject: unknown = undefined;
+
+    // 由业务本身来决定错误是否向前端暴露
+    if (exception instanceof BusinessException) {
+      message = exception.getErrorMessage();
+      errorObject = exception.getErrorObject();
+    }
+
+    // 记录结构化错误日志
     this.logger.error(
       {
         err: exception,
@@ -54,10 +60,11 @@ export class GlobalExceptionsFilter implements ExceptionFilter {
       message
     );
 
-    // 仅返回统一结构，不泄露具体错误对象
+    // 返回统一结构
     const responseBody: IApiResponse<never, unknown> = ResponseUtil.error(
       code,
-      message
+      message,
+      errorObject
     );
     // 总是 200 返回，由客户端根据 ok/code 处理
     if (traceId) {

@@ -1,12 +1,12 @@
 import { plainToInstance } from "class-transformer";
-import { validate, ValidationError } from "class-validator";
+import { validate } from "class-validator";
 import {
   ArgumentMetadata,
   Injectable,
   PipeTransform,
   Type
 } from "@nestjs/common";
-import { ValidationException } from "../exceptions/business.exception";
+import { ValidationException } from "@/exceptions/validation.exception";
 
 /**
  * 全局验证管道
@@ -58,8 +58,8 @@ export class GlobalValidationPipe implements PipeTransform<any> {
         });
       }
 
-      const errorMessages = this.buildErrorMessage(errors);
-      throw new ValidationException(errorMessages);
+      // ✅ 后端只负责提供原始的验证错误信息，前端决定如何展示
+      throw new ValidationException(errors);
     }
 
     return object;
@@ -82,31 +82,5 @@ export class GlobalValidationPipe implements PipeTransform<any> {
     } catch {
       return null;
     }
-  }
-
-  /**
-   * 构建错误消息
-   */
-  private buildErrorMessage(errors: ValidationError[]): string {
-    const messages: string[] = [];
-
-    const processError = (error: ValidationError, prefix = "") => {
-      const property = prefix ? `${prefix}.${error.property}` : error.property;
-
-      if (error.constraints) {
-        const constraintMessages = Object.values(error.constraints);
-        messages.push(
-          ...constraintMessages.map((msg) => `${property}: ${msg}`)
-        );
-      }
-
-      if (error.children && error.children.length > 0) {
-        error.children.forEach((child) => processError(child, property));
-      }
-    };
-
-    errors.forEach((error) => processError(error));
-
-    return messages.join("; ");
   }
 }
