@@ -24,8 +24,8 @@ export class TaskExecutionService {
       status,
       triggerSource,
       triggerName,
-      startDate,
-      endDate,
+      startedAt,
+      finishedAt,
       page,
       limit,
       offset,
@@ -52,13 +52,13 @@ export class TaskExecutionService {
     }
 
     // 时间范围过滤 (DTO已验证日期格式)
-    if (startDate || endDate) {
+    if (startedAt || finishedAt) {
       where.startedAt = {};
-      if (startDate) {
-        where.startedAt.gte = new Date(startDate);
+      if (startedAt) {
+        where.startedAt.gte = new Date(startedAt);
       }
-      if (endDate) {
-        where.startedAt.lte = new Date(endDate);
+      if (finishedAt) {
+        where.startedAt.lte = new Date(finishedAt);
       }
     }
 

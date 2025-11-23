@@ -1,6 +1,7 @@
 import type { PaginationQuery } from "@/types/pagination";
 import type { ExecuteTaskDTO, TaskExecutionListVO, TaskExecutionQueryDTO, TaskVO } from "@/types/task";
 import {
+  keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
@@ -33,12 +34,13 @@ export function useTaskExecutions(
   options?: { initialData?: TaskExecutionListVO },
 ) {
   return useQuery({
-    queryKey: ["tasks", "executions", "history", query],
+    queryKey: ["tasks", "executions", query],
     queryFn: async () => {
       const response = await taskApi.getTaskExecutions(query);
       return response.data.data!;
     },
     initialData: options?.initialData,
+    placeholderData: keepPreviousData,
   });
 }
 

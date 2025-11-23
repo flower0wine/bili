@@ -1,9 +1,14 @@
 "use client";
 
 import type { ReactNode } from "react";
-import type { TaskExecutionListVO } from "@/types/task";
-import { useState } from "react";
+import type { TaskExecutionListVO, TaskExecutionQueryDTO } from "@/types/task";
+import { startTransition, useCallback, useEffect, useState } from "react";
+
+import { toast } from "sonner";
+
+
 import { taskExecutionColumns } from "@/components/admin/task/execution/columns";
+import { ExecutionFilters } from "@/components/admin/task/execution/filters";
 import { CommonPagination } from "@/components/common/pagination";
 import { DataTable } from "@/components/ui/data-table";
 import { useTaskExecutions } from "@/hooks/apis/task.use";
@@ -15,20 +20,39 @@ interface TaskExecutionListProps {
 
 export function TaskExecutionList({ initialData, initialError }: TaskExecutionListProps): ReactNode {
   const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState<TaskExecutionQueryDTO>({});
   const limit = 10;
+
+  const handleFiltersChange = useCallback((newFilters: TaskExecutionQueryDTO) => {
+    startTransition(() => {
+      setFilters(newFilters);
+      setPage(1);
+    });
+  }, []);
 
   const { data, isLoading, error: queryError } = useTaskExecutions(
     {
       page,
       limit,
+      ...filters,
     },
     { initialData: page === 1 && initialData ? initialData : undefined },
   );
 
-  const error = initialError && page === 1 ? initialError : queryError;
+  // 监听 queryError 并显示 toast
+  useEffect(() => {
+    if (queryError) {
+      const errorMessage = queryError instanceof Error
+        ? queryError.message
+        : "未知错误，加载执行历史失败";
+      toast.error(errorMessage);
+    }
+  }, [queryError]);
+
   const executions = data?.items ?? [];
   const total = data?.total ?? 0;
 
+  // 初始加载时显示加载状态
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -44,7 +68,8 @@ export function TaskExecutionList({ initialData, initialError }: TaskExecutionLi
     );
   }
 
-  if (error) {
+  // 初始加载失败时显示错误
+  if (initialError) {
     return (
       <div className="space-y-4">
         <h1 className="text-3xl font-bold tracking-tight">执行历史</h1>
@@ -52,7 +77,7 @@ export function TaskExecutionList({ initialData, initialError }: TaskExecutionLi
           <p className="text-sm text-destructive">
             加载执行历史失败:
             {" "}
-            {error instanceof Error ? error.message : "未知错误"}
+            {initialError}
           </p>
         </div>
       </div>
@@ -72,6 +97,10 @@ export function TaskExecutionList({ initialData, initialError }: TaskExecutionLi
             条记录
           </p>
         </div>
+      </div>
+
+      <div className="rounded-lg bg-card p-4">
+        <ExecutionFilters filters={filters} onFiltersChange={handleFiltersChange} />
       </div>
 
       <div className="rounded-lg bg-card">

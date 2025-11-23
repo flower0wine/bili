@@ -25,6 +25,7 @@ export const taskExecutionColumns: ColumnDef<TaskExecutionVO>[] = [
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue("taskName")}</div>
     ),
+    filterFn: "includesString",
   },
   {
     accessorKey: "status",
@@ -39,6 +40,7 @@ export const taskExecutionColumns: ColumnDef<TaskExecutionVO>[] = [
         </span>
       );
     },
+    filterFn: "equals",
   },
   {
     accessorKey: "triggerSource",
@@ -48,6 +50,7 @@ export const taskExecutionColumns: ColumnDef<TaskExecutionVO>[] = [
       const sourceStr = String(source);
       return <div className="text-sm">{triggerSourceMap[sourceStr] || "未知触发源"}</div>;
     },
+    filterFn: "equals",
   },
   {
     accessorKey: "startedAt",

@@ -20,11 +20,11 @@ export class TaskExecutionQueryDto extends PaginationQueryDto {
 
   @IsOptional()
   @IsDateString({}, { message: "开始日期格式不正确" })
-  startDate?: string;
+  startedAt?: string;
 
   @IsOptional()
   @IsDateString({}, { message: "结束日期格式不正确" })
-  endDate?: string;
+  finishedAt?: string;
 }
 
 export class ExecuteTaskDto {
