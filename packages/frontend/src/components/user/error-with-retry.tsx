@@ -6,16 +6,16 @@ import { useState } from "react";
 interface ErrorWithRetryProps {
   title: string;
   message: string;
-  onRetry: () => Promise<void> | void;
+  onRetry: () => Promise<void>;
 }
 
 export function ErrorWithRetry({ title, message, onRetry }: ErrorWithRetryProps) {
   const [isRetrying, setIsRetrying] = useState(false);
 
-  const handleRetry = async () => {
+  const handleRetry = () => {
     setIsRetrying(true);
     try {
-      await onRetry();
+      onRetry();
     }
     finally {
       setIsRetrying(false);
@@ -40,7 +40,7 @@ export function ErrorWithRetry({ title, message, onRetry }: ErrorWithRetryProps)
         </p>
 
         <button
-          onClick={void handleRetry}
+          onClick={handleRetry}
           disabled={isRetrying}
           className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >

@@ -16,12 +16,22 @@ export const taskApi = {
     );
   },
 
-  executeTask: async (
+  executeTaskManually: async (
     taskName: string,
     data: ExecuteTaskDTO,
   ) => {
     return api.post<ApiResponse<ExecuteTaskVO>>(
-      `/v1/tasks/${taskName}/execute`,
+      `/v1/tasks/${taskName}/execute/manual`,
+      data,
+    );
+  },
+
+  executeTaskViaAPI: async (
+    taskName: string,
+    data: ExecuteTaskDTO,
+  ) => {
+    return api.post<ApiResponse<ExecuteTaskVO>>(
+      `/v1/tasks/${taskName}/execute/api`,
       data,
     );
   },
@@ -40,17 +50,6 @@ export const taskApi = {
   ) => {
     return api.get<ApiResponse<TaskExecutionVO>>(
       `/v1/tasks/executions/${id}`,
-    );
-  },
-
-  getTaskStats: async (
-    taskName?: string,
-  ) => {
-    return api.get<ApiResponse<TaskStatsVO>>(
-      "/v1/tasks/stats/summary",
-      {
-        params: taskName ? { taskName } : undefined,
-      },
     );
   },
 };

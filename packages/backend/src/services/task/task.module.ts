@@ -10,6 +10,7 @@ import { TaskExecutionService } from "./task-execution.service";
 import { TaskExecutorService } from "./task-executor.service";
 import { TaskRegistryService } from "./task-registry.service";
 import { TaskController } from "./task.controller";
+import { TaskService } from "./task.service";
 import { FeishuBitableSyncTask } from "./tasks/feishu-sync/feishu-bitable-sync.task";
 import { UserCardSyncTask } from "./tasks/user-card-sync.task";
 import { UserSpaceSyncTask } from "./tasks/user-space-sync.task";
@@ -26,6 +27,7 @@ import { UserSpaceSyncTask } from "./tasks/user-space-sync.task";
     TaskRegistryService,
     TaskExecutorService,
     TaskExecutionService,
+    TaskService,
     LoggingMiddleware,
     PersistenceMiddleware,
     // 注册任务提供者

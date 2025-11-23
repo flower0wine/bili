@@ -12,9 +12,7 @@ import {
   ExecuteTaskDto,
   TaskExecutionQueryDto
 } from "./dto/task-execution.dto";
-import { TaskExecutionService } from "./task-execution.service";
-import { TaskExecutorService } from "./task-executor.service";
-import { TaskRegistryService } from "./task-registry.service";
+import { TaskService } from "./task.service";
 
 /**
  * 任务 API 控制器
@@ -22,66 +20,46 @@ import { TaskRegistryService } from "./task-registry.service";
  */
 @Controller("tasks")
 export class TaskController {
-  constructor(
-    private readonly taskRegistry: TaskRegistryService,
-    private readonly taskExecutor: TaskExecutorService,
-    private readonly taskExecutionService: TaskExecutionService
-  ) {}
+  constructor(private readonly taskService: TaskService) {}
 
   /**
    * 获取所有已注册的任务
-   * 使用 getAllTaskInfos() 而非 getAllTasks()，避免序列化 handler 函数
    */
   @Get()
   getAllTasks() {
-    const tasks = this.taskRegistry.getAllTaskInfos();
-    return tasks.map((task) => ({
-      name: task.name,
-      description: task.description,
-      options: task.options
-    }));
+    return this.taskService.getAllTasks();
   }
 
   /**
    * 手动执行任务
    */
-  @Post(":taskName/execute")
+  @Post(":taskName/execute/manual")
   @HttpCode(HttpStatus.OK)
-  async executeTask(
+  async executeTaskManually(
     @Param("taskName") taskName: string,
     @Body() body: ExecuteTaskDto
   ) {
-    const result = await this.taskExecutor.execute(
-      taskName,
-      body.params,
-      "api"
-    );
+    return await this.taskService.executeTaskManually(taskName, body);
+  }
 
-    return result;
+  /**
+   * 通过 API 调用执行任务
+   */
+  @Post(":taskName/execute/api")
+  @HttpCode(HttpStatus.OK)
+  async executeTaskViaAPI(
+    @Param("taskName") taskName: string,
+    @Body() body: ExecuteTaskDto
+  ) {
+    return await this.taskService.executeTaskViaAPI(taskName, body);
   }
 
   /**
    * 获取任务详情
-   * 使用 getTaskInfo() 而非 getTask()，避免序列化 handler 函数
    */
   @Get(":taskName")
   getTask(@Param("taskName") taskName: string) {
-    const task = this.taskRegistry.getTaskInfo(taskName);
-    if (!task) {
-      return {
-        success: false,
-        message: `任务不存在: ${taskName}`
-      };
-    }
-
-    return {
-      success: true,
-      data: {
-        name: task.name,
-        description: task.description,
-        options: task.options
-      }
-    };
+    return this.taskService.getTask(taskName);
   }
 
   /**
@@ -89,7 +67,7 @@ export class TaskController {
    */
   @Get("executions/history")
   async getTaskExecutions(@Query() query: TaskExecutionQueryDto) {
-    return await this.taskExecutionService.getTaskExecutions(query);
+    return await this.taskService.getTaskExecutions(query);
   }
 
   /**
@@ -97,13 +75,6 @@ export class TaskController {
    */
   @Get("executions/:id")
   async getTaskExecution(@Param("id") id: string) {
-    const execution = await this.taskExecutionService.getTaskExecution(id);
-    if (!execution) {
-      return {
-        success: false,
-        message: "执行记录不存在"
-      };
-    }
-    return execution;
+    return await this.taskService.getTaskExecution(id);
   }
 }

@@ -1,44 +1,36 @@
 "use client";
 
-import { useMemo } from "react";
 import { CodeEditor } from "./code-editor";
 
-interface JsonViewerProps {
-  data: unknown;
+interface TsViewerProps {
+  value: string;
   editable?: boolean;
   onChange?: (value: string) => void;
   height?: string;
   className?: string;
   showCopyButton?: boolean;
+  title?: string;
 }
 
-export function JsonViewer({
-  data,
+export function TsViewer({
+  value,
   editable = false,
   onChange,
   height = "400px",
   className = "",
   showCopyButton = true,
-}: JsonViewerProps) {
-  const jsonString = useMemo(() => {
-    try {
-      return JSON.stringify(data, null, 2);
-    }
-    catch {
-      return JSON.stringify({ error: "Failed to serialize data" }, null, 2);
-    }
-  }, [data]);
-
+  title = "TypeScript 代码",
+}: TsViewerProps) {
   return (
     <CodeEditor
-      value={jsonString}
-      language="json"
+      value={value}
+      language="typescript"
       editable={editable}
       onChange={onChange}
       height={height}
       className={className}
       showCopyButton={showCopyButton}
-      title="JSON 数据"
+      title={title}
     />
   );
 }

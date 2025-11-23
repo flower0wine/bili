@@ -54,19 +54,8 @@ export function useTaskExecution(id: string) {
   });
 }
 
-export function useTaskStats(taskName?: string) {
-  return useQuery({
-    queryKey: ["tasks", "stats", taskName],
-    queryFn: async () => {
-      const response = await taskApi.getTaskStats(taskName);
-      return response.data.data!;
-    },
-    enabled: !!taskName,
-  });
-}
-
 // Mutation Hooks
-export function useExecuteTask() {
+export function useExecuteTaskManually() {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -77,7 +66,29 @@ export function useExecuteTask() {
       taskName: string;
       data: ExecuteTaskDTO;
     }) => {
-      const response = await taskApi.executeTask(taskName, data);
+      const response = await taskApi.executeTaskManually(taskName, data);
+      return response.data.data!;
+    },
+    onSuccess: () => {
+      // Invalidate task executions and stats queries
+      queryClient.invalidateQueries({ queryKey: ["tasks", "executions"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
+    },
+  });
+}
+
+export function useExecuteTaskViaAPI() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      taskName,
+      data,
+    }: {
+      taskName: string;
+      data: ExecuteTaskDTO;
+    }) => {
+      const response = await taskApi.executeTaskViaAPI(taskName, data);
       return response.data.data!;
     },
     onSuccess: () => {

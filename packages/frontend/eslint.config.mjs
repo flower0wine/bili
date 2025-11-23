@@ -33,6 +33,7 @@ const eslintConfig = antfu({
     "ts/no-unsafe-return": "off",
     "ts/no-floating-promises": "off",
     "ts/switch-exhaustiveness-check": "off",
+    "ts/no-misused-promises": "off",
 
     // 放宽其他严格规则
     "unicorn/prefer-number-properties": "off",

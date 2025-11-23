@@ -16,6 +16,7 @@ const statusMap: Record<string, { label: string; color: string }> = {
 const triggerSourceMap: Record<string, string> = {
   cron: "定时任务",
   api: "API调用",
+  manual: "手动调用"
 };
 
 export const taskExecutionColumns: ColumnDef<TaskExecutionVO>[] = [
