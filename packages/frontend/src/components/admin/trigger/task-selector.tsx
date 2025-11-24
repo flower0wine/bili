@@ -24,9 +24,11 @@ interface TaskSelectorProps {
   value: string;
   onValueChange: (value: string) => void;
   disabled?: boolean;
+  className?: string;
+  "aria-invalid"?: boolean | "true" | "false";
 }
 
-export function TaskSelector({ value, onValueChange, disabled = false }: TaskSelectorProps) {
+export function TaskSelector({ value, onValueChange, disabled = false, className, "aria-invalid": ariaInvalid }: TaskSelectorProps) {
   const [open, setOpen] = React.useState(false);
   const { data: tasks = [] } = useAllTasks();
 
@@ -39,7 +41,8 @@ export function TaskSelector({ value, onValueChange, disabled = false }: TaskSel
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          aria-invalid={ariaInvalid}
+          className={cn("w-full justify-between", className)}
           disabled={disabled}
         >
           {value

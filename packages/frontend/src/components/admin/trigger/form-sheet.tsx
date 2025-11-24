@@ -4,7 +4,7 @@ import type { CreateTriggerDTO, TriggerVO, UpdateTriggerDTO } from "@/types/trig
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import * as devalue from "devalue";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -12,7 +12,14 @@ import * as z from "zod";
 import { TaskSelector } from "@/components/admin/trigger/task-selector";
 import { TsViewer } from "@/components/common/ts-viewer";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Field,
   FieldContent,
@@ -23,6 +30,7 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Sheet,
   SheetContent,
@@ -81,6 +89,7 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
   const createMutation = useCreateTrigger();
   const updateMutation = useUpdateTrigger();
   const isLoading = createMutation.isPending || updateMutation.isPending;
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const form = useForm<TriggerFormData>({
     resolver: zodResolver(triggerFormSchema) as any,
@@ -125,6 +134,29 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
       });
     }
   }, [open, trigger, form]);
+
+  // Check if form has unsaved changes
+  const hasChanges = form.formState.isDirty;
+
+  const handleSheetOpenChange = (newOpen: boolean) => {
+    if (!newOpen && hasChanges && !isLoading) {
+      // If closing and there are unsaved changes, show confirmation dialog
+      setShowConfirmDialog(true);
+    } else {
+      // Otherwise, close normally
+      onOpenChange(newOpen);
+    }
+  };
+
+  const handleConfirmClose = () => {
+    setShowConfirmDialog(false);
+    onOpenChange(false);
+    form.reset();
+  };
+
+  const handleCancelClose = () => {
+    setShowConfirmDialog(false);
+  };
 
   const onSubmit = (data: TriggerFormData): void => {
     // Parse params from JSON string
@@ -199,7 +231,8 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <>
+      <Sheet open={open} onOpenChange={handleSheetOpenChange}>
       <SheetContent side="left" className="w-full sm:max-w-2xl overflow-y-auto px-4">
         <SheetHeader>
           <SheetTitle>{isEdit ? "编辑触发器" : "新建触发器"}</SheetTitle>
@@ -208,10 +241,9 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
           </SheetDescription>
         </SheetHeader>
 
-        <form id="trigger-form" onSubmit={form.handleSubmit(onSubmit)} className="py-6">
+        <form id="trigger-form" onSubmit={form.handleSubmit(onSubmit)}>
           <FieldSet>
             <FieldGroup>
-              {/* 触发器名称 */}
               <Controller
                 name="name"
                 control={form.control}
@@ -220,9 +252,9 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
                     <FieldLabel htmlFor="trigger-name">触发器名称</FieldLabel>
                     <FieldContent>
                       <Input
-                        {...field}
                         id="trigger-name"
                         placeholder="例如：每天凌晨执行"
+                        onChange={field.onChange}
                         disabled={isLoading}
                         aria-invalid={fieldState.invalid}
                       />
@@ -232,7 +264,6 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
                 )}
               />
 
-              {/* 关联任务 */}
               <Controller
                 name="taskName"
                 control={form.control}
@@ -244,6 +275,7 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
                         value={field.value}
                         onValueChange={field.onChange}
                         disabled={isLoading}
+                        aria-invalid={fieldState.invalid}
                       />
                       <FieldError errors={[fieldState.error]} />
                     </FieldContent>
@@ -251,7 +283,6 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
                 )}
               />
 
-              {/* Cron 表达式 */}
               <Controller
                 name="cron"
                 control={form.control}
@@ -259,6 +290,9 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor="trigger-cron">Cron 表达式</FieldLabel>
                     <FieldContent>
+                      <FieldDescription>
+                        标准 Cron 格式：分 小时 日期 月份 星期
+                      </FieldDescription>
                       <Input
                         {...field}
                         id="trigger-cron"
@@ -266,16 +300,12 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
                         disabled={isLoading}
                         aria-invalid={fieldState.invalid}
                       />
-                      <FieldDescription>
-                        标准 Cron 格式：分 小时 日期 月份 星期
-                      </FieldDescription>
                       <FieldError errors={[fieldState.error]} />
                     </FieldContent>
                   </Field>
                 )}
               />
 
-              {/* 描述 */}
               <Controller
                 name="description"
                 control={form.control}
@@ -295,26 +325,34 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
                 )}
               />
 
-              {/* 启用状态 */}
               <Controller
                 name="enabled"
                 control={form.control}
                 render={({ field }) => (
-                  <Field orientation="horizontal">
-                    <Checkbox
-                      id="trigger-enabled"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      disabled={isLoading}
-                    />
+                  <Field>
+                    <FieldLabel>是否启用触发器</FieldLabel>
                     <FieldContent>
-                      <FieldLabel htmlFor="trigger-enabled">启用此触发器</FieldLabel>
+                      <RadioGroup
+                        value={field.value ? "true" : "false"}
+                        onValueChange={value => field.onChange(value === "true")}
+                        disabled={isLoading}
+                      >
+                        <div className="flex items-center gap-4">
+                          <label className="flex items-center gap-2" htmlFor="trigger-enabled-yes">
+                            <RadioGroupItem value="true" id="trigger-enabled-yes" />
+                            <span className="cursor-pointer">是</span>
+                          </label>
+                          <label className="flex items-center gap-2" htmlFor="trigger-enabled-no">
+                            <RadioGroupItem value="false" id="trigger-enabled-no" />
+                            <span className="cursor-pointer">否</span>
+                          </label>
+                        </div>
+                      </RadioGroup>
                     </FieldContent>
                   </Field>
                 )}
               />
 
-              {/* 参数配置 */}
               <Controller
                 name="paramsJson"
                 control={form.control}
@@ -333,7 +371,8 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
                         showCopyButton={false}
                         title="触发器参数对象"
                       />
-                      <FieldError errors={[fieldState.error]} />
+                      {/* <FieldError errors={}>
+                      </FieldError> */}
                     </FieldContent>
                   </Field>
                 )}
@@ -346,7 +385,7 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
           <Button
             variant="outline"
             onClick={() => {
-              onOpenChange(false);
+              handleSheetOpenChange(false);
             }}
             disabled={isLoading}
           >
@@ -362,5 +401,31 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
         </SheetFooter>
       </SheetContent>
     </Sheet>
+
+      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>确认关闭</DialogTitle>
+            <DialogDescription>
+              您有未保存的更改，确定要关闭吗？
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={handleCancelClose}
+            >
+              取消
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmClose}
+            >
+              关闭
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
