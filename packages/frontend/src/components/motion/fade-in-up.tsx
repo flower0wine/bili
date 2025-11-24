@@ -59,8 +59,6 @@ export function FadeInUp({
   fallback,
   ...props
 }: FadeInUpProps) {
-  console.log("渲染FadeInUp");
-
   return (
     <Suspense fallback={fallback || children}>
       <MotionDiv

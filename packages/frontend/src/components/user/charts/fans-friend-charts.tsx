@@ -20,7 +20,6 @@ export async function FansFriendCharts({ uid, startDate, endDate }: FansFriendCh
       endDate
     });
     historyData = response.data?.data;
-    console.log("数据在这呢：", response.data);
   }
   catch (err) {
     console.error("Failed to fetch fans friend history:", err);

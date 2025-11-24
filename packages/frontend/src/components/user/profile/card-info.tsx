@@ -1,5 +1,9 @@
+"use client";
+
 import type { UserCardVO } from "@/types/user-card";
-import { Calendar, Heart, TrendingUp, User, Users } from "lucide-react";
+import { Calendar, Heart, TrendingUp, Users } from "lucide-react";
+
+import { Avatar } from "@/components/common/avatar";
 
 interface UserProfileCardServiceProps {
   userCardData: UserCardVO;
@@ -11,11 +15,12 @@ export function UserProfileCardService({ userCardData, uid }: UserProfileCardSer
     <div className="bg-card rounded-2xl shadow-xl p-8 border border-border">
       <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
         {/* 头像区域 */}
-        <div className="shrink-0">
-          <div className="w-24 h-24 bg-linear-to-r from-primary to-secondary rounded-full flex items-center justify-center">
-            <User className="w-12 h-12 text-primary-foreground" />
-          </div>
-        </div>
+        <Avatar
+          src={userCardData.face}
+          alt={userCardData.name || "用户头像"}
+          size="xl"
+          borderGradient
+        />
 
         {/* 用户信息 */}
         <div className="flex-1">

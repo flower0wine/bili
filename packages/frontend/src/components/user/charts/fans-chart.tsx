@@ -11,9 +11,6 @@ export function FansChart({ data }: FansChartProps) {
   const chartRef = useRef<HTMLDivElement>(null);
   const [chartLoaded, setChartLoaded] = useState(false);
 
-  console.log("图表组件加载了");
-
-
   useEffect(() => {
     const loadChart = async () => {
       try {
