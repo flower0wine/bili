@@ -58,6 +58,11 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  compiler: {
+    removeConsole: {
+      exclude: ["error", "warning"],
+    },
+  },
 };
 
 export default nextConfig;

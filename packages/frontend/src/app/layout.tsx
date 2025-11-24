@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import setupLocatorUI from "@locator/runtime";
 import { ThemeProvider } from "next-themes";
 import { QueryProvider } from "@/providers/query.provider";
@@ -14,6 +14,17 @@ export const metadata: Metadata = {
   title: "Bilibili 用户信息查询",
   description:
     "基于 B 站公开 API 的用户信息查询系统，展示用户的详细资料、统计数据等内容",
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "cyan" },
+    { media: "(prefers-color-scheme: dark)", color: "black" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
