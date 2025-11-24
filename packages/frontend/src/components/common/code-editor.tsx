@@ -1,9 +1,10 @@
 "use client";
 
+import type { editor } from "monaco-editor";
 import Editor, { loader } from "@monaco-editor/react";
 import { Copy } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 
 // 配置 Monaco Editor Workers
@@ -49,6 +50,7 @@ export function CodeEditor({
 }: CodeEditorProps) {
   const { theme } = useTheme();
   const [copySuccess, setCopySuccess] = useState(false);
+  const editorRef = useRef<editor.IStandaloneCodeEditor>(null);
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(value).then(() => {
@@ -57,6 +59,16 @@ export function CodeEditor({
     }).catch((err) => {
       console.error("Failed to copy code:", err);
     });
+  };
+
+  const handleEditorMount = (editor: editor.IStandaloneCodeEditor) => {
+    editorRef.current = editor;
+  };
+
+  const handleEditorChange = (newValue: string | undefined) => {
+    if (editable && onChange && newValue) {
+      onChange(newValue);
+    }
   };
 
   return (
@@ -85,11 +97,8 @@ export function CodeEditor({
         height={showCopyButton ? `calc(${height} - 53px)` : height}
         defaultLanguage={language}
         value={value}
-        onChange={(newValue) => {
-          if (editable && onChange && newValue) {
-            onChange(newValue);
-          }
-        }}
+        onMount={handleEditorMount}
+        onChange={handleEditorChange}
         theme={theme === "dark" ? "vs-dark" : "vs"}
         options={{
           readOnly: !editable,

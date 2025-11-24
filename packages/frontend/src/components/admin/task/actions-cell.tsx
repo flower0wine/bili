@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { useExecuteTaskManually } from "@/hooks/apis/task.use";
 import { toError } from "@/lib/error.util";
+import { parseObjectString } from "@/lib/utils";
 
 interface TaskActionsCellProps {
   task: TaskVO;
@@ -31,27 +32,14 @@ export function TaskActionsCell({ task }: TaskActionsCellProps) {
     setParamsJson(value);
   };
 
-  const validateAndParseParams = (): Record<string, unknown> | null => {
-    const message = "参数必须是一个有效的对象";
-    try {
-      // eslint-disable-next-line no-eval
-      const parsed = eval(`(${paramsJson})`);
-
-      if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-        toast.error(message);
-        return null;
-      }
-      return parsed as Record<string, unknown>;
-    }
-    catch {
-      toast.error(message);
-      return null;
-    }
-  };
-
   const handleExecuteTask = async () => {
-    const params = validateAndParseParams();
-    if (params === null) {
+    let params: Record<string, unknown>;
+    try {
+      params = parseObjectString(paramsJson);
+    }
+    catch (e) {
+      const error = toError(e);
+      toast.error(error.message);
       return;
     }
 

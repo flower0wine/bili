@@ -3,13 +3,14 @@
 import type { CreateTriggerDTO, TriggerVO, UpdateTriggerDTO } from "@/types/trigger";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import * as devalue from "devalue";
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as z from "zod";
 
+import * as z from "zod";
 import { TaskSelector } from "@/components/admin/trigger/task-selector";
-import { JsonViewer } from "@/components/common/json-viewer";
+import { TsViewer } from "@/components/common/ts-viewer";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -32,7 +33,10 @@ import {
 } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateTrigger, useUpdateTrigger } from "@/hooks/apis/trigger.use";
+import { toError } from "@/lib/error.util";
+import { formatJS } from "@/lib/formatJS.util";
 import { ApiError } from "@/lib/request/axios";
+import { parseObjectString } from "@/lib/utils";
 
 
 // Form schema validation
@@ -46,13 +50,8 @@ const triggerFormSchema = z.object({
     (val) => {
       if (!val.trim())
         return true;
-      try {
-        const parsed = JSON.parse(val);
-        return typeof parsed === "object" && parsed !== null && !Array.isArray(parsed);
-      }
-      catch {
-        return false;
-      }
+      const parsed = parseObjectStringInner(val);
+      return parsed !== null;
     },
     { message: "参数必须是有效的 JSON 对象" }
   ),
@@ -64,6 +63,17 @@ interface TriggerFormSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   trigger?: TriggerVO | null;
+}
+
+function parseObjectStringInner(val: string) {
+  try {
+    return parseObjectString(val);
+  }
+  catch (e) {
+    const error = toError(e);
+    console.error(error.message);
+    return null;
+  }
 }
 
 export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormSheetProps) {
@@ -87,7 +97,24 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
   // Reset form when trigger changes or sheet opens
   useEffect(() => {
     if (open) {
-      const paramsJson = JSON.stringify(trigger?.params || {}, null, 2);
+      let paramsJson = "{}";
+      try {
+        paramsJson = formatJS(devalue.uneval(trigger?.params || {}));
+      }
+      catch (e) {
+        const error = toError(e);
+        console.error(error.message);
+
+        try {
+          paramsJson = JSON.stringify(trigger?.params || {}, null, 2);
+        }
+        catch (e) {
+          const error = toError(e);
+          console.error(error.message);
+          toast.error("解析失败");
+        }
+      }
+
       form.reset({
         name: trigger?.name || "",
         taskName: trigger?.taskName || "",
@@ -103,7 +130,14 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
     // Parse params from JSON string
     let params: Record<string, unknown> = {};
     if (data.paramsJson.trim()) {
-      params = JSON.parse(data.paramsJson);
+      try {
+        params = parseObjectString(data.paramsJson);
+      }
+      catch (e) {
+        const error = toError(e);
+        toast.error(error.message);
+        return;
+      }
     }
 
     if (isEdit && trigger) {
@@ -288,17 +322,17 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel>参数配置（可选）</FieldLabel>
                     <FieldContent>
-                      <JsonViewer
-                        data={field.value ? JSON.parse(field.value) : {}}
-                        editable={true}
+                      <FieldDescription>
+                        输入有效的对象作为触发器参数
+                      </FieldDescription>
+                      <TsViewer
+                        value={field.value}
+                        editable
                         onChange={field.onChange}
                         height="250px"
                         showCopyButton={false}
-                        className="border rounded-lg"
+                        title="触发器参数对象"
                       />
-                      <FieldDescription>
-                        输入有效的 JSON 对象作为触发器参数
-                      </FieldDescription>
                       <FieldError errors={[fieldState.error]} />
                     </FieldContent>
                   </Field>
