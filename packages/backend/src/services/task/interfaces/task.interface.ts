@@ -1,12 +1,50 @@
 /**
  * 任务触发来源类型
  */
-export type TaskSource = "cron" | "manual" | "event" | "api";
+export enum TaskSource {
+  CRON = "cron",
+  MANUAL = "manual",
+  EVENT = "event",
+  API = "api"
+}
+
+/**
+ * 任务执行状态
+ */
+// export type TaskExecutionStatus =
+//   | "running"
+//   | "completed"
+//   | "failed"
+//   | "cancelled";
+
+export enum TaskExecutionStatus {
+  RUNNING = "running",
+  SUCCESS = "success",
+  FAILED = "failed",
+  CANCELED = "cancelled"
+}
+
+export enum TaskExecutionLevel {
+  INFO = "info",
+  WARN = "warn",
+  ERROR = "error",
+  DEBUG = "debug"
+}
+
+/**
+ * 任务执行日志条目
+ */
+export interface TaskExecutionLog {
+  timestamp: Date;
+  level: TaskExecutionLevel;
+  message: string;
+  data?: any;
+}
 
 /**
  * 任务执行上下文
  */
-export interface TaskContext<P> {
+export interface TaskContext {
   /**
    * 任务名称
    */
@@ -15,7 +53,7 @@ export interface TaskContext<P> {
   /**
    * 任务参数
    */
-  params?: P;
+  params?: any;
 
   /**
    * 触发来源（cron、manual、event 等）
@@ -61,6 +99,21 @@ export interface TaskContext<P> {
    * 取消信号（支持外部取消任务）
    */
   signal?: AbortSignal;
+
+  /**
+   * 当前执行状态
+   */
+  status: TaskExecutionStatus;
+
+  /**
+   * 执行日志
+   */
+  logs: TaskExecutionLog[];
+
+  /**
+   * 执行结果
+   */
+  result?: TaskResult<any>;
 }
 
 /**

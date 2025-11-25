@@ -1,5 +1,10 @@
 import type { PaginationQuery } from "@/types/pagination";
-import type { ExecuteTaskDTO, TaskExecutionListVO, TaskExecutionQueryDTO, TaskVO } from "@/types/task";
+import type {
+  ExecuteTaskDTO,
+  TaskExecutionListVO,
+  TaskExecutionQueryDTO,
+  TaskVO,
+} from "@/types/task";
 import {
   keepPreviousData,
   useMutation,
@@ -72,7 +77,7 @@ export function useExecuteTaskManually() {
     onSuccess: () => {
       // Invalidate task executions and stats queries
       queryClient.invalidateQueries({ queryKey: ["tasks", "executions"] });
-      queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 }
@@ -94,7 +99,104 @@ export function useExecuteTaskViaAPI() {
     onSuccess: () => {
       // Invalidate task executions and stats queries
       queryClient.invalidateQueries({ queryKey: ["tasks", "executions"] });
-      queryClient.invalidateQueries({ queryKey: ["tasks", "stats"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    },
+  });
+}
+
+// 运行中的任务查询 Hooks
+export function useAllRunningTasks() {
+  return useQuery({
+    queryKey: ["tasks", "running"],
+    queryFn: async () => {
+      const response = await taskApi.getAllRunningTasks();
+      return response.data.data!;
+    },
+  });
+}
+
+export function useTaskExecutionsByName(taskName: string) {
+  return useQuery({
+    queryKey: ["tasks", "running", taskName],
+    queryFn: async () => {
+      const response = await taskApi.getTaskExecutionsByName(taskName);
+      return response.data.data!;
+    },
+  });
+}
+
+export function useTaskExecutionById(executionId: string) {
+  return useQuery({
+    queryKey: ["tasks", "running", "execution", executionId],
+    queryFn: async () => {
+      const response = await taskApi.getTaskExecutionById(executionId);
+      return response.data.data!;
+    },
+  });
+}
+
+// 取消任务 Mutation Hooks
+export function useCancelExecutionsByIds() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      executionIds,
+      failFast = false,
+    }: {
+      executionIds: string[];
+      failFast?: boolean;
+    }) => {
+      const response = await taskApi.cancelExecutionsByIds(
+        executionIds,
+        failFast
+      );
+      return response.data.data!;
+    },
+    onSuccess: () => {
+      // Invalidate running tasks and executions queries
+      queryClient.invalidateQueries({ queryKey: ["tasks", "running"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", "executions"] });
+    },
+  });
+}
+
+export function useCancelExecutionsByTaskNames() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      taskNames,
+      failFast = false,
+    }: {
+      taskNames: string[];
+      failFast?: boolean;
+    }) => {
+      const response = await taskApi.cancelExecutionsByTaskNames(
+        taskNames,
+        failFast
+      );
+      return response.data.data!;
+    },
+    onSuccess: () => {
+      // Invalidate running tasks and executions queries
+      queryClient.invalidateQueries({ queryKey: ["tasks", "running"] });
+      queryClient.invalidateQueries({ queryKey: ["tasks", "executions"] });
+    },
+  });
+}
+
+export function useCancelAllExecutions() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (failFast?: boolean) => {
+      const response = await taskApi.cancelAllExecutions(failFast);
+      return response.data.data!;
+    },
+    onSuccess: () => {
+      // Invalidate all task queries
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 }

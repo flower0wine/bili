@@ -5,7 +5,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface CollapsibleSectionProps {
-  title: string;
+  title: string | React.ReactNode;
   children: React.ReactNode;
   defaultOpen?: boolean;
   className?: string;
@@ -37,7 +37,11 @@ export function CollapsibleSection({
           titleClassName
         )}
       >
-        <h3 className="font-semibold text-sm">{title}</h3>
+        {typeof title === "string" ? (
+          <h3 className="font-semibold text-sm">{title}</h3>
+        ) : (
+          <div className="flex-1">{title}</div>
+        )}
         <ChevronDown
           className={cn(
             "w-4 h-4 transition-transform",

@@ -3,6 +3,7 @@
 import type { TaskVO } from "@/types/task";
 import { useState } from "react";
 import { toast } from "sonner";
+import { CancelExecutionDialog } from "@/components/admin/task/cancel-execution-dialog";
 import { TaskDetailSheet } from "@/components/admin/task/detail-sheet";
 import { TsViewer } from "@/components/common/ts-viewer";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useExecuteTaskManually } from "@/hooks/apis/task.use";
+import { useAllRunningTasks, useCancelExecutionsByTaskNames, useExecuteTaskManually } from "@/hooks/apis/task.use";
 import { toError } from "@/lib/error.util";
 import { parseObjectString } from "@/lib/utils";
 
@@ -25,8 +26,14 @@ interface TaskActionsCellProps {
 export function TaskActionsCell({ task }: TaskActionsCellProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [paramsJson, setParamsJson] = useState("{}");
   const executeTaskMutation = useExecuteTaskManually();
+  const cancelTaskMutation = useCancelExecutionsByTaskNames();
+  const { data: allRunningStats } = useAllRunningTasks();
+
+  const taskRunningCount = allRunningStats?.stats.find(s => s.taskName === task.name)?.count ?? 0;
+  const hasRunning = taskRunningCount > 0;
 
   const handleJsonHandle = (value: string) => {
     setParamsJson(value);
@@ -58,9 +65,35 @@ export function TaskActionsCell({ task }: TaskActionsCellProps) {
     }
   };
 
+  const handleCancelTask = async () => {
+    try {
+      const result = await cancelTaskMutation.mutateAsync({
+        taskNames: [task.name],
+      });
+
+      if (result.cancelled.length > 0) {
+        toast.success(`成功停止 ${result.cancelled.length} 个任务`);
+      }
+
+      if (result.taskNotFound.length > 0) {
+        toast.info("该任务没有正在运行的执行");
+      }
+
+      if (result.failed.length > 0) {
+        toast.error(`${result.failed.length} 个任务停止失败`);
+      }
+
+      setCancelDialogOpen(false);
+    }
+    catch (e) {
+      const error = toError(e);
+      toast.error(error.message);
+    }
+  };
+
   return (
     <>
-      <div className="flex gap-2">
+      <div className="flex justify-center gap-2">
         <Button
           variant="default"
           size="sm"
@@ -69,6 +102,16 @@ export function TaskActionsCell({ task }: TaskActionsCellProps) {
         >
           {executeTaskMutation.isPending ? "提交中..." : "执行"}
         </Button>
+        {hasRunning && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setCancelDialogOpen(true)}
+            disabled={cancelTaskMutation.isPending}
+          >
+            {cancelTaskMutation.isPending ? "停止中..." : "停止"}
+          </Button>
+        )}
         <Button
           variant="outline"
           size="sm"
@@ -121,6 +164,15 @@ export function TaskActionsCell({ task }: TaskActionsCellProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CancelExecutionDialog
+        open={cancelDialogOpen}
+        onOpenChange={setCancelDialogOpen}
+        title="确认停止任务"
+        description={`确定要停止任务 ${task.name} 的所有运行执行吗？此操作无法撤销。`}
+        onConfirm={handleCancelTask}
+        isLoading={cancelTaskMutation.isPending}
+      />
 
       <TaskDetailSheet
         open={sheetOpen}

@@ -8,7 +8,7 @@ import { formatDateTime, formatDuration } from "@/lib/utils";
 
 const statusMap: Record<string, { label: string; color: string }> = {
   running: { label: "运行中", color: "bg-blue-100 text-blue-800" },
-  completed: { label: "已完成", color: "bg-green-100 text-green-800" },
+  success: { label: "成功", color: "bg-green-100 text-green-800" },
   failed: { label: "失败", color: "bg-red-100 text-red-800" },
   cancelled: { label: "已取消", color: "bg-gray-100 text-gray-800" },
 };

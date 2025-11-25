@@ -10,6 +10,7 @@ import {
 import { TriggerConfig } from "@/services/task/trigger/config/trigger.schema";
 import { ConfigChangeEventType } from "@/services/task/trigger/config/types";
 import { toError } from "@/utils/error.util";
+import { TaskSource } from "../interfaces/task.interface";
 
 /**
  * 基于 ConfigManager 的 Cron 触发器服务
@@ -435,7 +436,7 @@ export class CronTriggerManagerService implements OnModuleDestroy {
 
     // 异步执行任务，不等待结果
     this.taskExecutor
-      .execute(config.taskName, config.params, "cron", config.name)
+      .execute(config.taskName, config.params, TaskSource.CRON, config.name)
       .catch((e) => {
         const error = toError(e);
         // 捕获错误避免未处理的 Promise rejection

@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -39,9 +40,9 @@ export function DataTable<TData, TValue>({
         <TableHeader>
           {table.getHeaderGroups().map(headerGroup => (
             <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
+              {headerGroup.headers.map((header, index) => {
                 return (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className={cn(index === 0 ? "" : "text-center")}>
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -62,8 +63,8 @@ export function DataTable<TData, TValue>({
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
                   >
-                    {row.getVisibleCells().map(cell => (
-                      <TableCell key={cell.id}>
+                    {row.getVisibleCells().map((cell, index) => (
+                      <TableCell key={cell.id} className={cn(index === 0 ? "" : "text-center")}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}
