@@ -79,7 +79,7 @@ function CollapsibleTrigger({
       data-slot="collapsible-trigger"
       data-state={open ? "open" : "closed"}
       className={cn(
-        "inline-flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex w-full items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[state=open]:justify-start data-[state=open]:px-3 data-[state=open]:py-2",
         className
       )}
       {...props}
@@ -97,40 +97,22 @@ function CollapsibleContent({
   ...props
 }: CollapsibleContentProps) {
   const { open } = useCollapsible();
-  const contentRef = React.useRef<HTMLDivElement>(null);
-  const [height, setHeight] = React.useState<number | undefined>(undefined);
-
-  React.useEffect(() => {
-    const element = contentRef.current;
-    if (!element)
-      return;
-
-    if (open) {
-      // 打开时，设置高度为内容高度
-      const scrollHeight = element.scrollHeight;
-      setHeight(scrollHeight);
-    }
-    else {
-      // 关闭时，设置高度为 0
-      setHeight(0);
-    }
-  }, [open]);
 
   return (
     <div
-      ref={contentRef}
       data-slot="collapsible-content"
       data-state={open ? "open" : "closed"}
       className={cn(
-        "overflow-hidden transition-all duration-200 ease-in-out",
+        "overflow: hidden transition-all duration-200 ease-in-out",
         className
       )}
       style={{
-        height: height !== undefined ? `${height}px` : "auto",
+        display: "grid",
+        gridTemplateRows: open ? "1fr" : "0fr",
       }}
       {...props}
     >
-      <div>
+      <div className="overflow-hidden">
         {children}
       </div>
     </div>

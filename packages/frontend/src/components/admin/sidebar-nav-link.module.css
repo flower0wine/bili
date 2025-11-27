@@ -1,8 +1,0 @@
-.active {
-  background-color: var(--color-primary);
-  color: var(--color-primary-foreground);
-}
-
-.active:hover {
-  filter: brightness(0.93);
-}
