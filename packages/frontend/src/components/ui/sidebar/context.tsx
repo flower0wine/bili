@@ -2,12 +2,14 @@
 
 import { usePathname } from "next/navigation";
 import * as React from "react";
+import { useMap } from "react-use";
 
 export type SidebarState = "expanded" | "collapsed";
 
 export interface SidebarContextType {
   state: SidebarState;
   setState: (state: SidebarState) => void;
+  isCollapsed: boolean;
   width: number;
   collapsedWidth: number;
   setWidth: (width: number) => void;
@@ -22,11 +24,19 @@ export interface SidebarContextType {
   setExpandedItems: (items: Set<string>) => void;
   toggleExpandedItem: (id: string) => void;
   /** 路由到激活菜单项的映射 */
-  routeToActiveMenuItemMap: Map<string, string>;
-  setRouteToActiveMenuItemMap: (map: Map<string, string> | ((prev: Map<string, string>) => Map<string, string>)) => void;
+  routeToActiveMenuItemMap: Record<string, string>;
+  routeToActiveMenuItemMapActions: {
+    set: (key: string, value: string) => void;
+    remove: (key: string) => void;
+    reset: () => void;
+  };
   /** 路由到需要展开的菜单项的映射 */
-  routeToExpandedItemsMap: Map<string, string[]>;
-  setRouteToExpandedItemsMap: (map: Map<string, string[]> | ((prev: Map<string, string[]>) => Map<string, string[]>)) => void;
+  routeToExpandedItemsMap: Record<string, string[]>;
+  routeToExpandedItemsMapActions: {
+    set: (key: string, value: string[]) => void;
+    remove: (key: string) => void;
+    reset: () => void;
+  };
 }
 
 const SidebarContext = React.createContext<SidebarContextType | undefined>(undefined);
@@ -64,8 +74,8 @@ export function SidebarProvider({
   const [isMobile, setIsMobile] = React.useState(false);
   const [activeMenuItemId, setActiveMenuItemId] = React.useState<string | null>(null);
   const [expandedItems, setExpandedItems] = React.useState<Set<string>>(new Set());
-  const [routeToActiveMenuItemMap, setRouteToActiveMenuItemMap] = React.useState<Map<string, string>>(new Map());
-  const [routeToExpandedItemsMap, setRouteToExpandedItemsMap] = React.useState<Map<string, string[]>>(new Map());
+  const [routeToActiveMenuItemMap, routeToActiveMenuItemMapActions] = useMap<Record<string, string>>({});
+  const [routeToExpandedItemsMap, routeToExpandedItemsMapActions] = useMap<Record<string, string[]>>({});
 
   const toggleExpandedItem = React.useCallback((id: string) => {
     setExpandedItems((prev) => {
@@ -115,10 +125,10 @@ export function SidebarProvider({
   }, []);
 
   // 监听路由变化，自动设置激活菜单项和展开状态
+  // 根据当前路由查找对应的菜单项
   React.useEffect(() => {
-    // 根据当前路由查找对应的菜单项
-    const activeMenuId = routeToActiveMenuItemMap.get(pathname);
-    const expandedIds = routeToExpandedItemsMap.get(pathname);
+    const activeMenuId = routeToActiveMenuItemMap[pathname];
+    const expandedIds = routeToExpandedItemsMap[pathname];
 
     if (activeMenuId) {
       setActiveMenuItemId(activeMenuId);
@@ -129,10 +139,11 @@ export function SidebarProvider({
     }
   }, [pathname, routeToActiveMenuItemMap, routeToExpandedItemsMap]);
 
-  const value: SidebarContextType = React.useMemo(
-    () => ({
+  return (
+    <SidebarContext.Provider value={{
       state,
       setState: handleStateChange,
+      isCollapsed: state === "collapsed",
       width: sidebarWidth,
       collapsedWidth,
       setWidth: setSidebarWidth,
@@ -147,12 +158,12 @@ export function SidebarProvider({
       setExpandedItems,
       toggleExpandedItem,
       routeToActiveMenuItemMap,
-      setRouteToActiveMenuItemMap,
+      routeToActiveMenuItemMapActions,
       routeToExpandedItemsMap,
-      setRouteToExpandedItemsMap,
-    }),
-    [state, sidebarWidth, collapsedWidth, showIcons, isMobile, openMobile, activeMenuItemId, expandedItems, toggleExpandedItem, routeToActiveMenuItemMap, routeToExpandedItemsMap]
+      routeToExpandedItemsMapActions,
+    }}
+    >
+      {children}
+    </SidebarContext.Provider>
   );
-
-  return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>;
 }
