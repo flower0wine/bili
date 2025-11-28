@@ -55,7 +55,7 @@ export function Sidebar({ children, className, ...props }: SidebarProps) {
         data-slot="sidebar"
         data-state={state}
         className={cn(
-          "fixed left-0 top-0 h-screen bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-in-out",
+          "fixed left-0 top-0 z-10 h-screen bg-sidebar text-sidebar-foreground transition-[width] duration-300 ease-in-out",
           className
         )}
         style={{ width: `${currentWidth}px` }}

@@ -18,6 +18,10 @@ export { SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader } from "./se
 
 // Main Sidebar
 export { Sidebar } from "./sidebar";
+
+// Sidebar Tooltip
+export { SidebarTooltip, SidebarTooltipContent, SidebarTooltipSimple, SidebarTooltipTrigger, useSidebarTooltipContext } from "./sidebar-tooltip";
+
 // Toggle
 export { SidebarToggle } from "./toggle";
 
