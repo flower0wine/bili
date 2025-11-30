@@ -1,150 +1,104 @@
-import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { STATUS_CODE } from "@/constants";
-import { UserSpaceRequestDto } from "@/services/user-space/dto/user-space.dto";
-import { encWbi, getWbiKeys } from "@/utils/wbi.util";
+import { Injectable, Logger } from "@nestjs/common";
+import { PaginationQueryDto } from "@/dto/pagination-query.dto";
+import {
+  createPaginatedResponse,
+  normalizePagination
+} from "@/interfaces/pagination.interface";
+import { PrismaService } from "@/services/common/prisma.service";
+import { Prisma, UserSpaceData } from "@prisma/client";
 
-export interface UserSpaceData {
-  mid: number;
-  name: string;
-  sex: string;
-  face: string;
-  faceNft: number;
-  sign: string;
-  level: number;
-  birthday?: string;
-
-  // 认证与会员信息
-  official?: object;
-  vip?: object;
-  pendant?: object;
-  nameplate?: object;
-
-  // 社交信息
-  fansBadge: boolean;
-  fansMedal?: object;
-  isFollowed: boolean;
-  topPhoto?: string;
-
-  // 其他展示信息
-  liveRoom?: object;
-  tags?: string[] | null;
-  sysNotice?: object;
-  isSeniorMember: number;
-}
-
+/**
+ * 用户空间数据查询服务
+ * 用于从数据库查询用户空间信息
+ */
 @Injectable()
 export class UserSpaceService {
   private readonly logger = new Logger(UserSpaceService.name);
 
-  constructor(private configService: ConfigService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  async getUserSpaceInfo(opts: UserSpaceRequestDto): Promise<UserSpaceData> {
-    const { mid } = opts;
+  /**
+   * 获取指定用户的最新一条用户空间数据
+   * @param mid 用户ID
+   * @returns 用户空间数据
+   */
+  async getLatestUserSpaceData(
+    mid: number,
+    query: PaginationQueryDto = {}
+  ): Promise<UserSpaceData | null> {
+    this.logger.log(`获取用户 ${mid} 的最新用户空间数据`);
 
-    if (!mid || typeof mid !== "number") {
-      const message = "缺少有效的用户ID";
-      this.logger.warn(message);
-      throw new HttpException(
-        { code: STATUS_CODE.INVALID_ARGUMENT, message },
-        HttpStatus.BAD_REQUEST
-      );
+    const { orderBy } = normalizePagination(query);
+
+    const record = await this.prisma.userSpaceData.findFirst({
+      where: { mid },
+      orderBy
+    });
+
+    if (!record) {
+      this.logger.warn(`用户 ${mid} 暂无用户空间数据`);
+      return null;
     }
 
-    // 从环境变量中获取cookie
-    const cookie = this.configService.get<string>("BILIBILI_COOKIE");
-    if (!cookie) {
-      const message = "未配置BILIBILI_COOKIE环境变量";
-      this.logger.error(message);
-      throw new HttpException(
-        { code: STATUS_CODE.INVALID_ARGUMENT, message },
-        HttpStatus.BAD_REQUEST
-      );
-    }
+    return record;
+  }
 
-    // 从cookie中提取SESSDATA
-    const sessdataMatch = cookie.match(/SESSDATA=([^;]+)/);
-    if (!sessdataMatch || !sessdataMatch[1]) {
-      const message = "BILIBILI_COOKIE中未找到SESSDATA";
-      this.logger.error(message);
-      throw new HttpException(
-        { code: STATUS_CODE.INVALID_ARGUMENT, message },
-        HttpStatus.BAD_REQUEST
-      );
-    }
-    const sessdata = sessdataMatch[1];
+  /**
+   * 分页获取指定用户的所有用户空间数据
+   * @param mid 用户ID
+   * @param query 分页参数
+   * @returns 分页的用户空间数据
+   */
+  async getUserSpaceDataByMid(mid: number, query: PaginationQueryDto = {}) {
+    this.logger.log(`分页获取用户 ${mid} 的用户空间数据`);
 
-    try {
-      // 获取WBI签名密钥
-      const { img_key, sub_key } = await getWbiKeys(sessdata);
+    const { page, limit, offset, orderBy } = normalizePagination(query);
 
-      // 构造请求参数
-      const params: { [key: string]: string | number } = { mid };
+    const [records, total] = await Promise.all([
+      this.prisma.userSpaceData.findMany({
+        where: { mid },
+        orderBy,
+        skip: offset,
+        take: limit
+      }),
+      this.prisma.userSpaceData.count({
+        where: { mid }
+      })
+    ]);
 
-      // 生成WBI签名
-      const signedQuery = encWbi(params, img_key, sub_key);
+    this.logger.log(`用户 ${mid} 共找到 ${total} 条记录，当前第 ${page} 页`);
 
-      // 请求用户空间信息
-      const url = `https://api.bilibili.com/x/space/wbi/acc/info?${signedQuery}`;
-      this.logger.log(`请求用户空间信息: ${url}`);
+    return createPaginatedResponse(records, total, page, limit);
+  }
 
-      const res = await fetch(url, {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
-          Referer: "https://www.bilibili.com/",
-          Cookie: cookie
-        }
-      });
+  /**
+   * 分页获取所有用户的最新用户空间数据
+   * @param query 分页参数
+   * @returns 分页的用户空间数据
+   */
+  async getAllLatestUserSpaceData(query: PaginationQueryDto = {}) {
+    this.logger.log("分页获取所有用户的最新用户空间数据");
 
-      const response = await res.json();
+    const { page, limit, offset, orderBy } = normalizePagination(query);
 
-      if (response.code !== 0) {
-        const message = `获取用户空间信息失败: ${response.message || "未知错误"}`;
-        this.logger.error(message);
-        throw new HttpException(
-          { code: STATUS_CODE.UNKNOWN_ERROR, message },
-          HttpStatus.BAD_REQUEST
-        );
-      }
+    // 获取每个用户的最新记录
+    const records = await this.prisma.userSpaceData.findMany({
+      distinct: ["mid"],
+      orderBy,
+      skip: offset,
+      take: limit
+    });
 
-      const { data } = response;
+    // 获取总用户数
+    const total = await this.prisma.userSpaceData
+      .groupBy({
+        by: ["mid"],
+        _count: true
+      })
+      .then((result) => result.length);
 
-      return {
-        mid: data.mid,
-        name: data.name,
-        sex: data.sex,
-        face: data.face,
-        faceNft: data.face_nft,
-        sign: data.sign,
-        level: data.level,
-        birthday: data.birthday,
+    this.logger.log(`共找到 ${total} 个用户的最新数据，当前第 ${page} 页`);
 
-        // 认证与会员信息
-        official: data.official,
-        vip: data.vip,
-        pendant: data.pendant,
-        nameplate: data.nameplate,
-
-        // 社交信息
-        fansBadge: data.fans_badge,
-        fansMedal: data.fans_medal,
-        isFollowed: data.is_followed,
-        topPhoto: data.top_photo,
-
-        // 其他展示信息
-        liveRoom: data.live_room,
-        tags: data.tags,
-        sysNotice: data.sys_notice,
-        isSeniorMember: data.is_senior_member
-      };
-    } catch (error: any) {
-      const message = `获取用户空间信息失败：${error?.message || error}`;
-      this.logger.error(message, error?.stack || undefined);
-      throw new HttpException(
-        { message, code: STATUS_CODE.UNKNOWN_ERROR },
-        HttpStatus.BAD_REQUEST
-      );
-    }
+    return createPaginatedResponse(records, total, page, limit);
   }
 }

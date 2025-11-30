@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import { Logger } from "nestjs-pino";
 import { Inject, Injectable, OnModuleInit } from "@nestjs/common";
 import { PrismaService } from "@/services/common/prisma.service";
+import { toError } from "@/utils/error.util";
 import { TaskContext, TaskResult } from "../interfaces/task.interface";
 import { TaskMiddleware } from "./task-middleware.interface";
 
@@ -47,7 +48,7 @@ export class PersistenceMiddleware implements TaskMiddleware, OnModuleInit {
    */
   async onModuleInit() {
     try {
-      const result = await (this.prisma as any).taskExecution.updateMany({
+      const result = await this.prisma.taskExecution.updateMany({
         where: {
           status: TaskExecutionStatus.RUNNING
         },
@@ -68,25 +69,25 @@ export class PersistenceMiddleware implements TaskMiddleware, OnModuleInit {
       }
     } catch (error) {
       this.logger.error(
-        `清理孤儿任务失败: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined
+        `清理孤儿任务失败: ${toError(error).message}`,
+        toError(error).stack
       );
     }
   }
 
-  async before<P>(context: TaskContext<P>): Promise<void> {
+  async before(context: TaskContext): Promise<void> {
     try {
       // 创建任务执行记录
-      await (this.prisma as any).taskExecution.create({
+      await this.prisma.taskExecution.create({
         data: {
           id: context.executionId,
           taskName: context.taskName,
           triggerSource: context.source,
           triggerName: context.triggerName,
-          params: context.params || {},
-          status: TaskExecutionStatus.RUNNING,
-          maxRetries: context.maxRetries || 0,
-          startedAt: context.startedAt || dayjs().toDate()
+          params: context.params,
+          status: context.status,
+          maxRetries: context.maxRetries,
+          startedAt: context.startedAt
         }
       });
 
@@ -101,29 +102,25 @@ export class PersistenceMiddleware implements TaskMiddleware, OnModuleInit {
           event: PersistenceEvent.EXECUTION_CREATE_FAILED,
           executionId: context.executionId,
           taskName: context.taskName,
-          error: error instanceof Error ? error.message : String(error)
+          error: toError(error).message
         },
-        error instanceof Error ? error.stack : undefined
+        toError(error).stack
       );
       // 不中断任务执行
     }
   }
 
-  async after<P, D>(
-    context: TaskContext<P>,
-    result: TaskResult<D>
-  ): Promise<void> {
+  async after(context: TaskContext): Promise<void> {
+    const result = context.result!;
     try {
       // 更新任务执行记录为成功
-      await (this.prisma as any).taskExecution.update({
+      await this.prisma.taskExecution.update({
         where: { id: result.executionId },
         data: {
-          status: result.success
-            ? TaskExecutionStatus.SUCCESS
-            : TaskExecutionStatus.FAILED,
+          status: context.status,
           result: result.data || {},
           error: result.error,
-          retryCount: result.retryCount || 0,
+          retryCount: result.retryCount,
           finishedAt: result.finishedAt,
           duration: result.duration
         }
@@ -141,22 +138,22 @@ export class PersistenceMiddleware implements TaskMiddleware, OnModuleInit {
           event: PersistenceEvent.EXECUTION_UPDATE_FAILED,
           executionId: context.executionId,
           taskName: context.taskName,
-          error: error instanceof Error ? error.message : String(error)
+          error: toError(error).message
         },
-        error instanceof Error ? error.stack : undefined
+        toError(error).stack
       );
     }
   }
 
-  async onError<P>(context: TaskContext<P>, error: Error): Promise<void> {
+  async onError(context: TaskContext, error: Error): Promise<void> {
     try {
       // 更新任务执行记录为失败
-      await (this.prisma as any).taskExecution.update({
+      await this.prisma.taskExecution.update({
         where: { id: context.executionId },
         data: {
-          status: TaskExecutionStatus.FAILED,
-          error: error.message || String(error),
-          retryCount: context.retryCount || 0,
+          status: context.status,
+          error: error.message,
+          retryCount: context.retryCount,
           finishedAt: dayjs().toDate(),
           duration: dayjs().diff(dayjs(context.startedAt))
         }
@@ -173,9 +170,9 @@ export class PersistenceMiddleware implements TaskMiddleware, OnModuleInit {
           event: PersistenceEvent.EXECUTION_ERROR_SAVE_FAILED,
           executionId: context.executionId,
           taskName: context.taskName,
-          error: err instanceof Error ? err.message : String(err)
+          error: toError(err).message
         },
-        err instanceof Error ? err.stack : undefined
+        toError(err).stack
       );
     }
   }

@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm run typecheck)",
+      "Bash(pnpm exec tsc:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(pnpm run lint)",
+      "Bash(pnpm add:*)",
+      "Bash(npx tsc:*)",
+      "Bash(rm:*)",
+      "Bash(pnpm run lint:*)",
+      "Bash(eslint.config.mjs)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

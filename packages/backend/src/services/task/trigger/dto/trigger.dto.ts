@@ -1,66 +1,54 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString
+} from "class-validator";
+import { IsValidCron } from "../decorators/is-valid-cron.decorator";
 
 export class CreateTriggerDto {
-  @ApiProperty({
-    description: "触发器名称（唯一标识）",
-    example: "daily-user-sync"
-  })
+  @IsString()
+  @IsNotEmpty()
   name!: string;
 
-  @ApiProperty({
-    description: "关联的任务名称",
-    example: "user-space-sync"
-  })
+  @IsString()
+  @IsNotEmpty()
   taskName!: string;
 
-  @ApiProperty({
-    description: "Cron 表达式",
-    example: "0 0 * * *"
-  })
+  @IsString()
+  @IsNotEmpty()
+  @IsValidCron()
   cron!: string;
 
-  @ApiPropertyOptional({
-    description: "任务参数（JSON 格式）",
-    example: { mid: 12345 }
-  })
-  params?: any;
+  @IsOptional()
+  @IsObject()
+  params?: Record<string, any>;
 
-  @ApiPropertyOptional({
-    description: "触发器描述",
-    example: "每天凌晨同步用户空间数据"
-  })
+  @IsOptional()
+  @IsString()
   description?: string;
 
-  @ApiPropertyOptional({
-    description: "是否启用",
-    example: true,
-    default: true
-  })
+  @IsOptional()
+  @IsBoolean()
   enabled?: boolean;
 }
 
 export class UpdateTriggerDto {
-  @ApiPropertyOptional({
-    description: "Cron 表达式",
-    example: "0 2 * * *"
-  })
+  @IsOptional()
+  @IsString()
+  @IsValidCron()
   cron?: string;
 
-  @ApiPropertyOptional({
-    description: "任务参数（JSON 格式）",
-    example: { mid: 12345 }
-  })
-  params?: any;
+  @IsOptional()
+  @IsObject()
+  params?: Record<string, any>;
 
-  @ApiPropertyOptional({
-    description: "是否启用",
-    example: false
-  })
+  @IsOptional()
+  @IsBoolean()
   enabled?: boolean;
 
-  @ApiPropertyOptional({
-    description: "触发器描述",
-    example: "每天凌晨2点同步用户空间数据"
-  })
+  @IsOptional()
+  @IsString()
   description?: string;
 }

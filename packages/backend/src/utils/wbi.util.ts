@@ -31,7 +31,7 @@ export function encWbi(
     .sort()
     .map((key) => {
       // 过滤 value 中的 "!'()*" 字符
-      const value = params[key].toString().replace(chr_filter, "");
+      const value = JSON.stringify(params[key]).replace(chr_filter, "");
       return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
     })
     .join("&");

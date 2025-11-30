@@ -411,12 +411,3 @@ Content-Type: application/json
 }
 ```
 
-## 访问 Swagger 文档
-
-启动后端服务后，访问以下地址查看完整的 API 文档：
-
-```
-http://localhost:3000/api
-```
-
-Swagger UI 提供了交互式的 API 测试功能，可以直接在浏览器中测试所有接口。

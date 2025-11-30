@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import { Logger } from "nestjs-pino";
 import { Inject, Injectable } from "@nestjs/common";
-import { TaskContext, TaskResult } from "../interfaces/task.interface";
+import { TaskContext } from "../interfaces/task.interface";
 import { TaskMiddleware } from "./task-middleware.interface";
 
 /**
@@ -21,7 +21,7 @@ const LogEvent = {
 export class LoggingMiddleware implements TaskMiddleware {
   constructor(@Inject(Logger) private readonly logger: Logger) {}
 
-  async before<P>(context: TaskContext<P>): Promise<void> {
+  async before(context: TaskContext): Promise<void> {
     this.logger.log({
       event: LogEvent.TASK_STARTED,
       executionId: context.executionId,
@@ -35,10 +35,8 @@ export class LoggingMiddleware implements TaskMiddleware {
     });
   }
 
-  async after<P, D>(
-    context: TaskContext<P>,
-    result: TaskResult<D>
-  ): Promise<void> {
+  async after(context: TaskContext): Promise<void> {
+    const result = context.result!;
     if (result.success) {
       this.logger.log({
         event: LogEvent.TASK_COMPLETED,
@@ -66,7 +64,7 @@ export class LoggingMiddleware implements TaskMiddleware {
     }
   }
 
-  async onError<P>(context: TaskContext<P>, error: Error): Promise<void> {
+  async onError(context: TaskContext, error: Error): Promise<void> {
     this.logger.error({
       event: LogEvent.TASK_ERROR,
       executionId: context.executionId,

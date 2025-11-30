@@ -1,10 +1,9 @@
 import { Logger } from "nestjs-pino";
 import { Inject, Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { PrismaService } from "@/services/common/prisma.service";
-import {
-  UserSpaceData,
-  UserSpaceService
-} from "@/services/user-space/user-space.service";
+import { UserSpaceTaskParams } from "@/services/user-space/dto/user-space-task-params.dto";
+import { UserSpaceTask } from "@/services/user-space/user-space.task";
 import { Prisma } from "@prisma/client";
 import { Task } from "../decorators/task.decorator";
 import { TaskCancelledError } from "../interfaces/task.interface";
@@ -14,6 +13,7 @@ import { TaskCancelledError } from "../interfaces/task.interface";
  */
 interface SyncParams {
   mids?: number[];
+  cookie?: string; // 可选的cookie，如果不提供则使用配置中的cookie
 }
 
 /**
@@ -38,7 +38,8 @@ interface SyncResult {
 @Injectable()
 export class UserSpaceSyncTask {
   constructor(
-    private readonly userSpaceService: UserSpaceService,
+    private readonly userSpaceTask: UserSpaceTask,
+    private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
     @Inject(Logger) private readonly logger: Logger
   ) {}
@@ -53,7 +54,18 @@ export class UserSpaceSyncTask {
     params?: SyncParams,
     signal?: AbortSignal
   ): Promise<SyncResult> {
-    const mids = params?.mids || [2]; // 默认用户列表
+    const mids = params?.mids; // 默认用户列表
+
+    if (!mids || mids.length === 0) {
+      throw new Error("用户列表为空");
+    }
+
+    // 获取cookie，优先使用传入的cookie，否则从环境变量获取
+    const cookie =
+      params?.cookie || this.configService.get<string>("BILIBILI_COOKIE");
+    if (!cookie) {
+      throw new Error("未配置BILIBILI_COOKIE环境变量且未提供cookie参数");
+    }
 
     const results: SyncResult["results"] = [];
 
@@ -64,9 +76,12 @@ export class UserSpaceSyncTask {
       }
 
       try {
+        // 构造任务参数
+        const taskParams: UserSpaceTaskParams = { mid, cookie };
+
         // 获取用户空间数据
-        const userData: UserSpaceData =
-          await this.userSpaceService.getUserSpaceInfo({ mid });
+        const userData =
+          await this.userSpaceTask.executeGetUserSpaceInfo(taskParams);
 
         // 再次检查取消状态
         if (signal?.aborted) {
@@ -80,9 +95,12 @@ export class UserSpaceSyncTask {
         });
 
         // 检查数据是否有变化
-        const hasChanged = this.hasDataChanged(latestRecord, userData);
+        const hasChanged = this.hasDataChanged({
+          oldData: latestRecord || undefined,
+          newData: userData
+        });
 
-        let saved: any = null;
+        let saved: any;
         if (hasChanged) {
           // 有变化，插入新记录
           saved = await this.prisma.userSpaceData.create({
@@ -97,21 +115,32 @@ export class UserSpaceSyncTask {
               birthday: userData.birthday,
 
               // 认证与会员信息
-              official: userData.official,
-              vip: userData.vip,
-              pendant: userData.pendant,
-              nameplate: userData.nameplate,
+              official: {
+                ...userData.official
+              },
+              vip: {
+                ...userData.vip
+              },
+              pendant: {
+                ...userData.pendant
+              },
+              nameplate: {
+                ...userData.nameplate
+              },
 
               // 社交信息
               fansBadge: userData.fansBadge,
-              fansMedal: userData.fansMedal,
               isFollowed: userData.isFollowed,
               topPhoto: userData.topPhoto,
 
               // 其他展示信息
-              liveRoom: userData.liveRoom,
+              liveRoom: {
+                ...userData.liveRoom,
+                watched_show: {
+                  ...userData.liveRoom?.watched_show
+                }
+              },
               tags: userData.tags === null ? Prisma.JsonNull : userData.tags,
-              sysNotice: userData.sysNotice,
               isSeniorMember: userData.isSeniorMember
             }
           });
@@ -178,7 +207,13 @@ export class UserSpaceSyncTask {
    * @param newData 从API获取的新数据
    * @returns true表示有变化，false表示无变化
    */
-  private hasDataChanged(oldData: any, newData: UserSpaceData): boolean {
+  private hasDataChanged({
+    oldData,
+    newData
+  }: {
+    oldData?: object;
+    newData: object;
+  }) {
     // 如果没有历史记录，说明是新用户，需要插入
     if (!oldData) {
       return true;
@@ -205,8 +240,8 @@ export class UserSpaceSyncTask {
         this.logger.debug({
           event: "user_space_sync.field_changed",
           field,
-          oldValue: oldData[field],
-          newValue: newData[field]
+          oldValue: JSON.stringify(oldData[field]),
+          newValue: JSON.stringify(newData[field])
         });
         return true;
       }

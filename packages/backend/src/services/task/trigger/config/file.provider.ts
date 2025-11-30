@@ -1,18 +1,30 @@
-import { createHash } from "crypto";
 import * as fs from "fs";
 import * as path from "path";
 import { createJiti } from "jiti";
 import { Injectable, Logger } from "@nestjs/common";
 import {
+  validateTriggerConfig,
+  type TriggerConfig
+} from "@/services/task/trigger/config/trigger.schema";
+import {
   ConfigSource,
-  ITriggerConfigProvider,
-  TriggerConfigSource
-} from "./trigger-config-loader.service";
+  ITriggerConfigProvider
+} from "@/services/task/trigger/config/types";
+import { toError } from "@/utils/error.util";
 
 /**
- * 配置文件提供者 - 从 trigger.config.ts/js 加载配置
+ * 配置文件提供者
  *
- * 使用 jiti 动态加载 TypeScript/JavaScript 配置文件
+ * 职责：
+ * - 从 trigger.config.ts/js 加载触发器配置
+ * - 验证配置格式
+ * - 提供完整的配置（包括 id 和 source）
+ *
+ * 设计原则：
+ * - 配置文件中的每个触发器必须提供 ID
+ * - 所有配置都必须包含 source 字段
+ * - 使用 Zod 进行运行时验证
+ * - 不负责管理监听器，由加载器负责
  */
 @Injectable()
 export class ConfigFileProvider implements ITriggerConfigProvider {
@@ -29,7 +41,7 @@ export class ConfigFileProvider implements ITriggerConfigProvider {
     this.configFilePath = possiblePaths.find((p) => fs.existsSync(p)) || null;
 
     if (this.configFilePath) {
-      this.logger.log(`找到触发器配置文件: ${this.configFilePath}`);
+      this.logger.log(`✅ 找到触发器配置文件: ${this.configFilePath}`);
     } else {
       this.logger.debug(
         `未找到触发器配置文件，检查路径: ${possiblePaths.join(", ")}`
@@ -37,11 +49,28 @@ export class ConfigFileProvider implements ITriggerConfigProvider {
     }
   }
 
-  getName(): string {
+  getSource() {
     return ConfigSource.CONFIG_FILE;
   }
 
-  async load(): Promise<TriggerConfigSource[]> {
+  getName() {
+    return "fileConfig";
+  }
+
+  /**
+   * 加载配置文件中的触发器配置
+   *
+   * 流程：
+   * 1. 检查配置文件是否存在
+   * 2. 使用 jiti 动态加载配置文件（支持 TypeScript）
+   * 3. 验证导出的数据格式
+   * 4. 对每个配置进行验证和规范化
+   * 5. 为每个配置生成稳定的 UUID
+   * 6. 返回规范化的配置列表
+   *
+   * @returns 规范化的触发器配置列表
+   */
+  async load(): Promise<TriggerConfig[]> {
     try {
       // 检查配置文件是否存在
       if (!this.configFilePath) {
@@ -50,93 +79,75 @@ export class ConfigFileProvider implements ITriggerConfigProvider {
       }
 
       // 使用 jiti 动态加载配置文件（支持 TypeScript）
+      this.logger.debug(`加载配置文件: ${this.configFilePath}`);
       const jiti = createJiti(__filename, {
         interopDefault: true
       });
       const configModule = (await jiti.import(this.configFilePath)) as any;
-      const triggerConfigs =
-        configModule.default || configModule.triggerConfigs;
+      const triggerConfigs = (configModule.default ||
+        configModule.triggerConfigs) as unknown[];
 
+      // 验证导出的数据是否为数组
       if (!Array.isArray(triggerConfigs)) {
-        this.logger.error(
-          `配置文件格式错误: 应该导出一个数组，实际类型: ${typeof triggerConfigs}`
-        );
+        const errorMsg = `配置文件格式错误: 应该导出一个数组，实际类型: ${typeof triggerConfigs}`;
+        this.logger.error(errorMsg);
         return [];
       }
 
-      // 验证并转换为标准格式
-      const validConfigs: TriggerConfigSource[] = [];
-      for (let i = 0; i < triggerConfigs.length; i++) {
-        const config = triggerConfigs[i];
+      // 验证并加载配置
+      const configs: TriggerConfig[] = [];
+      for (let index = 0; index < triggerConfigs.length; index++) {
+        const rawConfig = triggerConfigs[index];
 
-        // 类型校验
-        if (!this.validateConfig(config, i)) {
-          continue; // 跳过非法配置
+        // 检查配置是否为对象
+        if (typeof rawConfig !== "object" || rawConfig === null) {
+          const errorMsg = `配置文件中第 ${index + 1} 项配置格式错误: 应该是对象`;
+          this.logger.error(errorMsg);
+          continue;
         }
 
-        validConfigs.push({
-          id: this.generateStableId(config.name), // 生成稳定的唯一ID
-          name: config.name,
-          taskName: config.taskName,
-          cron: config.cron,
-          params: config.params,
-          enabled: config.enabled ?? true, // 默认启用
-          description: config.description,
+        const configObj = rawConfig as any;
+
+        // 检查是否提供了 ID
+        if (!configObj.id) {
+          const errorMsg = `配置文件中第 ${index + 1} 项配置缺少 ID，触发器: ${configObj.name || "未知"}`;
+          this.logger.error(errorMsg);
+          continue;
+        }
+
+        // 构建完整的配置（包含 id 和 source）
+        const fullConfig = {
+          ...configObj,
           source: ConfigSource.CONFIG_FILE
-        });
+        };
+
+        // 验证完整配置格式
+        const validation = validateTriggerConfig(fullConfig);
+        if (!validation.success) {
+          const errorMsg = `配置文件中第 ${index + 1} 项配置 (ID: ${configObj.id}) 验证失败: ${validation.error}`;
+          this.logger.error(errorMsg);
+          continue;
+        }
+
+        const config = validation.data!;
+        configs.push(config);
+        this.logger.debug(
+          `✅ 加载触发器: ${config.name} (ID: ${config.id}, 来源: ${ConfigSource.CONFIG_FILE})`
+        );
       }
 
       this.logger.log(
-        `从配置文件加载 ${validConfigs.length}/${triggerConfigs.length} 个有效触发器配置`
+        `从配置文件加载 ${configs.length}/${triggerConfigs.length} 个有效触发器配置`
       );
 
-      return validConfigs;
-    } catch (error) {
+      return configs;
+    } catch (e) {
+      const error = toError(e);
       this.logger.error(
         `从配置文件加载触发器配置失败: ${error.message}`,
         error.stack
       );
       return [];
     }
-  }
-
-  /**
-   * 生成稳定的触发器ID
-   * 基于配置源和触发器名称生成，确保同一配置每次加载都得到相同的ID
-   * 这样可以在服务重启后正确识别和更新触发器，而不是创建重复实例
-   */
-  private generateStableId(configName: string): string {
-    // 使用配置源类型 + 触发器名称生成唯一且稳定的ID
-    const uniqueKey = `${ConfigSource.CONFIG_FILE}:${configName}`;
-    const hash = createHash("sha256").update(uniqueKey).digest("hex");
-
-    // 转换为UUID格式（8-4-4-4-12）
-    // 使用hash的前32个字符
-    return [
-      hash.substring(0, 8),
-      hash.substring(8, 12),
-      hash.substring(12, 16),
-      hash.substring(16, 20),
-      hash.substring(20, 32)
-    ].join("-");
-  }
-
-  /**
-   * 验证配置项是否合法
-   */
-  private validateConfig(config: any, index: number): boolean {
-    const requiredFields = ["name", "taskName", "cron"];
-    const missingFields = requiredFields.filter(
-      (field) => !config[field] || typeof config[field] !== "string"
-    );
-
-    if (missingFields.length > 0) {
-      this.logger.error(
-        `配置文件中第 ${index + 1} 项配置缺少必填字段或类型错误: ${missingFields.join(", ")}，配置: ${JSON.stringify(config)}`
-      );
-      return false;
-    }
-
-    return true;
   }
 }

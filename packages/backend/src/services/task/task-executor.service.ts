@@ -3,10 +3,13 @@ import dayjs from "dayjs";
 import { Logger } from "nestjs-pino";
 import pRetry, { AbortError } from "p-retry";
 import { Inject, Injectable, OnModuleDestroy } from "@nestjs/common";
+import { toError } from "@/utils/error.util";
 import {
   TaskCancelledError,
   TaskContext,
   TaskDefinition,
+  TaskExecutionLevel,
+  TaskExecutionStatus,
   TaskResult,
   TaskSource,
   TaskTimeoutError
@@ -16,6 +19,17 @@ import {
   TaskMiddlewareChain
 } from "./middleware/task-middleware.interface";
 import { TaskRegistryService } from "./task-registry.service";
+
+/**
+ * 运行中的任务信息
+ */
+export interface RunningTaskInfo {
+  executionId: string;
+  taskName: string;
+  controller: AbortController;
+  context: TaskContext;
+  startedAt: Date;
+}
 
 /**
  * 任务执行器
@@ -32,7 +46,7 @@ import { TaskRegistryService } from "./task-registry.service";
 @Injectable()
 export class TaskExecutorService implements OnModuleDestroy {
   private readonly middlewareChain = new TaskMiddlewareChain();
-  private readonly runningTasks = new Map<string, AbortController>();
+  private readonly runningTasks = new Map<string, RunningTaskInfo>();
 
   constructor(
     private readonly taskRegistry: TaskRegistryService,
@@ -52,7 +66,7 @@ export class TaskExecutorService implements OnModuleDestroy {
   async execute<P, D>(
     taskName: string,
     params?: P,
-    source: TaskSource = "manual",
+    source: TaskSource = TaskSource.MANUAL,
     triggerName?: string,
     signal?: AbortSignal
   ): Promise<TaskResult<D>> {
@@ -75,7 +89,7 @@ export class TaskExecutorService implements OnModuleDestroy {
       taskAbortController.signal
     );
 
-    const context: TaskContext<P> = {
+    const context: TaskContext = {
       taskName,
       params,
       source,
@@ -86,13 +100,21 @@ export class TaskExecutorService implements OnModuleDestroy {
       maxRetries,
       startedAt,
       attemptStartedAt: startedAt,
-      signal: combinedSignal
+      signal: combinedSignal,
+      status: TaskExecutionStatus.RUNNING,
+      logs: []
     };
 
     let result: TaskResult<D>;
 
     // 记录正在运行的任务
-    this.runningTasks.set(executionId, taskAbortController);
+    this.runningTasks.set(executionId, {
+      executionId,
+      taskName,
+      controller: taskAbortController,
+      context,
+      startedAt
+    });
 
     try {
       // 执行前置中间件
@@ -118,6 +140,7 @@ export class TaskExecutorService implements OnModuleDestroy {
       });
 
       const finishedAt = dayjs().toDate();
+      context.status = TaskExecutionStatus.SUCCESS;
       result = {
         executionId,
         success: true,
@@ -127,31 +150,33 @@ export class TaskExecutorService implements OnModuleDestroy {
         duration: dayjs(finishedAt).diff(dayjs(startedAt)),
         retryCount: context.retryCount
       };
+      context.result = result;
 
       // 执行后置中间件
-      await this.middlewareChain.executeAfter(context, result);
+      await this.middlewareChain.executeAfter(context);
 
       return result;
     } catch (error) {
       const finishedAt = dayjs().toDate();
       const isCancelled = error instanceof TaskCancelledError;
 
+      context.status = isCancelled
+        ? TaskExecutionStatus.CANCELED
+        : TaskExecutionStatus.FAILED;
       result = {
         executionId,
         success: false,
-        error: error instanceof Error ? error.message : String(error),
+        error: toError(error).message,
         startedAt,
         finishedAt,
         duration: dayjs(finishedAt).diff(dayjs(startedAt)),
         retryCount: context.retryCount,
         cancelled: isCancelled
       };
+      context.result = result;
 
       // 执行错误中间件
-      await this.middlewareChain.executeOnError(
-        context,
-        error instanceof Error ? error : new Error(String(error))
-      );
+      await this.middlewareChain.executeOnError(context, toError(error));
 
       return result;
     } finally {
@@ -169,19 +194,36 @@ export class TaskExecutorService implements OnModuleDestroy {
     this.logger.log(`正在取消 ${this.runningTasks.size} 个正在运行的任务...`);
 
     // 取消所有正在运行的任务
-    for (const [executionId, controller] of this.runningTasks.entries()) {
+    for (const [executionId, taskInfo] of this.runningTasks.entries()) {
       try {
-        controller.abort();
+        taskInfo.controller.abort();
         this.logger.debug(`已取消任务执行: ${executionId}`);
       } catch (error) {
         this.logger.warn(
-          `取消任务执行失败: ${executionId}, 错误: ${error.message}`
+          `取消任务执行失败: ${executionId}, 错误: ${error instanceof Error ? error.message : String(error)}`
         );
       }
     }
 
     this.runningTasks.clear();
     this.logger.log("任务执行器清理完成");
+  }
+
+  /**
+   * 获取正在运行的任务映射表
+   */
+  getRunningTasks(): Map<string, RunningTaskInfo> {
+    return this.runningTasks;
+  }
+
+  stopRunningTask(executionId: string) {
+    const taskInfo = this.runningTasks.get(executionId);
+    if (!taskInfo) {
+      throw new Error(`任务不存在: ${executionId}`);
+    }
+
+    taskInfo.controller.abort();
+    taskInfo.context.status = TaskExecutionStatus.CANCELED;
   }
 
   /**
@@ -194,7 +236,7 @@ export class TaskExecutorService implements OnModuleDestroy {
   }: {
     task: TaskDefinition<P, D>;
     params?: P;
-    context: TaskContext<P>;
+    context: TaskContext;
   }): Promise<D> {
     const maxRetries = task.options.retries || 0;
 
@@ -221,12 +263,20 @@ export class TaskExecutorService implements OnModuleDestroy {
         context.retryCount = attemptNumber - 1;
         context.attemptStartedAt = dayjs().toDate();
 
+        const logMessage = `尝试执行任务 (第 ${attemptNumber}/${maxRetries + 1} 次)`;
         this.logger.debug({
           executionId: context.executionId,
           taskName: context.taskName,
           attemptNumber,
           maxAttempts: maxRetries + 1,
-          message: "尝试执行任务"
+          message: logMessage
+        });
+
+        // 记录日志到 context
+        context.logs.push({
+          timestamp: dayjs().toDate(),
+          level: TaskExecutionLevel.INFO,
+          message: logMessage
         });
 
         try {
@@ -245,14 +295,28 @@ export class TaskExecutorService implements OnModuleDestroy {
       },
       {
         retries: maxRetries,
-        onFailedAttempt: (error) => {
+        onFailedAttempt: (attemptError) => {
+          const errorMessage = `任务执行失败 (第 ${attemptError.attemptNumber}/${maxRetries + 1} 次, 剩余重试次数: ${attemptError.retriesLeft})`;
+          const errorDetail =
+            attemptError instanceof Error
+              ? attemptError.message
+              : JSON.stringify(attemptError);
           this.logger.warn({
             executionId: context.executionId,
             taskName: context.taskName,
-            attemptNumber: error.attemptNumber,
+            attemptNumber: attemptError.attemptNumber,
             maxAttempts: maxRetries + 1,
-            retriesLeft: error.retriesLeft,
-            message: "任务执行失败"
+            retriesLeft: attemptError.retriesLeft,
+            message: errorMessage,
+            errorDetail
+          });
+
+          // 记录日志到 context
+          context.logs.push({
+            timestamp: dayjs().toDate(),
+            level: TaskExecutionLevel.WARN,
+            message: errorMessage,
+            data: { error: errorDetail }
           });
         },
         // 指数退避策略
@@ -275,12 +339,24 @@ export class TaskExecutorService implements OnModuleDestroy {
   }: {
     task: TaskDefinition<P, D>;
     params?: P;
-    context: TaskContext<P>;
+    context: TaskContext;
   }): Promise<D> {
     const timeout = task.options.timeout;
 
     if (!timeout) {
       // 没有超时限制，直接执行
+      const startLog = `开始执行任务 (无超时限制)`;
+      this.logger.debug({
+        executionId: context.executionId,
+        taskName: context.taskName,
+        message: startLog
+      });
+      context.logs.push({
+        timestamp: dayjs().toDate(),
+        level: TaskExecutionLevel.INFO,
+        message: startLog
+      });
+
       return await task.handler(params, context.signal);
     }
 
@@ -293,10 +369,29 @@ export class TaskExecutorService implements OnModuleDestroy {
 
     let timeoutId: NodeJS.Timeout | undefined;
 
+    const startLog = `开始执行任务 (超时限制: ${timeout}ms)`;
+    this.logger.debug({
+      executionId: context.executionId,
+      taskName: context.taskName,
+      timeout,
+      message: startLog
+    });
+    context.logs.push({
+      timestamp: dayjs().toDate(),
+      level: TaskExecutionLevel.INFO,
+      message: startLog
+    });
+
     try {
       const timeoutPromise = new Promise<never>((_, reject) => {
         timeoutId = setTimeout(() => {
           timeoutAbortController.abort();
+          const timeoutLog = `任务执行超时 (${timeout}ms)`;
+          context.logs.push({
+            timestamp: dayjs().toDate(),
+            level: TaskExecutionLevel.ERROR,
+            message: timeoutLog
+          });
           reject(
             new TaskTimeoutError(context.taskName, context.executionId, timeout)
           );
@@ -309,7 +404,34 @@ export class TaskExecutorService implements OnModuleDestroy {
         timeoutPromise
       ]);
 
+      const successLog = `任务执行成功`;
+      this.logger.debug({
+        executionId: context.executionId,
+        taskName: context.taskName,
+        message: successLog
+      });
+      context.logs.push({
+        timestamp: dayjs().toDate(),
+        level: TaskExecutionLevel.INFO,
+        message: successLog
+      });
+
       return result;
+    } catch (error) {
+      const errorLog = `任务执行失败: ${error instanceof Error ? error.message : String(error)}`;
+      this.logger.error({
+        executionId: context.executionId,
+        taskName: context.taskName,
+        message: errorLog,
+        error
+      });
+      context.logs.push({
+        timestamp: dayjs().toDate(),
+        level: TaskExecutionLevel.ERROR,
+        message: errorLog,
+        data: { error: error instanceof Error ? error.message : String(error) }
+      });
+      throw error;
     } finally {
       // 清理资源
       if (timeoutId) {

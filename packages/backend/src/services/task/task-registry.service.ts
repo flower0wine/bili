@@ -50,9 +50,9 @@ export class TaskRegistryService implements OnModuleInit {
     private readonly metadataScanner: MetadataScanner
   ) {}
 
-  async onModuleInit() {
+  onModuleInit() {
     try {
-      await this.discoverTasks();
+      this.discoverTasks();
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
@@ -72,7 +72,7 @@ export class TaskRegistryService implements OnModuleInit {
    * 2. 扫描完整原型链（包括继承的方法）
    * 3. 存储 instance + methodName，而非 bind 后的函数
    */
-  private async discoverTasks(): Promise<void> {
+  discoverTasks() {
     const providers: InstanceWrapper[] = this.discoveryService.getProviders();
     let discoveredCount = 0;
 

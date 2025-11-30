@@ -4,11 +4,15 @@ import {
   OnModuleDestroy,
   OnModuleInit
 } from "@nestjs/common";
-import { PrismaClient } from "@prisma/client";
+import { toError } from "@/utils/error.util";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 @Injectable()
 export class PrismaService
-  extends PrismaClient
+  extends PrismaClient<
+    Prisma.PrismaClientOptions,
+    "query" | "info" | "warn" | "error"
+  >
   implements OnModuleInit, OnModuleDestroy
 {
   private readonly logger = new Logger(PrismaService.name);
@@ -26,15 +30,17 @@ export class PrismaService
     // 监听查询事件（开发环境）
     if (process.env.NODE_ENV === "development") {
       // 使用类型断言来解决类型问题
-      (this as any).$on("query", (e: any) => {
+      this.$on("query", (e) => {
         this.logger.debug(`Query: ${e.query}`);
         this.logger.debug(`Duration: ${e.duration}ms`);
       });
     }
 
     // 监听错误事件
-    (this as any).$on("error", (e: any) => {
-      this.logger.error(`Prisma Error: ${e.message}`);
+    this.$on<"error">("error", (e) => {
+      const error = toError(e);
+
+      this.logger.error(`Prisma Error: ${error.message}`);
     });
   }
 

@@ -1,43 +1,45 @@
-import { TriggerConfig } from "./src/services/task/trigger";
+import { TriggerConfig } from "./src/services/task/trigger/config/trigger.schema";
 
 /**
  * 触发器配置列表
  */
 export const triggerConfigs: TriggerConfig[] = [
-  // 示例：每天凌晨同步用户空间数据
-  // {
-  //   name: "user-space-sync-daily",
-  //   taskName: "user-space-sync",
-  //   cron: "*/20 * * * * *",
-  //   params: {
-  //     mids: [456664753]
-  //   },
-  //   enabled: true, // 默认禁用，需要手动启用
-  //   description: "同步用户空间数据"
-  // },
-  // 示例：每天凌晨同步用户名片数据
-  // {
-  //   name: "user-card-sync-daily",
-  //   taskName: "user-card-sync",
-  //   cron: "*/20 * * * * *", // 每天凌晨
-  //   params: {
-  //     mids: [456664753],
-  //     photo: true
-  //   },
-  //   enabled: true, // 默认禁用，需要手动启用
-  //   description: "同步用户名片数据"
-  // },
-  // 飞书多维表格同步任务（每天凌晨1点执行）
   {
-    name: "feishu-bitable-sync-daily",
-    taskName: "feishu-bitable-sync",
-    cron: "0 */1 * * * *", // 每天凌晨1点
+    id: "user-space-sync-daily",
+    name: "user-space-sync-daily",
+    taskName: "user-space-sync",
+    cron: "*/20 * * * * *",
     params: {
-      mids: [456664753] // 可以指定用户列表，或留空同步所有用户
+      mids: [456664753]
     },
-    enabled: true, // 默认禁用，需要配置飞书应用后手动启用
-    description: "同步用户数据到飞书多维表格"
+    enabled: false, // 默认禁用，需要手动启用
+    description: "同步用户空间数据",
+    source: "config_file"
+  },
+  {
+    id: "user-card-sync-daily",
+    name: "user-card-sync-daily",
+    taskName: "user-card-sync",
+    cron: "*/20 * * * * *", // 每天凌晨
+    params: {
+      mids: [456664753],
+      photo: true
+    },
+    enabled: false, // 默认禁用，需要手动启用
+    description: "同步用户名片数据",
+    source: "config_file"
   }
+  // 飞书多维表格同步任务（每天凌晨1点执行）
+  // {
+  //   name: "feishu-bitable-sync-daily",
+  //   taskName: "feishu-bitable-sync",
+  //   cron: "0 */1 * * * *", // 每天凌晨1点
+  //   params: {
+  //     mids: [456664753] // 可以指定用户列表，或留空同步所有用户
+  //   },
+  //   enabled: true, // 默认禁用，需要配置飞书应用后手动启用
+  //   description: "同步用户数据到飞书多维表格"
+  // }
   // 示例：每小时执行一次测试任务
   // {
   //   name: "hourly-hello",

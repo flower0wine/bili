@@ -1,6 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { toError } from "@/utils/error.util";
 import * as lark from "@larksuiteoapi/node-sdk";
+import { DataTableField, DataTableSort, RecordField } from "./types";
 
 /**
  * 飞书API服务
@@ -39,7 +41,6 @@ export class FeishuSyncService {
       appId,
       appSecret,
       appType: lark.AppType.SelfBuild // 自建应用类型
-      // domain: lark.Domain.Feishu, // 可选：指定飞书域名（默认）
     });
 
     this.logger.log("飞书客户端初始化成功，使用 tenant_access_token 自动认证");
@@ -51,7 +52,7 @@ export class FeishuSyncService {
    * 说明：默认使用 tenant_access_token（应用访问凭证）
    * SDK 会自动在请求中添加认证信息
    */
-  async listFolders(parentToken?: string): Promise<any[]> {
+  async listFolders(parentToken?: string) {
     try {
       const res = await this.client.drive.v1.file.list({
         params: {
@@ -68,7 +69,9 @@ export class FeishuSyncService {
       }
 
       return res.data?.files || [];
-    } catch (error) {
+    } catch (e) {
+      const error = toError(e);
+
       this.logger.error(`获取文件夹列表失败: ${error.message}`, error.stack);
       throw error;
     }
@@ -77,17 +80,16 @@ export class FeishuSyncService {
   /**
    * 查找文件夹（支持按名称查找）
    */
-  async findFolder(
-    folderName: string,
-    parentToken?: string
-  ): Promise<string | null> {
+  async findFolder(folderName: string, parentToken?: string) {
     try {
       const files = await this.listFolders(parentToken);
       const folder = files.find(
         (f) => f.name === folderName && f.type === "folder"
       );
       return folder ? folder.token : null;
-    } catch (error) {
+    } catch (e) {
+      const error = toError(e);
+
       this.logger.error(`查找文件夹失败: ${error.message}`, error.stack);
       throw error;
     }
@@ -98,18 +100,13 @@ export class FeishuSyncService {
    * @param folderName 文件夹名称
    * @param parentToken 父文件夹token，不传则创建在根目录（我的空间）
    */
-  async createFolder(
-    folderName: string,
-    parentToken: string = ""
-  ): Promise<string> {
+  async createFolder(folderName: string, parentToken: string = "") {
     try {
       // 构建请求数据
-      const requestData: any = {
-        name: folderName
+      const requestData = {
+        name: folderName,
+        folder_token: parentToken
       };
-
-      // 仅当有父文件夹token时才添加folder_token字段
-      requestData.folder_token = parentToken;
 
       const res = await this.client.drive.v1.file.createFolder({
         data: requestData
@@ -128,7 +125,8 @@ export class FeishuSyncService {
 
       this.logger.log(`成功创建文件夹: "${folderName}", token: ${token}`);
       return token;
-    } catch (error) {
+    } catch (e) {
+      const error = toError(e);
       this.logger.error(
         `创建文件夹 "${folderName}" 失败: ${error.message}`,
         error.stack
@@ -140,10 +138,7 @@ export class FeishuSyncService {
   /**
    * 确保文件夹存在（不存在则创建）
    */
-  async ensureFolder(
-    folderName: string,
-    parentToken?: string
-  ): Promise<string> {
+  async ensureFolder(folderName: string, parentToken?: string) {
     let folderToken = await this.findFolder(folderName, parentToken);
     if (!folderToken) {
       folderToken = await this.createFolder(folderName, parentToken);
@@ -154,17 +149,15 @@ export class FeishuSyncService {
   /**
    * 查找多维表格
    */
-  async findBitable(
-    bitableName: string,
-    folderToken?: string
-  ): Promise<string | null> {
+  async findBitable(bitableName: string, folderToken?: string) {
     try {
       const files = await this.listFolders(folderToken);
       const bitable = files.find(
         (f) => f.name === bitableName && f.type === "bitable"
       );
       return bitable ? bitable.token : null;
-    } catch (error) {
+    } catch (e) {
+      const error = toError(e);
       this.logger.error(`查找多维表格失败: ${error.message}`, error.stack);
       throw error;
     }
@@ -175,20 +168,13 @@ export class FeishuSyncService {
    * @param bitableName 多维表格名称
    * @param folderToken 文件夹token，不传则创建在根目录
    */
-  async createBitable(
-    bitableName: string,
-    folderToken?: string
-  ): Promise<string> {
+  async createBitable(bitableName: string, folderToken: string = "") {
     try {
       // 构建请求数据
-      const requestData: any = {
-        name: bitableName
+      const requestData = {
+        name: bitableName,
+        folder_token: folderToken
       };
-
-      // 仅当有文件夹token时才添加folder_token字段
-      if (folderToken) {
-        requestData.folder_token = folderToken;
-      }
 
       this.logger.debug(`创建多维表格请求参数: ${JSON.stringify(requestData)}`);
 
@@ -209,7 +195,8 @@ export class FeishuSyncService {
 
       this.logger.log(`成功创建多维表格: "${bitableName}", token: ${appToken}`);
       return appToken;
-    } catch (error) {
+    } catch (e) {
+      const error = toError(e);
       this.logger.error(
         `创建多维表格 "${bitableName}" 失败: ${error.message}`,
         error.stack
@@ -221,10 +208,7 @@ export class FeishuSyncService {
   /**
    * 确保多维表格存在
    */
-  async ensureBitable(
-    bitableName: string,
-    folderToken?: string
-  ): Promise<string> {
+  async ensureBitable(bitableName: string, folderToken?: string) {
     let bitableToken = await this.findBitable(bitableName, folderToken);
     if (!bitableToken) {
       bitableToken = await this.createBitable(bitableName, folderToken);
@@ -235,7 +219,7 @@ export class FeishuSyncService {
   /**
    * 获取多维表格的所有数据表
    */
-  async listTables(appToken: string): Promise<any[]> {
+  async listTables(appToken: string) {
     try {
       const res = await this.client.bitable.v1.appTable.list({
         path: {
@@ -252,7 +236,9 @@ export class FeishuSyncService {
       }
 
       return res.data?.items || [];
-    } catch (error) {
+    } catch (e) {
+      const error = toError(e);
+
       this.logger.error(`获取数据表列表失败: ${error.message}`, error.stack);
       throw error;
     }
@@ -264,8 +250,8 @@ export class FeishuSyncService {
   async createTable(
     appToken: string,
     tableName: string,
-    fields?: any[]
-  ): Promise<string> {
+    fields: DataTableField[] = []
+  ) {
     try {
       const res = await this.client.bitable.v1.appTable.create({
         path: {
@@ -274,7 +260,7 @@ export class FeishuSyncService {
         data: {
           table: {
             name: tableName,
-            fields: fields || []
+            fields
           }
         }
       });
@@ -291,7 +277,9 @@ export class FeishuSyncService {
 
       this.logger.log(`成功创建数据表: ${tableName}, table_id: ${tableId}`);
       return tableId;
-    } catch (error) {
+    } catch (e) {
+      const error = toError(e);
+
       this.logger.error(`创建数据表失败: ${error.message}`, error.stack);
       throw error;
     }
@@ -300,12 +288,14 @@ export class FeishuSyncService {
   /**
    * 查找数据表
    */
-  async findTable(appToken: string, tableName: string): Promise<string | null> {
+  async findTable(appToken: string, tableName: string) {
     try {
       const tables = await this.listTables(appToken);
       const table = tables.find((t) => t.name === tableName);
-      return table ? table.table_id : null;
-    } catch (error) {
+      return table?.table_id;
+    } catch (e) {
+      const error = toError(e);
+
       this.logger.error(`查找数据表失败: ${error.message}`, error.stack);
       throw error;
     }
@@ -317,8 +307,8 @@ export class FeishuSyncService {
   async ensureTable(
     appToken: string,
     tableName: string,
-    fields?: any[]
-  ): Promise<string> {
+    fields?: DataTableField[]
+  ) {
     let tableId = await this.findTable(appToken, tableName);
     if (!tableId) {
       tableId = await this.createTable(appToken, tableName, fields);
@@ -337,8 +327,8 @@ export class FeishuSyncService {
     appToken: string,
     tableId: string,
     pageSize: number = 1,
-    sort?: { field_name: string; desc?: boolean }[]
-  ): Promise<any[]> {
+    sort?: DataTableSort
+  ) {
     try {
       // 如果需要排序，使用 search 接口；否则使用 list 接口
       if (sort && sort.length > 0) {
@@ -384,7 +374,9 @@ export class FeishuSyncService {
 
         return res.data?.items || [];
       }
-    } catch (error) {
+    } catch (e) {
+      const error = toError(e);
+
       this.logger.error(`获取记录失败: ${error.message}`, error.stack);
       throw error;
     }
@@ -393,11 +385,7 @@ export class FeishuSyncService {
   /**
    * 添加记录
    */
-  async addRecord(
-    appToken: string,
-    tableId: string,
-    fields: any
-  ): Promise<string> {
+  async addRecord(appToken: string, tableId: string, fields: RecordField) {
     try {
       const res = await this.client.bitable.v1.appTableRecord.create({
         path: {
@@ -421,7 +409,9 @@ export class FeishuSyncService {
 
       this.logger.log(`成功添加记录, record_id: ${recordId}`);
       return recordId;
-    } catch (error) {
+    } catch (e) {
+      const error = toError(e);
+
       this.logger.error(`添加记录失败: ${error.message}`, error.stack);
       throw error;
     }
@@ -433,8 +423,8 @@ export class FeishuSyncService {
   async batchAddRecords(
     appToken: string,
     tableId: string,
-    records: any[]
-  ): Promise<string[]> {
+    records: RecordField[]
+  ) {
     try {
       const res = await this.client.bitable.v1.appTableRecord.batchCreate({
         path: {
@@ -452,10 +442,12 @@ export class FeishuSyncService {
       }
 
       const recordIds =
-        res.data?.records?.map((r: any) => r.record_id).filter(Boolean) || [];
+        res.data?.records?.map((r) => r.record_id).filter(Boolean) || [];
       this.logger.log(`成功批量添加 ${recordIds.length} 条记录`);
       return recordIds as string[];
-    } catch (error) {
+    } catch (e) {
+      const error = toError(e);
+
       this.logger.error(`批量添加记录失败: ${error.message}`, error.stack);
       throw error;
     }
