@@ -30,7 +30,7 @@ export async function UserSpaceCardWrapper({ uid }: UserSpaceCardWrapperProps) {
       errorTitle="加载空间信息失败"
     >
       {userSpaceData && (
-        <FadeInUp fallback={<UserSpaceCardSkeleton></UserSpaceCardSkeleton>}>
+        <FadeInUp fallback={<UserSpaceCardSkeleton />}>
           <UserSpaceCardService userSpaceData={userSpaceData} />
         </FadeInUp>
       )}

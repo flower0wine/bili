@@ -30,7 +30,7 @@ export async function UserProfileCardWrapper({ uid }: UserProfileCardWrapperProp
       errorTitle="加载用户资料失败"
     >
       {userCardData && (
-        <FadeInUp fallback={<UserProfileCardSkeleton></UserProfileCardSkeleton>}>
+        <FadeInUp fallback={<UserProfileCardSkeleton />}>
           <UserProfileCardService
             userCardData={userCardData}
             uid={uid}

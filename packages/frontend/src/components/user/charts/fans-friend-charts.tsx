@@ -1,5 +1,6 @@
 import { userCardApi } from "@/apis/user-card.api";
 import { FadeInUp } from "@/components/motion";
+import { ChartLoadingAnimation } from "./chart-loading-animation";
 import { ChartStateHandler } from "./chart-state-handler";
 import { FansChart } from "./fans-chart";
 import { FriendChart } from "./friend-chart";
@@ -35,7 +36,17 @@ export async function FansFriendCharts({ uid, startDate, endDate }: FansFriendCh
       errorTitle="加载图表数据失败"
     >
       {historyData && historyData.length > 0 && (
-        <FadeInUp>
+        <FadeInUp fallback={(
+          <div className="h-160">
+            <div className="bg-card rounded-lg">
+              <ChartLoadingAnimation theme="red" text="正在加载粉丝图表..." />
+            </div>
+            <div className="bg-card rounded-lg">
+              <ChartLoadingAnimation theme="blue" text="正在加载关注图表..." />
+            </div>
+          </div>
+        )}
+        >
           <div className="bg-card rounded-2xl shadow-xl p-8 border border-border">
             <h2 className="text-2xl font-bold text-card-foreground mb-6 text-center">
               粉丝关注变化趋势

@@ -2,13 +2,7 @@
 
 import type { HTMLMotionProps } from "framer-motion";
 import type { ReactNode } from "react";
-import { lazy, Suspense } from "react";
-
-// 动态导入 motion 组件
-const MotionDiv = lazy(async () => {
-  const mod = await import("framer-motion");
-  return { default: mod.motion.div };
-});
+import { useDynamicImport } from "@/hooks/use-dynamic-import";
 
 interface FadeInUpProps extends Omit<HTMLMotionProps<"div">, "children"> {
   children: ReactNode;
@@ -59,17 +53,23 @@ export function FadeInUp({
   fallback,
   ...props
 }: FadeInUpProps) {
+  const [mod, loading] = useDynamicImport(async () => import("framer-motion"));
+
+  const MotionDiv = mod?.motion.div;
+
+  if (loading || !MotionDiv) {
+    return <>{fallback || children}</>;
+  }
+
   return (
-    <Suspense fallback={fallback || children}>
-      <MotionDiv
-        initial={{ opacity: 0, y: yOffset }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.1 }}
-        transition={{ duration, delay, ease: "easeOut" }}
-        {...props}
-      >
-        {children}
-      </MotionDiv>
-    </Suspense>
+    <MotionDiv
+      initial={{ opacity: 0, y: yOffset }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.1 }}
+      transition={{ duration, delay, ease: "easeOut" }}
+      {...props}
+    >
+      {children}
+    </MotionDiv>
   );
 }
