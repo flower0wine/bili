@@ -135,6 +135,9 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
     }
   }, [open, trigger, form]);
 
+  console.log(trigger);
+
+
   // Check if form has unsaved changes
   const hasChanges = form.formState.isDirty;
 
@@ -142,7 +145,8 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
     if (!newOpen && hasChanges && !isLoading) {
       // If closing and there are unsaved changes, show confirmation dialog
       setShowConfirmDialog(true);
-    } else {
+    }
+    else {
       // Otherwise, close normally
       onOpenChange(newOpen);
     }
@@ -233,174 +237,175 @@ export function TriggerFormSheet({ open, onOpenChange, trigger }: TriggerFormShe
   return (
     <>
       <Sheet open={open} onOpenChange={handleSheetOpenChange}>
-      <SheetContent side="left" className="w-full sm:max-w-2xl overflow-y-auto px-4">
-        <SheetHeader>
-          <SheetTitle>{isEdit ? "编辑触发器" : "新建触发器"}</SheetTitle>
-          <SheetDescription>
-            {isEdit ? "修改触发器配置" : "创建新的 Cron 触发器"}
-          </SheetDescription>
-        </SheetHeader>
+        <SheetContent side="left" className="w-full sm:max-w-2xl overflow-y-auto px-4">
+          <SheetHeader>
+            <SheetTitle>{isEdit ? "编辑触发器" : "新建触发器"}</SheetTitle>
+            <SheetDescription>
+              {isEdit ? "修改触发器配置" : "创建新的 Cron 触发器"}
+            </SheetDescription>
+          </SheetHeader>
 
-        <form id="trigger-form" onSubmit={form.handleSubmit(onSubmit)}>
-          <FieldSet>
-            <FieldGroup>
-              <Controller
-                name="name"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="trigger-name">触发器名称</FieldLabel>
-                    <FieldContent>
-                      <Input
-                        id="trigger-name"
-                        placeholder="例如：每天凌晨执行"
-                        onChange={field.onChange}
-                        disabled={isLoading}
-                        aria-invalid={fieldState.invalid}
-                      />
-                      <FieldError errors={[fieldState.error]} />
-                    </FieldContent>
-                  </Field>
-                )}
-              />
+          <form id="trigger-form" onSubmit={form.handleSubmit(onSubmit)}>
+            <FieldSet>
+              <FieldGroup>
+                <Controller
+                  name="name"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="trigger-name">触发器名称</FieldLabel>
+                      <FieldContent>
+                        <Input
+                          id="trigger-name"
+                          placeholder="例如：每天凌晨执行"
+                          onChange={field.onChange}
+                          value={field.value}
+                          disabled={isLoading}
+                          aria-invalid={fieldState.invalid}
+                        />
+                        <FieldError errors={[fieldState.error]} />
+                      </FieldContent>
+                    </Field>
+                  )}
+                />
 
-              <Controller
-                name="taskName"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel>关联任务</FieldLabel>
-                    <FieldContent>
-                      <TaskSelector
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        disabled={isLoading}
-                        aria-invalid={fieldState.invalid}
-                      />
-                      <FieldError errors={[fieldState.error]} />
-                    </FieldContent>
-                  </Field>
-                )}
-              />
+                <Controller
+                  name="taskName"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel>关联任务</FieldLabel>
+                      <FieldContent>
+                        <TaskSelector
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={isLoading}
+                          aria-invalid={fieldState.invalid}
+                        />
+                        <FieldError errors={[fieldState.error]} />
+                      </FieldContent>
+                    </Field>
+                  )}
+                />
 
-              <Controller
-                name="cron"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="trigger-cron">Cron 表达式</FieldLabel>
-                    <FieldContent>
-                      <FieldDescription>
-                        标准 Cron 格式：分 小时 日期 月份 星期
-                      </FieldDescription>
-                      <Input
-                        {...field}
-                        id="trigger-cron"
-                        placeholder="例如：0 0 * * *"
-                        disabled={isLoading}
-                        aria-invalid={fieldState.invalid}
-                      />
-                      <FieldError errors={[fieldState.error]} />
-                    </FieldContent>
-                  </Field>
-                )}
-              />
+                <Controller
+                  name="cron"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="trigger-cron">Cron 表达式</FieldLabel>
+                      <FieldContent>
+                        <FieldDescription>
+                          标准 Cron 格式：分 小时 日期 月份 星期
+                        </FieldDescription>
+                        <Input
+                          {...field}
+                          id="trigger-cron"
+                          placeholder="例如：0 0 * * *"
+                          disabled={isLoading}
+                          aria-invalid={fieldState.invalid}
+                        />
+                        <FieldError errors={[fieldState.error]} />
+                      </FieldContent>
+                    </Field>
+                  )}
+                />
 
-              <Controller
-                name="description"
-                control={form.control}
-                render={({ field }) => (
-                  <Field>
-                    <FieldLabel htmlFor="trigger-description">描述（可选）</FieldLabel>
-                    <FieldContent>
-                      <Textarea
-                        {...field}
-                        id="trigger-description"
-                        placeholder="输入触发器的描述信息"
-                        disabled={isLoading}
-                        rows={3}
-                      />
-                    </FieldContent>
-                  </Field>
-                )}
-              />
+                <Controller
+                  name="description"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Field>
+                      <FieldLabel htmlFor="trigger-description">描述（可选）</FieldLabel>
+                      <FieldContent>
+                        <Textarea
+                          {...field}
+                          id="trigger-description"
+                          placeholder="输入触发器的描述信息"
+                          disabled={isLoading}
+                          rows={3}
+                        />
+                      </FieldContent>
+                    </Field>
+                  )}
+                />
 
-              <Controller
-                name="enabled"
-                control={form.control}
-                render={({ field }) => (
-                  <Field>
-                    <FieldLabel>是否启用触发器</FieldLabel>
-                    <FieldContent>
-                      <RadioGroup
-                        value={field.value ? "true" : "false"}
-                        onValueChange={value => field.onChange(value === "true")}
-                        disabled={isLoading}
-                      >
-                        <div className="flex items-center gap-4">
-                          <label className="flex items-center gap-2" htmlFor="trigger-enabled-yes">
-                            <RadioGroupItem value="true" id="trigger-enabled-yes" />
-                            <span className="cursor-pointer">是</span>
-                          </label>
-                          <label className="flex items-center gap-2" htmlFor="trigger-enabled-no">
-                            <RadioGroupItem value="false" id="trigger-enabled-no" />
-                            <span className="cursor-pointer">否</span>
-                          </label>
-                        </div>
-                      </RadioGroup>
-                    </FieldContent>
-                  </Field>
-                )}
-              />
+                <Controller
+                  name="enabled"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Field>
+                      <FieldLabel>是否启用触发器</FieldLabel>
+                      <FieldContent>
+                        <RadioGroup
+                          value={field.value ? "true" : "false"}
+                          onValueChange={value => field.onChange(value === "true")}
+                          disabled={isLoading}
+                        >
+                          <div className="flex items-center gap-4">
+                            <label className="flex items-center gap-2" htmlFor="trigger-enabled-yes">
+                              <RadioGroupItem value="true" id="trigger-enabled-yes" />
+                              <span className="cursor-pointer">是</span>
+                            </label>
+                            <label className="flex items-center gap-2" htmlFor="trigger-enabled-no">
+                              <RadioGroupItem value="false" id="trigger-enabled-no" />
+                              <span className="cursor-pointer">否</span>
+                            </label>
+                          </div>
+                        </RadioGroup>
+                      </FieldContent>
+                    </Field>
+                  )}
+                />
 
-              <Controller
-                name="paramsJson"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel>参数配置（可选）</FieldLabel>
-                    <FieldContent>
-                      <FieldDescription>
-                        输入有效的对象作为触发器参数
-                      </FieldDescription>
-                      <TsViewer
-                        value={field.value}
-                        editable
-                        onChange={field.onChange}
-                        height="250px"
-                        showCopyButton={false}
-                        title="触发器参数对象"
-                      />
-                      {/* <FieldError errors={}>
+                <Controller
+                  name="paramsJson"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel>参数配置（可选）</FieldLabel>
+                      <FieldContent>
+                        <FieldDescription>
+                          输入有效的对象作为触发器参数
+                        </FieldDescription>
+                        <TsViewer
+                          value={field.value}
+                          editable
+                          onChange={field.onChange}
+                          height="250px"
+                          showCopyButton={false}
+                          title="触发器参数对象"
+                        />
+                        {/* <FieldError errors={}>
                       </FieldError> */}
-                    </FieldContent>
-                  </Field>
-                )}
-              />
-            </FieldGroup>
-          </FieldSet>
-        </form>
+                      </FieldContent>
+                    </Field>
+                  )}
+                />
+              </FieldGroup>
+            </FieldSet>
+          </form>
 
-        <SheetFooter className="flex flex-row justify-end">
-          <Button
-            variant="outline"
-            onClick={() => {
-              handleSheetOpenChange(false);
-            }}
-            disabled={isLoading}
-          >
-            取消
-          </Button>
-          <Button
-            type="submit"
-            form="trigger-form"
-            disabled={isLoading}
-          >
-            {isLoading ? "保存中..." : "保存"}
-          </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+          <SheetFooter className="flex flex-row justify-end">
+            <Button
+              variant="outline"
+              onClick={() => {
+                handleSheetOpenChange(false);
+              }}
+              disabled={isLoading}
+            >
+              取消
+            </Button>
+            <Button
+              type="submit"
+              form="trigger-form"
+              disabled={isLoading}
+            >
+              {isLoading ? "保存中..." : "保存"}
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
 
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent>
