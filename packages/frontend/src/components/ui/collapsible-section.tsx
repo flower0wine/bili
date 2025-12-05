@@ -37,11 +37,13 @@ export function CollapsibleSection({
           titleClassName
         )}
       >
-        {typeof title === "string" ? (
-          <h3 className="font-semibold text-sm">{title}</h3>
-        ) : (
-          <div className="flex-1">{title}</div>
-        )}
+        {typeof title === "string"
+          ? (
+              <h3 className="font-semibold text-sm">{title}</h3>
+            )
+          : (
+              <div className="flex-1">{title}</div>
+            )}
         <ChevronDown
           className={cn(
             "w-4 h-4 transition-transform",

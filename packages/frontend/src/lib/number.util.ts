@@ -8,12 +8,12 @@
  *   123456789  → 1.23亿
  *   123456789012 → 45.68亿
  *
- * @param num 数字（支持 number | string | null | undefined）
- * @param options 配置项
- *   - fixed: 最多保留几位小数（默认 2，自动去尾部0）
- *   - zeroText: 0 或无效值时显示内容，默认 "-"
- *   - forceUnit: 强制显示单位（即使 <1万 也显示“万”）
- * @returns 格式化后的字符串
+ * @param {number|string|null|undefined} num 数字
+ * @param {object} [options] 配置项
+ * @param {number} [options.fixed] 最多保留几位小数（默认 2，自动去尾部0）
+ * @param {string} [options.zeroText] 0 或无效值时显示内容
+ * @param {boolean} [options.forceUnit] 强制显示单位（即使 <1万 也显示“万”）
+ * @returns {string} 格式化后的字符串
  */
 export function formatNumber(
   num: number | string | null | undefined,

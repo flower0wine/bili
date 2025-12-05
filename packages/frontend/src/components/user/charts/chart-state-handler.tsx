@@ -26,7 +26,7 @@ export function ChartStateHandler({
   const router = useRouter();
   const [currentError, setCurrentError] = useState(error);
 
-  const handleRetry = () => {
+  const handleRetry = async () => {
     setCurrentError(undefined);
     router.refresh();
   };

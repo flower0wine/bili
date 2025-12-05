@@ -22,9 +22,9 @@ interface MotionFallbackProps {
 
 /**
  * Motion 动画组件的 fallback 骨架屏
- * 
+ *
  * 在 Framer Motion 代码加载时显示的占位组件
- * 
+ *
  * @example
  * ```tsx
  * <FadeInUp fallback={<MotionFallback height="200px" />}>
@@ -32,14 +32,14 @@ interface MotionFallbackProps {
  * </FadeInUp>
  * ```
  */
-export function MotionFallback({ 
-  height = "auto", 
-  width = "100%", 
+export function MotionFallback({
+  height = "auto",
+  width = "100%",
   rounded = "rounded-2xl",
   className = ""
 }: MotionFallbackProps) {
   return (
-    <div 
+    <div
       className={`animate-pulse bg-muted/50 ${rounded} ${className}`}
       style={{ height, width }}
     >
@@ -49,7 +49,7 @@ export function MotionFallback({
             <div
               key={i}
               className="w-2 h-2 bg-muted-foreground/30 rounded-full animate-bounce"
-              style={{ 
+              style={{
                 animationDelay: `${i * 200}ms`,
                 animationDuration: "1s"
               }}

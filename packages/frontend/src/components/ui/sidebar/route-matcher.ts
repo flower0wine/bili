@@ -89,7 +89,7 @@ export function matchRouteToMenu(
     // 检查当前路由是否与该可展开菜单项的路由匹配
     if (currentPath.startsWith(expandableRoute.path)) {
       // 添加该菜单项及其所有父菜单项
-      expandableRoute.parentIds.forEach((id) => expandedItemIds.add(id));
+      expandableRoute.parentIds.forEach(id => expandedItemIds.add(id));
       expandedItemIds.add(expandableRoute.id);
     }
   }
