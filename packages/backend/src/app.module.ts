@@ -17,7 +17,15 @@ import { TransformInterceptor } from "./interceptors/response-transform.intercep
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      // 自动加载 .env 文件（默认就是 .env）
+      // 再根据 NODE_ENV 加载对应的环境文件
+      envFilePath: [
+        `.env.${process.env.NODE_ENV}`, // 比如 .env.development、.env.production
+        ".env" // 最后再加载通用 .env（作为 fallback）
+      ]
+    }),
     PrismaModule,
     LoggerModule.forRoot({
       pinoHttp: {
