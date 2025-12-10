@@ -13,7 +13,8 @@ export function toError(unknownError: unknown): Error {
   // 作为错误信息，以便于记录。
   try {
     return new Error(JSON.stringify(unknownError));
-  } catch {
+  }
+  catch {
     // 如果连 JSON.stringify 都失败了（比如循环引用），就给一个通用的错误信息
     return new Error(String(unknownError));
   }

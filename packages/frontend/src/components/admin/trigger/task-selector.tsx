@@ -21,10 +21,10 @@ import { useAllTasks } from "@/hooks/apis/task.use";
 import { cn } from "@/lib/utils";
 
 interface TaskSelectorProps {
-  value: string;
-  onValueChange: (value: string) => void;
-  disabled?: boolean;
-  className?: string;
+  "value": string;
+  "onValueChange": (value: string) => void;
+  "disabled"?: boolean;
+  "className"?: string;
   "aria-invalid"?: boolean | "true" | "false";
 }
 

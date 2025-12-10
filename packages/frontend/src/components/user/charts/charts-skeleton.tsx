@@ -21,9 +21,9 @@ export function FansFriendChartsSkeleton() {
               {/* 图表区域 */}
               <div className="h-48 bg-muted-foreground/10 rounded flex items-end justify-around p-4">
                 {Array.from({ length: 7 }).map((_, i) => (
-                  <Skeleton 
-                    key={i} 
-                    className="w-8 bg-primary/20" 
+                  <Skeleton
+                    key={i}
+                    className="w-8 bg-primary/20"
                     style={{ height: `${Math.random() * 80 + 20}%` }}
                   />
                 ))}
@@ -51,9 +51,9 @@ export function FansFriendChartsSkeleton() {
               {/* 图表区域 */}
               <div className="h-48 bg-muted-foreground/10 rounded flex items-end justify-around p-4">
                 {Array.from({ length: 7 }).map((_, i) => (
-                  <Skeleton 
-                    key={i} 
-                    className="w-8 bg-blue-500/20" 
+                  <Skeleton
+                    key={i}
+                    className="w-8 bg-blue-500/20"
                     style={{ height: `${Math.random() * 80 + 20}%` }}
                   />
                 ))}
