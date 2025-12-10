@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bili-backend
+  labels:
+    app: bili-backend
+  annotations:
+    secrets.infisical.com/auto-reload: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bili-backend
+  template:
+    metadata:
+      labels:
+        app: bili-backend
+    spec:
+      containers:
+        - name: bili-backend
+          image: flower0wine/bili:latest
+          imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: managed-secret
+          ports:
+            - containerPort: 9000

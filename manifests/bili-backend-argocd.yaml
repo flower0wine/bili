@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bili-backend
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/flower0wine/bili
+    targetRevision: HEAD
+    path: packages/backend/k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: bili
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
