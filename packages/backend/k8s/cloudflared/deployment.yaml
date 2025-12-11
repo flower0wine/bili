@@ -20,22 +20,17 @@ spec:
       containers:
         - name: cloudflared
           image: cloudflare/cloudflared:latest
+          command:
+            - cloudflared
           args:
             - tunnel
             - --no-autoupdate
             - run
             - --token
-            - ${CLOUDFLARE_TUNNEL_TOKEN}
+            - "$(CLOUDFLARE_TUNNEL_TOKEN)"
           env:
             - name: CLOUDFLARE_TUNNEL_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: managed-secret
                   key: CLOUDFLARE_TUNNEL_TOKEN
-          resources:
-            requests:
-              cpu: 50m
-              memory: 128Mi
-            limits:
-              cpu: 200m
-              memory: 256Mi
