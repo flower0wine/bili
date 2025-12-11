@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared-tunnel
+  namespace: default
+  labels:
+    app: cloudflared
+  annotations:
+    secrets.infisical.com/auto-reload: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudflared
+  template:
+    metadata:
+      labels:
+        app: cloudflared
+    spec:
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:latest
+          args:
+            - tunnel
+            - --no-autoupdate
+            - run
+            - --token
+            - ${CLOUDFLARE_TUNNEL_TOKEN}
+          env:
+            - name: CLOUDFLARE_TUNNEL_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: managed-secret
+                  key: CLOUDFLARE_TUNNEL_TOKEN
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
