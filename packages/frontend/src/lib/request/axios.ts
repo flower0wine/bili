@@ -5,10 +5,6 @@ import { ApiError } from "./api-error";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-if (!API_BASE_URL) {
-  throw new Error("NEXT_PUBLIC_API_BASE_URL environment variable is not set");
-}
-
 // 使用WeakMap存储请求时间戳，避免污染axios配置
 const requestTimestamps = new WeakMap<AxiosRequestConfig, Date>();
 
