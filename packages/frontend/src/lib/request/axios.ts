@@ -3,14 +3,16 @@ import type { ApiResponse } from "@/types/http";
 import axios from "axios";
 import { ApiError } from "./api-error";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const isBrowser = typeof window !== "undefined";
 
 // 使用WeakMap存储请求时间戳，避免污染axios配置
 const requestTimestamps = new WeakMap<AxiosRequestConfig, Date>();
 
 // 创建axios实例
 export const api = axios.create({
-  baseURL: process.env.NODE_ENV === "development" ? `${API_BASE_URL}/api` : "/api",
+  baseURL: isBrowser
+    ? "/api"
+    : `${process.env.NEXT_PUBLIC_BACKEND_POINT}/api`,
   timeout: 60_000,
   headers: {
     "Content-Type": "application/json",
