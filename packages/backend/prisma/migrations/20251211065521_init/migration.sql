@@ -29,7 +29,7 @@ CREATE TABLE "UserSpaceData" (
 
 -- CreateTable
 CREATE TABLE "CronTrigger" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "taskName" TEXT NOT NULL,
     "cron" TEXT NOT NULL,
