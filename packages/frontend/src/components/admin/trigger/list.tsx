@@ -9,6 +9,7 @@ import { TriggerFormSheet } from "@/components/admin/trigger/form-sheet";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/ui/data-table";
 import { useAllTriggers } from "@/hooks/apis/trigger.use";
+import { toError } from "@/lib/error.util";
 
 interface TriggerListProps {
   initialData: TriggerVO[];
@@ -21,7 +22,8 @@ export function TriggerList({ initialData, initialError }: TriggerListProps): Re
     initialData,
   });
 
-  const error = initialError || queryError;
+  const err = initialError || queryError;
+  const error = err && toError(err);
 
   if (isLoading) {
     return (
@@ -46,7 +48,7 @@ export function TriggerList({ initialData, initialError }: TriggerListProps): Re
           <p className="text-sm text-destructive">
             加载触发器失败:
             {" "}
-            {error instanceof Error ? error.message : "未知错误"}
+            {error.message}
           </p>
         </div>
       </div>

@@ -12,6 +12,7 @@ import { ExecutionFilters } from "@/components/admin/task/execution/filters";
 import { CommonPagination } from "@/components/common/pagination";
 import { DataTable } from "@/components/ui/data-table";
 import { useTaskExecutions } from "@/hooks/apis/task.use";
+import { toError } from "@/lib/error.util";
 
 interface TaskExecutionListProps {
   initialData?: TaskExecutionListVO | null;
@@ -39,15 +40,8 @@ export function TaskExecutionList({ initialData, initialError }: TaskExecutionLi
     { initialData: page === 1 && initialData ? initialData : undefined },
   );
 
-  // 监听 queryError 并显示 toast
-  useEffect(() => {
-    if (queryError) {
-      const errorMessage = queryError instanceof Error
-        ? queryError.message
-        : "未知错误，加载执行历史失败";
-      toast.error(errorMessage);
-    }
-  }, [queryError]);
+  const err = initialError || queryError;
+  const error = err && toError(err);
 
   const executions = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -69,7 +63,7 @@ export function TaskExecutionList({ initialData, initialError }: TaskExecutionLi
   }
 
   // 初始加载失败时显示错误
-  if (initialError) {
+  if (error) {
     return (
       <div className="space-y-4">
         <h1 className="text-3xl font-bold tracking-tight">执行历史</h1>
@@ -77,7 +71,7 @@ export function TaskExecutionList({ initialData, initialError }: TaskExecutionLi
           <p className="text-sm text-destructive">
             加载执行历史失败:
             {" "}
-            {initialError}
+            {error.message}
           </p>
         </div>
       </div>

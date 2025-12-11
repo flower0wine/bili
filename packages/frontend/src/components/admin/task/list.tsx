@@ -48,7 +48,8 @@ export function TaskList({ initialData, initialError }: TaskListProps): ReactNod
     }
   };
 
-  const error = initialError || queryError;
+  const err = initialError || queryError;
+  const error = err && toError(err);
 
   if (isLoading) {
     return (
