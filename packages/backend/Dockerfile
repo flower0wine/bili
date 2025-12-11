@@ -32,6 +32,7 @@ RUN apt-get update && \
 
 # 创建非 root 用户
 RUN groupadd -r nodejs && useradd -r -g nodejs -d /app -s /sbin/nologin nodejs
+RUN chown -R nodejs:nodejs /app
 USER nodejs
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc* ./
