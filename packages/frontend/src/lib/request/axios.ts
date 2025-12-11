@@ -10,7 +10,7 @@ const requestTimestamps = new WeakMap<AxiosRequestConfig, Date>();
 
 // 创建axios实例
 export const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`,
+  baseURL: process.env.NODE_ENV === "development" ? `${API_BASE_URL}/api` : "/api",
   timeout: 60_000,
   headers: {
     "Content-Type": "application/json",
