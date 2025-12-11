@@ -19,7 +19,7 @@ spec:
       initContainers:
         - name: prisma-migrate
           image: flower0wine/bili:latest
-          command: ["npx", "prisma", "migrate", "deploy"]
+          command: ["pnpm", "--dir", "packages/backend", "exec", "prisma", "migrate", "deploy"]
           envFrom:
             - secretRef:
                 name: managed-secret
