@@ -16,6 +16,21 @@ spec:
       labels:
         app: bili-backend
     spec:
+      initContainers:
+        - name: prisma-migrate
+          image: flower0wine/bili:latest
+          command: ["npx", "prisma", "migrate", "deploy"]
+          envFrom:
+            - secretRef:
+                name: managed-secret
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
       containers:
         - name: bili-backend
           image: flower0wine/bili:latest
