@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const cspHeader = `
     default-src 'self';
+    connect-src 'self' https://api.flowerwine.dpdns.org;
     script-src 'self' 'unsafe-eval' 'unsafe-inline';
     style-src 'self' 'unsafe-inline';
     img-src 'self' blob: data: https:;
