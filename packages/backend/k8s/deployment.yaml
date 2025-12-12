@@ -21,7 +21,7 @@ spec:
           image: flower0wine/bili:latest
           securityContext:
             runAsUser: 0
-          command: ["pnpm", "--dir", "packages/backend", "exec", "prisma", "migrate", "deploy"]
+          command: ["pnpm", "--filter", "./packages/backend", "exec", "prisma", "migrate", "deploy"]
           envFrom:
             - secretRef:
                 name: managed-secret
