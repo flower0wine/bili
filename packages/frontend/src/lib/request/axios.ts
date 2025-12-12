@@ -6,11 +6,13 @@ import { ApiError } from "./api-error";
 // 使用WeakMap存储请求时间戳，避免污染axios配置
 const requestTimestamps = new WeakMap<AxiosRequestConfig, Date>();
 
+const isBrowser = typeof window !== "undefined";
+
 // 创建axios实例
 export const api = axios.create({
-  baseURL: process.env.NODE_ENV === "development"
+  baseURL: isBrowser
     ? "/api"
-    : `https://api.flowerwine.dpdns.org/api`,
+    : `${process.env.NEXT_PUBLIC_BACKEND_POINT}/api`,
   timeout: 60_000,
   headers: {
     "Content-Type": "application/json",
